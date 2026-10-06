@@ -5,9 +5,15 @@
 - RiboseQC installs and runs again on current Bioconductor (3.22). Before,
   `prepare_annotation_files()` failed there, because GenomicFeatures'
   `makeTxDbFromGFF()` is defunct; it now comes from txdbmaker.
-- devtools is no longer needed. `prepare_annotation_files(forge_BSgenome =
-  TRUE)` installs the forged BSgenome package with `install.packages()`, and
-  stops with an error if the installation fails.
+- devtools is no longer needed.
+- `prepare_annotation_files()` no longer forges and installs a BSgenome
+  package from a 2bit file: this failed with current BSgenomeForge versions
+  (#21, #23). Give the genome as a FASTA file (`genome_seq`); `twoBitToFa` of
+  the UCSC tools makes one from a 2bit file. `forge_BSgenome` defaults to
+  `FALSE`, as before, and without `genome_seq` the function stops at once
+  with this advice. `twobit_file`, `scientific_name` and `annotation_name`
+  are no longer used. Annotations that earlier versions made with a forged
+  BSgenome package still load.
 
 ## Changes in results
 
@@ -46,11 +52,9 @@
 
 ## Annotation files
 
-- New `*_Rannot` files have the format of ORFquant's. The new element
-  `genome_package` holds the name of the forged BSgenome package, or `NULL`
-  with `genome_seq`. The element `genome` now holds the genome sequence: the
-  BSgenome object, or the `FaFile_Circ` as before. Before, it held the package
-  name or the `FaFile_Circ`.
+- New `*_Rannot` files have the format of ORFquant's: they have the new
+  element `genome_package` (`NULL`), and the element `genome`, which holds
+  the `FaFile_Circ` as before, is now the last one.
 - `exons_bins` in `*_Rannot` keeps all columns of `exonicParts()` (`tx_id`,
   `tx_name`, `gene_id`, `exon_id`, `exon_name` and `exon_rank`). Before, it
   had `gene_id`, `tx_name` and an empty `exonic_part`. RiboseQC doesn't use
@@ -77,22 +81,16 @@
   gene id.
 - `prepare_annotation_files()` no longer fails when the annotation has
   exactly one coding transcript.
-- `prepare_annotation_files(forge_BSgenome = TRUE)` now keeps the circular
-  chromosomes circular in the forged BSgenome package when the genome has
-  more than one, for example `ChrM` and `ChrC`. Before, the seed file lost
-  them.
 - `prepare_annotation_files()` now checks its input before the long steps,
   and stops with a message that says what is wrong:
-  - Files that don't exist (the GTF file, and the FASTA or twobit file) are
-    listed together, before anything is written.
+  - Files that don't exist (the GTF and FASTA files) are listed together,
+    before anything is written.
   - A GTF file that is empty, has no exon lines, has exon lines without
     `transcript_id` or `gene_id`, or has no CDS lines.
   - When txdbmaker cannot read the GTF file, the message says that its
     chromosome names must be those of the genome sequence, with examples.
-  - Without `genome_seq` and without `twobit_file`, it asks for one.
-- `forge_BSgenome` now defaults to `TRUE`, as its help said. With
-  `genome_seq`, the forging is cancelled, with a message. Calls that worked
-  before don't change: without `genome_seq`, `forge_BSgenome = FALSE` failed.
+  - Without `genome_seq`, it asks for a FASTA file (see "Installation and
+    dependencies"). Before, it failed in `FaFile(NULL)`.
 - `prepare_annotation_files()` now closes the TxDb database when it no longer
   needs it (lcalviell/ORFquant#3).
 - `prepare_annotation_files()` gives the message "N genes were dropped

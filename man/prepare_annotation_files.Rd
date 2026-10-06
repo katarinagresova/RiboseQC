@@ -4,35 +4,42 @@
 \alias{prepare_annotation_files}
 \title{Prepare comprehensive sets of annotated genomic features}
 \usage{
-prepare_annotation_files(annotation_directory, twobit_file, gtf_file,
+prepare_annotation_files(annotation_directory, twobit_file = NULL, gtf_file,
   scientific_name = "Homo.sapiens", annotation_name = "genc25",
-  export_bed_tables_TxDb = TRUE, forge_BSgenome = TRUE,
+  export_bed_tables_TxDb = TRUE, forge_BSgenome = FALSE,
   genome_seq = NULL, circ_chroms = DEFAULT_CIRC_SEQS,
-  create_TxDb = TRUE)
+  create_TxDb = TRUE, annot_file = NULL)
 }
 \arguments{
 \item{annotation_directory}{The target directory which will contain the output files}
 
-\item{twobit_file}{Full path to the genome file in twobit format}
+\item{twobit_file}{Not used. Earlier versions forged a \code{BSgenome} package from this twobit file}
 
 \item{gtf_file}{Full path to the annotation file in GTF format}
 
-\item{scientific_name}{A name to give to the organism studied; must be two words separated by a ".", defaults to Homo.sapiens}
+\item{scientific_name}{Not used. Earlier versions named the forged \code{BSgenome} package with it}
 
-\item{annotation_name}{A name to give to annotation used; defaults to genc25}
+\item{annotation_name}{Not used. Earlier versions named the forged \code{BSgenome} package with it}
 
 \item{export_bed_tables_TxDb}{Export coordinates and info about different genomic regions in the annotation_directory? It defaults to \code{TRUE}}
 
-\item{forge_BSgenome}{Forge and install a \code{BSgenome} package? It defaults to \code{TRUE}}
+\item{forge_BSgenome}{Not used. Earlier versions forged and installed a \code{BSgenome} package from \code{twobit_file} when it was \code{TRUE};
+this failed with current BSgenomeForge versions (ohlerlab/RiboseQC#21, #23). It defaults to \code{FALSE}}
+
+\item{genome_seq}{FASTA file of the genome sequence (a path or an \code{FaFile}). Required; \code{twoBitToFa} of the UCSC tools
+(http://hgdownload.soe.ucsc.edu/admin/exe/) makes one from a twobit file}
+
+\item{circ_chroms}{Chromosomes to make circular in the genome sequence - defaults to DEFAULT_CIRC_SEQS}
 
 \item{create_TxDb}{Create a \code{TxDb} object and a *Rannot object? It defaults to \code{TRUE}}
+
+\item{annot_file}{specify an exact file name for the rds file created by this function, defaults to annotation_directory/basename(gtf)_Rannot}
 }
 \value{
-a TxDb file and a *Rannot files are created in the specified \code{annotation_directory}. 
-In addition, a BSgenome object is forged, installed, and linked to the *Rannot object
+a TxDb file and a *Rannot files are created in the specified \code{annotation_directory}.
 }
 \description{
-This function processes a gtf file and a twobit file (created using faToTwoBit from ucsc tools: http://hgdownload.soe.ucsc.edu/admin/exe/ ) to create a comprehensive set of genomic regions of interest in genomic and transcriptomic space (e.g. introns, UTRs, start/stop codons).
+This function processes a gtf file and a FASTA file of the genome to create a comprehensive set of genomic regions of interest in genomic and transcriptomic space (e.g. introns, UTRs, start/stop codons).
    In addition, by linking genome sequence and annotation, it extracts additional info, such as gene and transcript biotypes, genetic codes for different organelles, or chromosomes and transcripts lengths.
 }
 \details{
@@ -40,8 +47,7 @@ This function uses the \code{makeTxDbFromGFF} function to  create a TxDb object 
 genomic regions and other info to a *Rannot R file; the \code{mapToTranscripts} and \code{mapFromTranscripts} functions are used to 
 map features to genomic or transcript-level coordinates. GTF file mist contain "exon" and "CDS" lines,
 where each line contains "transcript_id" and "gene_id" values. Additional values such as "gene_biotype" or "gene_name" are also extracted.
-Regarding sequences, the twobit file, together with input scientific and annotation names, is used to forge and install a 
-BSgenome package using the \code{forgeBSgenomeDataPkg} function.\cr\cr
+The genome sequence is read from the FASTA file \code{genome_seq}.\cr\cr
 The resulting GTF_annotation object (obtained after runnning \code{load_annotation}) contains:\cr\cr
 \code{txs}: annotated transcript boundaries.\cr
 \code{txs_gene}: GRangesList including transcript grouped by gene.\cr
@@ -65,11 +71,13 @@ the most upstream/downstream start/stop codons and the start/stop codons residin
 \code{trann}: DataFrame object including (when available) the mapping between gene_id, gene_name, gene_biotypes, transcript_id and transcript_biotypes.\cr
 \code{cds_txs_coords}: transcript-level coordinates of ORF boundaries, for each annotated coding transcript. Additional columns are the same as as for the \code{start_stop_codons} object.\cr
 \code{genetic_codes}: an object containing the list of genetic code ids used for each chromosome/organelle. see GENETIC_CODE_TABLE for more info.\cr
-\code{genome}: the name of the forged BSgenome package, or an FaFile_Circ object. Loaded with \code{load_annotation} function.\cr
+\code{genome_package}: \code{NULL}. In annotations made by ORFquant with \code{forge_BSgenome=TRUE}, the name of the forged
+BSgenome package, which \code{load_annotation} loads.\cr
+\code{genome}: the genome sequence, an FaFile_Circ object. Loaded with \code{load_annotation} function.\cr
 \code{stop_in_gtf}: stop codon, as defined in the annotation.\cr
 }
 \seealso{
-\code{\link{load_annotation}}, \code{\link{forgeBSgenomeDataPkg}}, \code{\link{makeTxDbFromGFF}}.
+\code{\link{load_annotation}}, \code{\link{makeTxDbFromGFF}}.
 }
 \author{
 Lorenzo Calviello, \email{calviello.l.bio@gmail.com}

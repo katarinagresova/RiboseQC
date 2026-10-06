@@ -2435,19 +2435,20 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
 
 #' Prepare comprehensive sets of annotated genomic features
 #'
-#' This function processes a gtf file and a twobit file (created using faToTwoBit from ucsc tools: http://hgdownload.soe.ucsc.edu/admin/exe/ ) to create a com
-#' prehensive set of genomic regions of interest in genomic and transcriptomic space (e.g. introns, UTRs, start/stop codons).
+#' This function processes a gtf file and a FASTA file of the genome to create a comprehensive set of genomic regions of interest in genomic and transcriptomic space (e.g. introns, UTRs, start/stop codons).
 #'    In addition, by linking genome sequence and annotation, it extracts additional info, such as gene and transcript biotypes, genetic codes for different organelles, or chromosomes and transcripts lengths.
 #' @keywords RiboseQC
 #' @author Lorenzo Calviello, \email{calviello.l.bio@@gmail.com}
 #' @param annotation_directory The target directory which will contain the output files
-#' @param twobit_file Full path to the genome file in twobit format
+#' @param twobit_file Not used. Earlier versions forged a \code{BSgenome} package from this twobit file
 #' @param gtf_file Full path to the annotation file in GTF format
-#' @param scientific_name A name to give to the organism studied; must be two words separated by a ".", defaults to Homo.sapiens
-#' @param annotation_name A name to give to annotation used; defaults to genc25
+#' @param scientific_name Not used. Earlier versions named the forged \code{BSgenome} package with it
+#' @param annotation_name Not used. Earlier versions named the forged \code{BSgenome} package with it
 #' @param export_bed_tables_TxDb Export coordinates and info about different genomic regions in the annotation_directory? It defaults to \code{TRUE}
-#' @param forge_BSgenome Forge and install a \code{BSgenome} package? It defaults to \code{TRUE}
-#' @param genome_seq Fasta file to use for genome seq if not forging a BSgenome package
+#' @param forge_BSgenome Not used. Earlier versions forged and installed a \code{BSgenome} package from \code{twobit_file} when it was \code{TRUE};
+#' this failed with current BSgenomeForge versions (ohlerlab/RiboseQC#21, #23). It defaults to \code{FALSE}
+#' @param genome_seq FASTA file of the genome sequence (a path or an \code{FaFile}). Required; \code{twoBitToFa} of the UCSC tools
+#' (http://hgdownload.soe.ucsc.edu/admin/exe/) makes one from a twobit file
 #' @param circ_chroms Chromosomes to make circular in the genome sequence - defaults to DEFAULT_CIRC_SEQS
 #' @param create_TxDb Create a \code{TxDb} object and a *Rannot object? It defaults to \code{TRUE}
 #' @param annot_file specify an exact file name for the rds file created by this function, defaults to annotation_directory/basename(gtf)_Rannot
@@ -2462,8 +2463,7 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
 #' from those of transcripts with CDS lines and of their genes, which are "protein_coding" (without biotypes, e.g. in UCSC's GTFs,
 #' transcripts with a CDS that GENCODE calls "nonsense_mediated_decay" are "protein_coding" too). The transcript biotype "mRNA" (NCBI)
 #' is read as "protein_coding"; if no gene has a name, all are "no_name". Transcripts with a CDS shorter than 3 nt are removed.
-#' Regarding sequences, the twobit file, together with input scientific and annotation names, is used to forge and install a
-#' BSgenome package using the \code{forgeBSgenomeDataPkg} function.\cr\cr
+#' The genome sequence is read from the FASTA file \code{genome_seq}.\cr\cr
 #' The resulting GTF_annotation object (obtained after runnning \code{load_annotation}) contains:\cr\cr
 #' \code{txs}: annotated transcript boundaries.\cr
 #' \code{txs_gene}: GRangesList including transcript grouped by gene.\cr
@@ -2487,12 +2487,12 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
 #' \code{trann}: DataFrame object including (when available) the mapping between gene_id, gene_name, gene_biotypes, transcript_id and transcript_biotypes.\cr
 #' \code{cds_txs_coords}: transcript-level coordinates of ORF boundaries, for each annotated coding transcript. Additional columns are the same as as for the \code{start_stop_codons} object.\cr
 #' \code{genetic_codes}: an object containing the list of genetic code ids used for each chromosome/organelle. see GENETIC_CODE_TABLE for more info.\cr
-#' \code{genome_package}: the name of the forged BSgenome package, or \code{NULL} with \code{genome_seq}.\cr
+#' \code{genome_package}: \code{NULL}. In annotations made by ORFquant with \code{forge_BSgenome=TRUE}, the name of the forged
+#' BSgenome package, which \code{load_annotation} loads.\cr
 #' \code{stop_in_gtf}: stop codon, as defined in the annotation.\cr
-#' \code{genome}: the genome sequence: the BSgenome object of the forged package, or an FaFile_Circ object. Loaded with \code{load_annotation} function.\cr
+#' \code{genome}: the genome sequence, an FaFile_Circ object. Loaded with \code{load_annotation} function.\cr
 #' @return a TxDb file and a *Rannot files are created in the specified \code{annotation_directory}.
-#' In addition, a BSgenome object is forged, installed, and linked to the *Rannot object
-#' @seealso \code{\link{load_annotation}}, \code{\link[BSgenome]{forgeBSgenomeDataPkg}}, \code{\link[txdbmaker]{makeTxDbFromGFF}}.
+#' @seealso \code{\link{load_annotation}}, \code{\link[txdbmaker]{makeTxDbFromGFF}}.
 #' @examples
 #' gtf_file <- system.file("extdata", "example.gtf",
 #' package = "RiboseQC",mustWork = TRUE)
@@ -2507,9 +2507,13 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
 
 
 prepare_annotation_files<-function(annotation_directory,twobit_file=NULL,gtf_file,scientific_name="Homo.sapiens",
-                                   annotation_name="genc25",export_bed_tables_TxDb=TRUE,forge_BSgenome=TRUE,genome_seq=NULL,circ_chroms=DEFAULT_CIRC_SEQS,create_TxDb=TRUE,annot_file=NULL){
-    if(!is.null(genome_seq)){
-        forge_BSgenome<-FALSE
+                                   annotation_name="genc25",export_bed_tables_TxDb=TRUE,forge_BSgenome=FALSE,genome_seq=NULL,circ_chroms=DEFAULT_CIRC_SEQS,create_TxDb=TRUE,annot_file=NULL){
+    #forging a BSgenome package from twobit_file is removed: it fails with current BSgenomeForge (ohlerlab/RiboseQC#21, #23)
+    if(is.null(genome_seq)){
+        stop("Please give the genome sequence as a FASTA file (genome_seq). prepare_annotation_files() no longer forges a BSgenome package ",
+             "from a twobit file (forge_BSgenome, twobit_file); twoBitToFa of the UCSC tools makes a FASTA file from it",call. = FALSE)
+    }
+    if(forge_BSgenome){
         message('fasta file passed - cancelling BSgenome creation')
     }
 
@@ -2517,15 +2521,8 @@ prepare_annotation_files<-function(annotation_directory,twobit_file=NULL,gtf_fil
                                   "dmel_mitochondrion_genome","Pltd","ChrC","Pt","chloroplast",
                                   "Chloro","2micron","2-micron","2uM",
                                   "Mt", "NC_001879.2", "NC_006581.1","ChrM","mitochondrion_genome"))
-    #adjust variable names (some chars not permitted)
-    annotation_name<-gsub(annotation_name,pattern = "_",replacement = "")
-    annotation_name<-gsub(annotation_name,pattern = "-",replacement = "")
 
     filestotest <- c(gtf_file)
-    if(forge_BSgenome){
-        if(is.null(twobit_file)){stop("Please give genome_seq (a FASTA file), or twobit_file to forge a BSgenome package")}
-        filestotest <- c(filestotest,twobit_file)
-    }
     if(is.character(genome_seq)) filestotest <- c(filestotest,genome_seq)
     check_files_exist(filestotest)
     if(create_TxDb) check_gtf(gtf_file)
@@ -2535,92 +2532,16 @@ prepare_annotation_files<-function(annotation_directory,twobit_file=NULL,gtf_fil
     gtf_file<-normalizePath(gtf_file)
 
 
-    #get circular sequences
-
-    #Forge a BSGenome package
-
-    if(forge_BSgenome){
-        scientific_name_spl<-strsplit(scientific_name,"[.]")[[1]]
-        ok<-length(scientific_name_spl)==2
-        if(!ok){stop("\"scientific_name\" must be two words separated by a \".\", like \"Homo.sapiens\"")}
-
-
-        twobit_file<-normalizePath(twobit_file)
-
-        seqinfotwob<-seqinfo(TwoBitFile(twobit_file))
-        circss<-seqnames(seqinfotwob)[which(seqnames(seqinfotwob)%in%circ_chroms)]
-        seqinfotwob@is_circular[which(seqnames(seqinfotwob)%in%circ_chroms)]<-TRUE
-
-
-        circseed<-circss
-        if(length(circseed)==0){circseed<-NULL}
-
-        pkgnm<-paste("BSgenome",scientific_name,annotation_name,sep=".")
-
-
-        message("Creating the BSgenome package ... ",date())
-        seed_text<-paste("Package: BSgenome.",scientific_name,".",annotation_name,"\n",
-                         "Title: Full genome sequences for ",scientific_name,", ",annotation_name,"\n",
-                         "Description: Full genome sequences for ",scientific_name,", ",annotation_name,"\n",
-                         "Version: 1.0","\n",
-                         "organism: ",scientific_name,"\n",
-                         "common_name: ",scientific_name,"\n",
-                         "provider: NA","\n",
-                         "provider_version: ",annotation_name,"\n",
-                         "release_date: NA","\n",
-                         "release_name: NA","\n",
-                         "source_url: NA","\n",
-                         "organism_biocview: ", scientific_name,"\n",
-                         "BSgenomeObjname: ",scientific_name,"\n",
-                         "seqs_srcdir: ",dirname(twobit_file),"\n",
-                         "seqfile_name: ",basename(twobit_file),sep="")
-
-
-        seed_dest<-paste(annotation_directory,"/",basename(twobit_file),"_",scientific_name,"_seed",sep = "")
-
-
-        if(length(circseed)==0){
-            writeLines(text = seed_text,con = seed_dest)
-        }
-
-        if(length(circseed)==1){
-            seed_text<-paste(seed_text,"\n",
-                             "circ_seqs: \"",circseed,"\"",sep="")
-            writeLines(text = seed_text,con = seed_dest)
-        }
-
-        if(length(circseed)>1){
-            circseed<-paste('c("',paste(circseed,collapse=","),'")',sep="")
-            circseed<-gsub(circseed,pattern = ",",replacement='","')
-
-            cat(seed_text,"\n","circ_seqs: ",circseed,"\n",sep="",file = seed_dest)
-        }
-
-        unlink(paste(annotation_directory,pkgnm,sep="/"),recursive=TRUE)
-
-        forgeBSgenomeDataPkg(x=seed_dest,destdir=annotation_directory,seqs_srcdir=dirname(twobit_file))
-        message("Creating the BSgenome package --- Done! ",date())
-
-        message("Installing the BSgenome package ... ",date())
-
-        #install.packages() only warns when the installation fails: stop instead, as devtools::install() did
-        tryCatch(utils::install.packages(paste(annotation_directory,pkgnm,sep="/"),repos = NULL,type = "source"),
-                 warning=function(w){stop("Installing the BSgenome package failed: ",conditionMessage(w))})
-        message("Installing the BSgenome package --- Done! ",date())
-
-        seqinfo_genome <- seqinfotwob
-    }else{
-        if(!is(genome_seq,'FaFile')){
-            genome_seq <- Rsamtools::FaFile(genome_seq)
-        }
-        if(!is(genome_seq,'FaFile_Circ')){
-            genome_seq <- FaFile_Circ(genome_seq,circularRanges=circ_chroms)
-        }
-        seqinfo_genome<-seqinfo(genome_seq)
-        seqinfo_genome@is_circular[which(seqnames(seqinfo_genome)%in%circ_chroms)]<-TRUE
-        genome <- genome_seq
-        pkgnm<-NULL
+    if(!is(genome_seq,'FaFile')){
+        genome_seq <- Rsamtools::FaFile(genome_seq)
     }
+    if(!is(genome_seq,'FaFile_Circ')){
+        genome_seq <- FaFile_Circ(genome_seq,circularRanges=circ_chroms)
+    }
+    seqinfo_genome<-seqinfo(genome_seq)
+    seqinfo_genome@is_circular[which(seqnames(seqinfo_genome)%in%circ_chroms)]<-TRUE
+    genome <- genome_seq
+    pkgnm<-NULL
     #Create the TxDb from GTF and BSGenome info
 
     if(is.null(annot_file)){
@@ -2806,10 +2727,6 @@ prepare_annotation_files<-function(annotation_directory,twobit_file=NULL,gtf_fil
 
         #define start and stop codons (genome space)
 
-        if(forge_BSgenome){
-            suppressPackageStartupMessages(library(pkgnm,character.only=TRUE))
-            genome<-get(pkgnm)
-        }
         tocheck<-as.character(runValue(seqnames(cds_tx)))
         tocheck<-cds_tx[!tocheck%in%circs]
         seqcds<-extractTranscriptSeqs(genome,transcripts = tocheck)
