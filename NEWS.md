@@ -55,11 +55,16 @@
   `tx_name`, `gene_id`, `exon_id`, `exon_name` and `exon_rank`). Before, it
   had `gene_id`, `tx_name` and an empty `exonic_part`. RiboseQC doesn't use
   `exons_bins`.
+- `load_annotation()` reads the `*_Rannot` files of all versions of RiboseQC
+  and ORFquant. Its new argument `envir` says where it puts `GTF_annotation`
+  and `genome_seq`; the default is the environment of the caller, as before.
 - The other files that `prepare_annotation_files()` writes don't change,
   apart from the biotypes in `table_gene_tx_IDs` (see "Changes in results").
 
 ## Bug fixes
 
+- `load_annotation()` no longer fails with `first argument has length > 1`
+  on annotations made with a forged BSgenome package (#21).
 - `prepare_annotation_files()` no longer fails on GTFs without `transcript`
   lines, such as the bundled Arabidopsis GTF, or with lines without
   `transcript_id`, such as the `gene` lines of GENCODE and Ensembl GTFs

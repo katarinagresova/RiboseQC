@@ -2277,31 +2277,35 @@ get_ps_fromsplicemin<-function(x,cutoff){
 #' @keywords RiboseQC
 #' @author Lorenzo Calviello, \email{calviello.l.bio@@gmail.com}
 #' @param path Full path to the *Rannot R file in the annotation directory used in the \code{prepare_annotation_files function}
-#' @return introduces a \code{GTF_annotation} object and a \code{genome_seq} object in the parent environment
+#' @param envir The environment to put \code{GTF_annotation} and \code{genome_seq} in; defaults to the environment of the caller
+#' @details Reads the *Rannot files of all versions of RiboseQC and ORFquant: with the name of the BSgenome package in
+#' \code{genome_package} (from RiboseQC 1.2.0, and ORFquant) or in \code{genome} (RiboseQC before 1.2.0), or with an
+#' \code{FaFile_Circ} object in \code{genome}.
+#' @return introduces a \code{GTF_annotation} object and a \code{genome_seq} object in \code{envir}
 #' @seealso \code{\link{prepare_annotation_files}}
 #' @examples
 #' data(res_all)
 #' load_annotation('test_arabidopsis.gtf.gz_Rannot')
 #' @export
 
-load_annotation<-function(path){
+load_annotation<-function(path,envir=parent.frame()){
 
     GTF_annotation<-get(load(path))
-	  haspackage <- isTRUE(is.character(GTF_annotation$genome))
+	  genome_package <- if(is.character(GTF_annotation$genome)) GTF_annotation$genome else GTF_annotation$genome_package
+	  haspackage <- isTRUE(is.character(genome_package))
     if(haspackage){
-      genome_sequence<-get(library(GTF_annotation$genome,character.only = TRUE))
-      library(GTF_annotation$genome,character.only = TRUE)
-      genome_sequence<-get(GTF_annotation$genome)
-	    message(paste0('assigning genome package ',GTF_annotation$genome,' to the global workspace as genome_seq'))
-      assign('genome_seq',genome_sequence,envir = parent.frame())
+      library(genome_package,character.only = TRUE)
+      genome_sequence<-get(genome_package)
+	    message(paste0('assigning genome package ',genome_package,' to the global workspace as genome_seq'))
+      assign('genome_seq',genome_sequence,envir = envir)
     }else{
       genome_sequence<-GTF_annotation$genome
       message(paste0('assigning FaFile_Circ object ',GTF_annotation$genome$path,' to the global workspace as genome_seq'))
-      assign('genome_seq',genome_sequence,envir = parent.frame())
+      assign('genome_seq',genome_sequence,envir = envir)
     }
 
 	  message(paste0('assigning GTF_annotation object GTF_annotation to parent workspace'))
-    assign('GTF_annotation',GTF_annotation,envir = parent.frame())
+    assign('GTF_annotation',GTF_annotation,envir = envir)
 
 }
 

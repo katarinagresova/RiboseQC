@@ -4,16 +4,23 @@
 \alias{load_annotation}
 \title{Load genomic features and genome sequence}
 \usage{
-load_annotation(path)
+load_annotation(path, envir = parent.frame())
 }
 \arguments{
 \item{path}{Full path to the *Rannot R file in the annotation directory used in the \code{prepare_annotation_files function}}
+
+\item{envir}{The environment to put \code{GTF_annotation} and \code{genome_seq} in; defaults to the environment of the caller}
 }
 \value{
-introduces a \code{GTF_annotation} object and a \code{genome_seq} object in the parent environment
+introduces a \code{GTF_annotation} object and a \code{genome_seq} object in \code{envir}
 }
 \description{
 This function loads the annotation created by the \code{prepare_annotation_files function}
+}
+\details{
+Reads the *Rannot files of all versions of RiboseQC and ORFquant: with the name of the BSgenome package in
+\code{genome_package} (from RiboseQC 1.2.0, and ORFquant) or in \code{genome} (RiboseQC before 1.2.0), or with an
+\code{FaFile_Circ} object in \code{genome}.
 }
 \seealso{
 \code{\link{prepare_annotation_files}}
