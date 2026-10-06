@@ -2014,6 +2014,14 @@ setMethods(f = "unlist","GRanges",function(x){return(x)})
 setMethods(f = "unlist","GAlignments",function(x){return(x)})
 
 
+# kmeans() picks random start centres. With a fixed seed and fixed kinds of
+# random numbers, the same data give the same clusters, and so the same offsets,
+# in each run. with_seed() restores the random numbers of the session after the call.
+kmeans_seeded<-function(...){
+    withr::with_seed(666,kmeans(...),.rng_kind="Mersenne-Twister",.rng_normal_kind="Inversion",.rng_sample_kind="Rejection")
+}
+
+
 #' Filter read lengths for P-sites position calculation
 #'
 #' This function selects a subset of readlenghts to be used in the P-sites calculation step
@@ -2138,7 +2146,7 @@ choose_readlengths<-function(summary_data,choice="max_coverage",nt_signals){
                 net_all_cov_ok<-net_all_cov
             }
             if(ln>3){
-                km<-kmeans(gains_sign,3)
+                km<-kmeans_seeded(gains_sign,3)
                 net_all_cov_ok<-net_all_cov[!km$cluster==km$cluster[which.min(gains_sign)][1],]
             }
         }
@@ -2373,11 +2381,11 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
     km_meta<-NA
     km_meta_fra<-NA
     if(length(unique(metaprof))>3){
-        kms<-kmeans(metaprof,centers=3)$cluster
+        kms<-kmeans_seeded(metaprof,centers=3)$cluster
         km_meta<-abs(as.numeric(names(metaprof[which(kms==kms[which.max(metaprof)])[1]])))
     }
     if(length(unique(metaprof_fra))>3){
-        kms<-kmeans(metaprof_fra,centers=3)$cluster
+        kms<-kmeans_seeded(metaprof_fra,centers=3)$cluster
         km_meta_fra<-abs(as.numeric(names(metaprof_fra[which(kms==kms[which.max(metaprof_fra)])[1]])))
 
     }
@@ -2396,10 +2404,10 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
     cutoff_fra<-abs(as.numeric(names(tbcut_fra)[which.max(tbcut_fra)]))
     if(length(cutoff_fra)==0){cutoff_fra=NA}
     if(length(cutoff)>0 & length(unique(tbcut))>4){
-        kms<-kmeans(tbcut,centers=3)$cluster
+        kms<-kmeans_seeded(tbcut,centers=3)$cluster
         cutoff_km<-abs(as.numeric(names(tbcut[which(kms==kms[which.max(tbcut)])[1]])))
         if(length(unique(tbcut_fra))>3){
-            kms<-kmeans(tbcut_fra,centers=3)$cluster
+            kms<-kmeans_seeded(tbcut_fra,centers=3)$cluster
             cutoff_km_fra<-abs(as.numeric(names(tbcut_fra[which(kms==kms[which.max(tbcut_fra)])[1]])))
         }
     }
