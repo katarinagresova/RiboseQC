@@ -64,7 +64,6 @@ NULL
 #' @import GenomicAlignments
 #' @import BSgenome
 #' @import GenomicFiles
-#' @import devtools
 #' @import reshape2
 #' @import ggplot2
 #' @import knitr
