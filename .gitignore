@@ -56,3 +56,6 @@ vignettes/shoot*
 # Agents
 CLAUDE.md
 PLAN.md
+
+# Dev harness 
+dev/
