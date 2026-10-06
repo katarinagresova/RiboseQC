@@ -1,72 +1,58 @@
+# History files
+.Rhistory
+.Rapp.history
+
+# Session data files
+.RData
+.RDataTmp
+
+# User-specific files
+.Ruserdata
+.Renviron
+.Rprofile
+
+# Example code in package build process
+*-Ex.R
+
+# Output files from R CMD build
+/*.tar.gz
+
+# Output files from R CMD check
+/*.Rcheck/
+
+# RStudio files
+.Rproj.user/
+
+# Produced vignettes
+vignettes/*.html
+vignettes/*.pdf
 inst/doc
-.Rproj.user
+
+# knitr and R Markdown cache directories
+*_cache/
+/cache/
+
+# Temporary files created by R Markdown
+*.utf8.md
+*.knit.md
+
+# OAuth2 token
+.httr-oauth
+
+# pkgdown site
+docs/
+
+# OS files
+.DS_Store
+
+# Project-specific
 devnotes_dermot.txt
 arab_analysis.Rdata
-.renviron
-.rprofile
-.rproj
-.rproj.user
-.rhistory
-.rapp.history
-.o
-.sl
-.so
-.dylib
-.a
-.dll
-.def
-.ds_store
-unsrturl.bst
-.log
-.aux
-.backups
-.cproject
-.directory
-.dropbox
-.exrc
-.gdb.history
-.gitattributes
-.gitmodules
-.hgtags
-.project
-.seed
-.settings
-.tm_properties
 vignettes/tmp*
 vignettes/test*
 vignettes/root*
 vignettes/shoot*
-..Rcheck*
-Rcheck*
-.renviron
-.rprofile
-.rproj
-.rproj.user
-.rhistory
-.rapp.history
-.o
-.sl
-.so
-.dylib
-.a
-.dll
-.def
-.ds_store
-unsrturl.bst
-.log
-.aux
-.backups
-.cproject
-.directory
-.dropbox
-.exrc
-.gdb.history
-.gitattributes
-.gitmodules
-.hgtags
-.project
-.seed
-.settings
-.tm_propertiesRiboseQC.Rcheck/
-RiboseQC.Rcheck
-.Rproj.user
+
+# Agents
+CLAUDE.md
+PLAN.md
