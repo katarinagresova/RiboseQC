@@ -110,3 +110,10 @@
 - The `getSeq()` error for ranges that wrap twice around a circular
   chromosome now reads "Ranges wrapping twice isn't implemented yet...",
   without the stray quote, line break and spaces it had.
+- RiboseQC now imports all the functions that it uses from other packages,
+  for example `Seqinfo()`, `isCircular()` and `saveDb()`. Before, R found
+  some of them only because `library(RiboseQC)` attached the packages in
+  `Depends`. When RiboseQC was only loaded (with `RiboseQC::`, with
+  `loadNamespace()` or as an import of another package), functions such as
+  `seqinfo()` of a `FaFile_Circ` stopped with `could not find function
+  "Seqinfo"`.
