@@ -1,5 +1,4 @@
 #' @include riboseqc.R
-#' @import Rsamtools
 NULL
 
 
@@ -59,22 +58,6 @@ NULL
 #' number of reads mapping (also in percentage of total n of reads), and genomic feature annotation.\cr\cr
 #' \code{summary_P_sites}: contains a DataFrame object summarizing the P_sites calculation and read length selection, including statistics on percentage of total reads used.
 #' @seealso \code{\link{prepare_annotation_files}}, \code{\link{calc_cutoffs_from_profiles}}, \code{\link{choose_readlengths}}, \code{\link{create_html_report}}.
-#' @import rmarkdown
-#' @import rtracklayer
-#' @import GenomicAlignments
-#' @import BSgenome
-#' @import GenomicFiles
-#' @import reshape2
-#' @import ggplot2
-#' @import knitr
-#' @import DT
-#' @import gridExtra
-#' @import ggpubr
-#' @import viridis
-#' @import Biostrings
-#' @import GenomicFeatures
-#' @import BiocGenerics
-#' @import GenomicRanges
 #' @export 
 
 RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, readlength_choice_method = "max_coverage", 

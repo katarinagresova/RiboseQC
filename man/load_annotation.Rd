@@ -23,10 +23,14 @@ Reads the *Rannot files of all versions of RiboseQC and ORFquant: with the name 
 \code{genome_package} (from RiboseQC 1.2.0, and ORFquant) or in \code{genome} (RiboseQC before 1.2.0), or with an
 \code{FaFile_Circ} object in \code{genome}.
 }
+\examples{
+data(res_all)
+load_annotation('test_arabidopsis.gtf.gz_Rannot')
+}
 \seealso{
 \code{\link{prepare_annotation_files}}
 }
 \author{
 Lorenzo Calviello, \email{calviello.l.bio@gmail.com}
 }
-\keyword{Ribo-seQC}
+\keyword{RiboseQC}

@@ -37,7 +37,7 @@ exportClasses(FaFile_Circ)
 exportMethods(getSeq)
 exportMethods(seqinfo)
 import(BSgenome)
-import(BiocGenerics)
+import(BiocGenerics, except = c(combine, Position))
 import(Biostrings)
 import(DT)
 import(GenomicAlignments)
@@ -45,44 +45,53 @@ import(GenomicFeatures)
 import(GenomicFiles)
 import(GenomicRanges)
 import(Rsamtools)
-import(rmarkdown)
-import(gridExtra)
-import(ggpubr)
-import(reshape2)
 import(ggplot2)
+import(ggpubr)
+import(gridExtra)
 import(knitr)
+import(reshape2)
+import(rmarkdown)
 import(rtracklayer)
 import(viridis)
 importFrom(AnnotationDbi,saveDb)
-importFrom(IRanges,"%over%")
-importFrom(IRanges,CharacterList)
-importFrom(IRanges,DataFrameList)
-importFrom(IRanges,IRanges)
-importFrom(IRanges,IntegerList)
-importFrom(IRanges,LogicalList)
-importFrom(Rsamtools,FaFile)
-importFrom(S4Vectors,"runValue<-")
-importFrom(S4Vectors,DataFrame)
-importFrom(S4Vectors,aggregate)
-importFrom(S4Vectors,cbind.DataFrame)
-importFrom(S4Vectors,endoapply)
-importFrom(S4Vectors,queryHits)
-importFrom(S4Vectors,runLength)
-importFrom(S4Vectors,runValue)
-importFrom(S4Vectors,subjectHits)
-importFrom(Seqinfo,"seqlengths<-")
-importFrom(Seqinfo,Seqinfo)
-importFrom(Seqinfo,isCircular)
-importFrom(Seqinfo,seqlengths)
-importFrom(Seqinfo,seqlevels)
-importFrom(grDevices,dev.off)
-importFrom(grDevices,pdf)
-importFrom(grDevices,rainbow)
-importFrom(methods,as)
-importFrom(methods,is)
-importFrom(methods,new)
-importFrom(methods,representation)
-importFrom(methods,setMethod)
-importFrom(methods,setRefClass)
+importFrom(IRanges,
+  "%over%",
+  CharacterList,
+  DataFrameList,
+  IRanges,
+  IntegerList,
+  LogicalList
+)
+importFrom(S4Vectors,
+  "runValue<-",
+  DataFrame,
+  aggregate,
+  cbind.DataFrame,
+  endoapply,
+  queryHits,
+  runLength,
+  runValue,
+  subjectHits
+)
+importFrom(Seqinfo,
+  "seqlengths<-",
+  Seqinfo,
+  isCircular,
+  seqlengths,
+  seqlevels
+)
+importFrom(grDevices,
+  dev.off,
+  pdf,
+  rainbow
+)
+importFrom(methods,
+  as,
+  is,
+  new,
+  representation,
+  setMethod,
+  setRefClass
+)
 importFrom(stats,kmeans)
 importFrom(utils,write.table)

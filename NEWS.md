@@ -14,6 +14,14 @@
   with this advice. `twobit_file`, `scientific_name` and `annotation_name`
   are no longer used. Annotations that earlier versions made with a forged
   BSgenome package still load.
+- Loading RiboseQC no longer warns "replacing previous import" for
+  `combine` and `Position`.
+- A new run of roxygen2 on the source no longer breaks the install (#24).
+  Before, it added an import of `DEFAULT_CIRC_SEQS` from GenomicFeatures,
+  which no longer has it. This list of circular chromosome names (the
+  default of `circ_chroms` in `prepare_annotation_files()`) is now a
+  constant of RiboseQC, with the same names. `NAMESPACE` and the help pages
+  are now made with roxygen2 from the source.
 
 ## Changes in results
 
@@ -117,3 +125,9 @@
   `loadNamespace()` or as an import of another package), functions such as
   `seqinfo()` of a `FaFile_Circ` stopped with `could not find function
   "Seqinfo"`.
+- The help pages are made again from the source (with roxygen2 8.1.0; they
+  were from 2019). They now describe all arguments, for example
+  `genome_seq`, `stranded`, `normalize_cov` and `offsets_df` of
+  `RiboseQC_analysis()`, and their usage sections match the functions. Most
+  of the examples that they now show don't run yet: they use data that the
+  package doesn't have (`data(res_all)`) or files that don't exist.
