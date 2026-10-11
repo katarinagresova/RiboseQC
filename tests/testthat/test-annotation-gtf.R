@@ -145,6 +145,14 @@ test_that("a gene on both strands is kept in the annotation, and is not in $gene
   expect_equal(ann$ncRNAs[!ann$ncRNAs %over% locus], ann_genc$ncRNAs[!ann_genc$ncRNAs %over% locus])
 })
 
+# GENCODE's CDS lines end before the stop codon, and its stop_codon lines add it to the CDS.
+# Without them, as in GTFs with CDS lines from factR, most CDS end before their stop codon.
+# From ORFquant's test of this case, without its run of ORFquant
+test_that("without stop_codon lines, stop_in_gtf is NA", {
+  expect_identical(ann_genc$stop_in_gtf, "*")
+  expect_true(is.na(annotate(gtf_example[line_type(gtf_example) != "stop_codon"], "no_stop_codons")$stop_in_gtf))
+})
+
 test_that("load_annotation() returns the annotation invisibly, and assigns it in envir", {
   env <- new.env()
   res <- suppressMessages(withVisible(load_annotation(file.path(work, "genc", "genes.gtf_Rannot"), envir = env)))
