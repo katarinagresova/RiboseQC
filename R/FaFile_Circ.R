@@ -34,7 +34,6 @@ FaFile_Circ<-setRefClass("FaFile_Circ",
 #'
 #' @return A Seqinfo object
 #'
-#' @seealso \code{\link{create_html_report}}
 #' @examples
 #'
 #' mytempfile=tempfile()
@@ -54,14 +53,18 @@ setMethod(seqinfo,'FaFile_Circ',function (x){
 
 
 #' Yields the sequence for a particular range on a circular Fasta File
-#' note that
 #'
+#' GRanges on a circular chromosome may run past its end by up to the
+#' chromosome's length; the rest of the sequence is then taken from its start.
 #'
-#' @param x FaFile_Circ; the object to get the seqinfo for
+#' @param x FaFile_Circ; the object to get the sequences from
+#' @param ... the ranges to get (\code{param}, which may be unnamed) and further
+#'   arguments, passed on to \code{\link[Rsamtools]{scanFa}}
 #'
-#' @return A Seqinfo object
+#' @return A DNAStringSet with the sequence of each range (reverse-complemented
+#'   for GRanges on the - strand), or of every sequence in the file if no ranges
+#'   are given
 #'
-#' @seealso \code{\link{create_html_report}}
 #' @examples
 #'
 #' mytempfile=tempfile()
@@ -69,7 +72,7 @@ setMethod(seqinfo,'FaFile_Circ',function (x){
 #'   c('chrM','chr2')),filepath=mytempfile)
 #' Rsamtools::indexFa(mytempfile)
 #' cREF<-FaFile_Circ(Rsamtools::FaFile(mytempfile),circularRanges='chrM')
-#' seqinfo(cREF)
+#' getSeq(cREF, GRanges('chrM:9-12'))
 #' @export
 
 
@@ -108,8 +111,8 @@ setMethod('getSeq','FaFile_Circ', function (x, ...){
                #shift these wrapped ranges back to 1
                wrapped_grs <- shift(wrapped_grs,-chrends_wrap)
                #make sure they don't wrap twice
-               if(any(end(wrapped_grs) > chrends_wrap)) stop("Ranges wrapping twice',
-                                                                         ' isn't implemented yet...")
+               if(any(end(wrapped_grs) > chrends_wrap)) stop("Ranges wrapping twice ",
+                      "isn't implemented yet...")
                #also get the within bounds ranges
                nonwrapped_grs <- restrict(param,end=chrends)
                #scan seperately

@@ -2281,7 +2281,8 @@ get_ps_fromsplicemin<-function(x,cutoff){
 #' @details Reads the *Rannot files of all versions of RiboseQC and ORFquant: with the name of the BSgenome package in
 #' \code{genome_package} (from RiboseQC 1.2.0, and ORFquant) or in \code{genome} (RiboseQC before 1.2.0), or with an
 #' \code{FaFile_Circ} object in \code{genome}.
-#' @return introduces a \code{GTF_annotation} object and a \code{genome_seq} object in \code{envir}
+#' @return invisibly, a list with the annotated features (\code{GTF_annotation}) and the genome sequence (\code{genome_seq}).
+#' The function also assigns the two objects to \code{GTF_annotation} and \code{genome_seq} in \code{envir}.
 #' @seealso \code{\link{prepare_annotation_files}}
 #' @examples
 #' data(res_all)
@@ -2306,7 +2307,7 @@ load_annotation<-function(path,envir=parent.frame()){
 
 	  message(paste0('assigning GTF_annotation object GTF_annotation to parent workspace'))
     assign('GTF_annotation',GTF_annotation,envir = envir)
-
+    invisible(list(GTF_annotation=GTF_annotation,genome_seq=genome_sequence))
 }
 
 #' Calculate offsets from 5'end profiles
@@ -2455,9 +2456,11 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
 #' @details This function uses the \code{makeTxDbFromGFF} function to  create a TxDb object and extract
 #' genomic regions and other info to a *Rannot R file; the \code{mapToTranscripts} and \code{mapFromTranscripts} functions are used to
 #' map features to genomic or transcript-level coordinates. GTF file must contain "exon" and "CDS" lines,
-#' where each line contains "transcript_id" and "gene_id" values. The CDS must include the stop codon, or the file must have
-#' "stop_codon" lines (as GENCODE and Ensembl files do): otherwise the annotated stop codons are not found (in ORFquant, ORFs ending
-#' at an annotated stop codon get other categories, e.g. "C_extension" instead of "ORF_annotated"). Biotypes and gene names are read
+#' where each line contains "transcript_id" and "gene_id" values. The CDS should include the stop codon, or the file should have
+#' "stop_codon" lines, which are added to the CDS (as in GENCODE, Ensembl and RefSeq files). If most CDS end before their stop codon
+#' (e.g. CDS lines made by factR, or a GENCODE file without its "stop_codon" lines), \code{stop_in_gtf} is \code{NA}, and
+#' ORFquant's \code{annotate_ORFs} uses the codon after each CDS as its stop codon. In ORFquant, a file with both kinds of CDS gives
+#' wrong categories to ORFs at the stop codons of the smaller part, e.g. "C_extension" instead of "ORF_annotated". Biotypes and gene names are read
 #' from "gene_biotype" or "gene_type", "transcript_biotype" or "transcript_type", and "gene_name", "gene_symbol", "gene" (NCBI) or
 #' "ref_gene_name" (StringTie) values, on any line of the transcript or (for genes) of the gene. Missing biotypes are "no_type", apart
 #' from those of transcripts with CDS lines and of their genes, which are "protein_coding" (without biotypes, e.g. in UCSC's GTFs,
@@ -2489,7 +2492,7 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
 #' \code{genetic_codes}: an object containing the list of genetic code ids used for each chromosome/organelle. see GENETIC_CODE_TABLE for more info.\cr
 #' \code{genome_package}: \code{NULL}. In annotations made by ORFquant with \code{forge_BSgenome=TRUE}, the name of the forged
 #' BSgenome package, which \code{load_annotation} loads.\cr
-#' \code{stop_in_gtf}: stop codon, as defined in the annotation.\cr
+#' \code{stop_in_gtf}: \code{"*"} if most CDS end with a stop codon, \code{NA} if most end before it.\cr
 #' \code{genome}: the genome sequence, an FaFile_Circ object. Loaded with \code{load_annotation} function.\cr
 #' @return a TxDb file and a *Rannot files are created in the specified \code{annotation_directory}.
 #' @seealso \code{\link{load_annotation}}, \code{\link[txdbmaker]{makeTxDbFromGFF}}.

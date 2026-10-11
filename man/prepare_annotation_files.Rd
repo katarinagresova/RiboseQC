@@ -46,7 +46,12 @@ This function processes a gtf file and a FASTA file of the genome to create a co
 This function uses the \code{makeTxDbFromGFF} function to  create a TxDb object and extract
 genomic regions and other info to a *Rannot R file; the \code{mapToTranscripts} and \code{mapFromTranscripts} functions are used to 
 map features to genomic or transcript-level coordinates. GTF file mist contain "exon" and "CDS" lines,
-where each line contains "transcript_id" and "gene_id" values. Additional values such as "gene_biotype" or "gene_name" are also extracted.
+where each line contains "transcript_id" and "gene_id" values. The CDS should include the stop codon, or the file should have
+"stop_codon" lines, which are added to the CDS (as in GENCODE, Ensembl and RefSeq files). If most CDS end before their stop codon
+(e.g. CDS lines made by factR, or a GENCODE file without its "stop_codon" lines), \code{stop_in_gtf} is \code{NA}, and
+ORFquant's \code{annotate_ORFs} uses the codon after each CDS as its stop codon. In ORFquant, a file with both kinds of CDS gives
+wrong categories to ORFs at the stop codons of the smaller part, e.g. "C_extension" instead of "ORF_annotated".
+Additional values such as "gene_biotype" or "gene_name" are also extracted.
 The genome sequence is read from the FASTA file \code{genome_seq}.\cr\cr
 The resulting GTF_annotation object (obtained after runnning \code{load_annotation}) contains:\cr\cr
 \code{txs}: annotated transcript boundaries.\cr
@@ -74,7 +79,7 @@ the most upstream/downstream start/stop codons and the start/stop codons residin
 \code{genome_package}: \code{NULL}. In annotations made by ORFquant with \code{forge_BSgenome=TRUE}, the name of the forged
 BSgenome package, which \code{load_annotation} loads.\cr
 \code{genome}: the genome sequence, an FaFile_Circ object. Loaded with \code{load_annotation} function.\cr
-\code{stop_in_gtf}: stop codon, as defined in the annotation.\cr
+\code{stop_in_gtf}: \code{"*"} if most CDS end with a stop codon, \code{NA} if most end before it.\cr
 }
 \seealso{
 \code{\link{load_annotation}}, \code{\link{makeTxDbFromGFF}}.

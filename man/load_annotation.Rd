@@ -12,7 +12,8 @@ load_annotation(path, envir = parent.frame())
 \item{envir}{The environment to put \code{GTF_annotation} and \code{genome_seq} in; defaults to the environment of the caller}
 }
 \value{
-introduces a \code{GTF_annotation} object and a \code{genome_seq} object in \code{envir}
+invisibly, a list with the annotated features (\code{GTF_annotation}) and the genome sequence (\code{genome_seq}).
+The function also assigns the two objects to \code{GTF_annotation} and \code{genome_seq} in \code{envir}.
 }
 \description{
 This function loads the annotation created by the \code{prepare_annotation_files function}
