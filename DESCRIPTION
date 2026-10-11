@@ -8,9 +8,37 @@ Authors@R: c(person("Lorenzo", "Calviello", email = "calviello.l.bio@gmail.com",
     person("Uwe", "Ohler", email = "Uwe.Ohler@mdc-berlin.de", role = c("rev","fnd")))
 Maintainer: Dermot Harnett <dermot.harnett@mdc-berlin.de>
 Description: A powerful analysis tool for the analysis of Ribo-seq data, which is able to provide read-length specific analysis of both cytoplasmic and organellar ribosome, and provides interactive visualization of results in a dynamic html report
-Imports: GenomicRanges,Rsamtools,rtracklayer, methods, withr, txdbmaker, AnnotationDbi, IRanges, S4Vectors, Seqinfo, scales, grDevices, stats, utils
+Imports:
+    AnnotationDbi,
+    BiocGenerics,
+    Biostrings,
+    BSgenome,
+    DT,
+    GenomicAlignments,
+    GenomicFeatures,
+    GenomicFiles,
+    ggplot2,
+    ggpubr,
+    grDevices,
+    gridExtra,
+    IRanges,
+    knitr,
+    methods,
+    reshape2,
+    rmarkdown,
+    Rsamtools,
+    rtracklayer,
+    S4Vectors,
+    scales,
+    Seqinfo,
+    stats,
+    txdbmaker,
+    utils,
+    viridis,
+    withr
 biocViews: RiboSeq, Sequencing, QualityControl, DataImport, GenomeAnnotation, Transcriptomics, Software, Coverage, RNASeq
-Depends: Rsamtools,rmarkdown, rtracklayer, GenomicAlignments, BSgenome, GenomicFiles, reshape2, ggplot2, knitr, DT, gridExtra, ggpubr, viridis, Biostrings, GenomicFeatures, BiocGenerics, jsonlite, methods
+Depends:
+    GenomicRanges
 License: GPL-3 or above
 Encoding: UTF-8
 LazyData: FALSE

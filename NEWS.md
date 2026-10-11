@@ -14,6 +14,15 @@
   with this advice. `twobit_file`, `scientific_name` and `annotation_name`
   are no longer used. Annotations that earlier versions made with a forged
   BSgenome package still load.
+- `library(RiboseQC)` now attaches only GenomicRanges and the packages it
+  attaches (IRanges, S4Vectors, Seqinfo, BiocGenerics, generics and stats4).
+  Before, it attached the 18 packages of its Depends field and theirs. They
+  are now imported, so RiboseQC still uses them. Scripts that relied on
+  `library(RiboseQC)` to attach others, for example Biostrings,
+  rtracklayer, Rsamtools or ggplot2, need their own `library()` calls. The
+  vignette now calls `Biostrings::getGeneticCode()` and
+  `ggpubr::as_ggplot()`. jsonlite is no longer needed: RiboseQC didn't use
+  it.
 - Loading RiboseQC no longer warns "replacing previous import" for
   `combine` and `Position`.
 - A new run of roxygen2 on the source no longer breaks the install (#24).

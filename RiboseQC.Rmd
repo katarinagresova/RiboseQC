@@ -109,8 +109,8 @@ The genetic codes used for each chromosomes are accessed using:
 
 ```{r gtf_hum_general_6}
 GTF_annotation$genetic_codes
-getGeneticCode(GTF_annotation$genetic_codes["chr22","genetic_code"])
-getGeneticCode(GTF_annotation$genetic_codes["chrM","genetic_code"])
+Biostrings::getGeneticCode(GTF_annotation$genetic_codes["chr22","genetic_code"])
+Biostrings::getGeneticCode(GTF_annotation$genetic_codes["chrM","genetic_code"])
 ```
 
 Annotation and genome sequences are linked together in the annotation creation step.
@@ -194,9 +194,9 @@ For example, the 5'end profiles of different read lengths around start and stop 
 
 
 ```{r yeast_4, warning=FALSE, results='asis', fig.width=12, fig.height=10, dpi=120}
-as_ggplot(readRDS("test_yeast_TCP.html_plots/rds/SSU_nucl_4_profiles_fivepr_metagene_subcodon_log2")[[1]])
+ggpubr::as_ggplot(readRDS("test_yeast_TCP.html_plots/rds/SSU_nucl_4_profiles_fivepr_metagene_subcodon_log2")[[1]])
 
-as_ggplot(readRDS("test_yeast_TCP.html_plots/rds/RS_nucl_4_profiles_fivepr_metagene_subcodon_log2")[[1]])
+ggpubr::as_ggplot(readRDS("test_yeast_TCP.html_plots/rds/RS_nucl_4_profiles_fivepr_metagene_subcodon_log2")[[1]])
 ```
 
 
@@ -242,7 +242,7 @@ readRDS("test_root_shoots.html_plots/rds/all_samples_1_readlocdist")[[1]]
 or visualize z-scored positional codon usage values, calculated using A-site positions for chloroplast ribosomes in the shoots sample:
 
 ```{r arab_4, warning=FALSE, results='asis', fig.width=12, fig.height=16, dpi=150}
-as_ggplot(readRDS("test_root_shoots.html_plots/rds/shoots_ChrC_7_codonusage_positional_A-sites_per_codon_all_zscore")[[1]])
+ggpubr::as_ggplot(readRDS("test_root_shoots.html_plots/rds/shoots_ChrC_7_codonusage_positional_A-sites_per_codon_all_zscore")[[1]])
 ```
 
 Much more information is available in the html reports, including read length distributions per biotype and compartment, statistics on codon usage, and analysis of the highest mapping positions in the genome.
