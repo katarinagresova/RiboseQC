@@ -144,3 +144,14 @@ test_that("a gene on both strands is kept in the annotation, and is not in $gene
   # the other genes have the regions of the example
   expect_equal(ann$ncRNAs[!ann$ncRNAs %over% locus], ann_genc$ncRNAs[!ann_genc$ncRNAs %over% locus])
 })
+
+test_that("load_annotation() returns the annotation invisibly, and assigns it in envir", {
+  env <- new.env()
+  res <- suppressMessages(withVisible(load_annotation(file.path(work, "genc", "genes.gtf_Rannot"), envir = env)))
+  expect_false(res$visible)
+  expect_named(res$value, c("GTF_annotation", "genome_seq"))
+  expect_true(is(res$value$genome_seq, "FaFile_Circ"))
+  expect_identical(res$value$GTF_annotation$trann, ann_genc$trann)
+  expect_identical(env$GTF_annotation, res$value$GTF_annotation)
+  expect_identical(env$genome_seq, res$value$genome_seq)
+})

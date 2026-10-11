@@ -62,6 +62,12 @@
 - `load_annotation()` reads the `*_Rannot` files of all versions of RiboseQC
   and ORFquant. Its new argument `envir` says where it puts `GTF_annotation`
   and `genome_seq`; the default is the environment of the caller, as before.
+- `load_annotation()` now returns the annotation and the genome sequence,
+  invisibly, as a list with the elements `GTF_annotation` and `genome_seq`,
+  as ORFquant's `load_annotation()` does. It still assigns them in `envir`,
+  so scripts that use these variables work unchanged. Before, it returned
+  `GTF_annotation` alone, invisibly, which was not documented: a script that
+  used this value must now take `$GTF_annotation` of the list.
 - The other files that `prepare_annotation_files()` writes don't change,
   apart from the biotypes in `table_gene_tx_IDs` (see "Changes in results").
 

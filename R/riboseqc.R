@@ -2281,7 +2281,8 @@ get_ps_fromsplicemin<-function(x,cutoff){
 #' @details Reads the *Rannot files of all versions of RiboseQC and ORFquant: with the name of the BSgenome package in
 #' \code{genome_package} (from RiboseQC 1.2.0, and ORFquant) or in \code{genome} (RiboseQC before 1.2.0), or with an
 #' \code{FaFile_Circ} object in \code{genome}.
-#' @return introduces a \code{GTF_annotation} object and a \code{genome_seq} object in \code{envir}
+#' @return invisibly, a list with the annotated features (\code{GTF_annotation}) and the genome sequence (\code{genome_seq}).
+#' The function also assigns the two objects to \code{GTF_annotation} and \code{genome_seq} in \code{envir}.
 #' @seealso \code{\link{prepare_annotation_files}}
 #' @examples
 #' data(res_all)
@@ -2306,7 +2307,7 @@ load_annotation<-function(path,envir=parent.frame()){
 
 	  message(paste0('assigning GTF_annotation object GTF_annotation to parent workspace'))
     assign('GTF_annotation',GTF_annotation,envir = envir)
-
+    invisible(list(GTF_annotation=GTF_annotation,genome_seq=genome_sequence))
 }
 
 #' Calculate offsets from 5'end profiles
