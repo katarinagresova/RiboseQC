@@ -107,3 +107,6 @@
   `suppressMessages()` hides them. Before, it wrote them to the standard
   output. It no longer writes the `.fai` index of the FASTA file again in
   each run: Rsamtools makes the index when it is missing.
+- The `getSeq()` error for ranges that wrap twice around a circular
+  chromosome now reads "Ranges wrapping twice isn't implemented yet...",
+  without the stray quote, line break and spaces it had.
