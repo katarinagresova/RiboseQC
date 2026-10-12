@@ -1743,7 +1743,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         es_codons_counts <- list()
         
         if (length(ps) == 0) {
-            print("Not enough signal or low frame preference, skipped P-sites & codon occupancy calculation. \n Set 'all' in the 'choose_readlengths' choice to ignore this warning and get P-sites positions in a new run")
+            warning("Not enough signal or low frame preference, skipped P-sites & codon occupancy calculation. Set readlength_choice_method = 'all' to ignore this warning and get P-sites positions in a new run")
         }
         if (length(ps) > 0) {
             
