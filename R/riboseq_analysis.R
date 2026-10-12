@@ -1331,6 +1331,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         # operations on the chunk (here count reads and whatnot)
         
         mapp <- function(x) {
+            mcols(x)$MD[which(is.na(mcols(x)$MD))] <- "NO"
+            
             x_I <- x[grep("I", cigar(x))]
             
             if (length(x_I) > 0) {
@@ -1524,10 +1526,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                     
                     ps_plus_uniq <- ps_plus[mcols(ps_plus)$mapq > 50]
                     
-                    mapqokay <- mcols(ok_reads)$mapq > 50 & grepl(x = mcols(ok_reads)$MD, 
-                      pattern = "\\W|.{3,}")
-                    length(mapqokay)
-                    ps_plus_uniq_mm <- ps_plus[mapqokay]
+                    ps_plus_uniq_mm <- ps_plus[mcols(ps_plus)$mapq > 50 & 
+                      nchar(mcols(ps_plus)$MD) > 3]
                     
                     mcols(ps_plus) <- NULL
                     mcols(ps_plus_uniq) <- NULL
@@ -1590,11 +1590,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                     ps_neg <- c(ps_unspl, firstok, lastok, ps_spl)
                     # HERE PROBLEM WITH MAPPING QUALITY
                     ps_neg_uniq <- ps_neg[mcols(ps_neg)$mapq > 50]
-                    mapqokay <- mcols(ok_reads)$mapq > 50 & grepl(x = mcols(ok_reads)$MD, 
-                      pattern = "\\W|.{3,}")
-                    length(mapqokay)
-                    
-                    ps_neg_uniq_mm <- ok_reads[mapqokay]
+                    ps_neg_uniq_mm <- ps_neg[mcols(ps_neg)$mapq > 50 & 
+                      nchar(mcols(ps_neg)$MD) > 3]
                     
                     mcols(ps_neg) <- NULL
                     mcols(ps_neg_uniq) <- NULL
