@@ -2822,14 +2822,14 @@ prepare_annotation_files<-function(annotation_directory,twobit_file=NULL,gtf_fil
         df<-cbind.DataFrame(start(start_stop_cc),start_stop_cc$type,start_stop_cc$gene_id)
         colnames(df)<-c("start_pos","type","gene_id")
         upst<-by(df$start_pos,INDICES = df$gene_id,function(x){x==min(x) | x==max(x)})
-        start_stop_cc$most_up_downstream<-unlist(upst[unique(df$gene_id)])
+        start_stop_cc$most_up_downstream[unlist(split(seq_len(nrow(df)),df$gene_id))]<-unlist(upst)
 
         mostfr<-by(df[,c("start_pos","type")],INDICES = df$gene_id,function(x){
             mfreq<-table(x)
             x$start_pos%in%as.numeric(names(which(mfreq[,1]==max(mfreq[,1])))) | x$start_pos%in%as.numeric(names(which(mfreq[,2]==max(mfreq[,2]))))
         })
 
-        start_stop_cc$most_frequent<-unlist(mostfr[unique(df$gene_id)])
+        start_stop_cc$most_frequent[unlist(split(seq_len(nrow(df)),df$gene_id))]<-unlist(mostfr)
 
         names(start_stop_cc)<-NULL
 
