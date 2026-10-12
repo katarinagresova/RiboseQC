@@ -27,3 +27,9 @@
 #' @importFrom stats kmeans
 #' @importFrom utils write.table
 NULL
+
+# Column names used in aes() and mutate(), which R CMD check takes for globals.
+utils::globalVariables(c("L1", "Var1", "Var2", "aa", "biotype", "codon", "frame",
+  "read_length", "value", "variable"))
+# generate_rdata_list() load()s res_all.
+utils::globalVariables("res_all")
