@@ -1,3 +1,27 @@
+# RiboseQC 1.2.1
+
+## New output file
+
+- `RiboseQC_analysis()` writes the new file `<dest_name>_P_sites_offsets.tsv`.
+  It has the offsets that it used to calculate the P-sites, with the columns
+  `read_length`, `cutoff` and `compartment` (`nucl` or the name of a circular
+  chromosome). It includes the offsets of `offsets_df`, and with
+  `rescue_all_rls = TRUE` the offset 12 of the other read lengths. It is the
+  cutoff file of ORFquant's `prepare_for_ORFquant()`. Use it, not
+  `*_P_sites_calcs`: that file lists the offsets of the analysis for all
+  read lengths, and not only those that were used for the P-sites.
+
+## Bug fixes
+
+- The HTML report (`create_html_report()`, and `RiboseQC_analysis()` with
+  `create_report = TRUE`, the default) works again with current knitr
+  (tested with 1.52). Before, rendering stopped with an error about a code
+  chunk, because the report templates indented the closing fences of the
+  chunks that they generate.
+- After a report fails, R output goes to the console again. Before,
+  `create_html_report()` left its text-output file open, so R wrote all
+  later output of the session into it.
+
 # RiboseQC 1.2.0
 
 ## Installation and dependencies
