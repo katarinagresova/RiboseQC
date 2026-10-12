@@ -1,3 +1,16 @@
+# RiboseQC 1.2.1
+
+## Bug fixes
+
+- The HTML report (`create_html_report()`, and `RiboseQC_analysis()` with
+  `create_report = TRUE`, the default) works again with current knitr
+  (tested with 1.52). Before, rendering stopped with an error about a code
+  chunk, because the report templates indented the closing fences of the
+  chunks that they generate.
+- After a report fails, R output goes to the console again. Before,
+  `create_html_report()` left its text-output file open, so R wrote all
+  later output of the session into it.
+
 # RiboseQC 1.2.0
 
 ## Installation and dependencies
