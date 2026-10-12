@@ -28,8 +28,13 @@ progressively selects read lengths which add in-frame signals in codons not cove
 the "all" method selects all available read lengths
 }
 \examples{
-data(res_all)
-choose_readlengths(res_all$results_cutoffs,choice="max_coverage",nt_signals=res_all$profiles_fivepr[["five_prime_subcodon"]])
+\dontrun{
+# The 5' profiles of each transcript are only in the *_results_RiboseQC_all file
+# (RiboseQC_analysis() with write_tmp_files = TRUE).
+load("my_sample_results_RiboseQC_all")
+choose_readlengths(res_all$selection_cutoffs$results_cutoffs, choice = "max_coverage",
+  nt_signals = res_all$profiles_fivepr[["five_prime_subcodon"]])
+}
 }
 \seealso{
 \code{\link{calc_cutoffs_from_profiles}}

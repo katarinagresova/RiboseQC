@@ -38,8 +38,8 @@ This function generates iteratively all heatmap plots
 These plots are displayed in the RiboseQC report in section 4.1/4.3.
 }
 \examples{
-data(res_all)
-plot_metagene_hm_rmd(res_all, "profiles_fivepr", 'shoot', paste0('myfigpath', "rds/"))
+load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+plot_metagene_hm_rmd(res_all, "profiles_fivepr", "root")
 }
 \seealso{
 \code{\link{create_html_report}}, \code{\link{get_metagene_data}}, \code{\link{plot_metagene_hm}}

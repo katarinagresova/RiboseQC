@@ -26,9 +26,8 @@ for one input sample. \cr \cr
 This plot is used in the RiboseQC report in section 1.1.
 }
 \examples{
-data(res_all)
-plot_read_biotype_dist_1(
-  res_all$read_stats$positions, 'shoot', paste0('myfigpath', "rds/"))
+load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+plot_read_biotype_dist_1(res_all$read_stats$positions, "root")
 }
 \seealso{
 \code{\link{create_html_report}}

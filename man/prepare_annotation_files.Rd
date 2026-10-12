@@ -94,15 +94,14 @@ BSgenome package, which \code{load_annotation} loads.\cr
 \code{genome}: the genome sequence, an FaFile_Circ object. Loaded with \code{load_annotation} function.\cr
 }
 \examples{
-gtf_file <- system.file("extdata", "example.gtf",
-package = "RiboseQC",mustWork = TRUE)
-twobit_file <- system.file("extdata", "example.2bit",
-                           package = "RiboseQC",mustWork = TRUE)
-output_dir <- tempdir()
-prepare_annotation_files(output_dir,twobit_file,gtf_file,
-                   scientific_name = "Arabidopsis.thaliana",
-                   annotation_name = "tair10.42" )
-
+# An uncompressed copy of the bundled FASTA file
+fasta <- file.path(tempdir(), "simp_arab.fa")
+Biostrings::writeXStringSet(Biostrings::readDNAStringSet(
+  system.file("ext_data", "simp_arab.fa.gz", package = "RiboseQC")), fasta)
+annot_file <- prepare_annotation_files(annotation_directory = tempdir(),
+  gtf_file = system.file("ext_data", "simp_arab.gtf.gz", package = "RiboseQC"),
+  genome_seq = fasta)
+annot_file
 }
 \seealso{
 \code{\link{load_annotation}}, \code{\link[txdbmaker]{makeTxDbFromGFF}}.

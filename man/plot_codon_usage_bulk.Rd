@@ -32,8 +32,9 @@ is examplatory calculated
 }
 }
 \examples{
-data(res_all)
-plot_codon_usage_bulk_rmd(res_all, 'shoot', paste0('myfigpath', "rds/"))
+load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+codon_usage_data <- get_codon_usage_data(res_all, "P_sites_percodon", "nucl", "all")
+plot_codon_usage_bulk(codon_usage_data, "root")
 }
 \seealso{
 \code{\link{create_html_report}}

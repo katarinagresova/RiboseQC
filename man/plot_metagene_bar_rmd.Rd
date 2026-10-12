@@ -22,8 +22,9 @@ This function plots a 5' or P-site profile as barplot
 This plot is used in the RiboseQC report in section 4.1/4.3.
 }
 \examples{
-data(res_all)
-plot_metagene_hm_rmd(res_all, "profiles_fivepr", 'shoot', paste0('myfigpath', "rds/"))
+load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+metagene_data <- get_metagene_data(res_all, "profiles_fivepr", "five_prime_subcodon", "nucl")
+plot_metagene_bar_rmd(metagene_data, "root")
 }
 \seealso{
 \code{\link{create_html_report}}

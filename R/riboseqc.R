@@ -126,9 +126,12 @@ create_html_report <- function(input_files, input_sample_names, output_file,exte
 #'
 #' @seealso \code{\link{create_html_report}}
 #' @examples
-#'
-#' @examples
-#' create_pdfs_from_rds_objects(paste('test_root_shoots.html',"_plots/rds/",sep=""))
+#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+#' output_rds_path <- file.path(tempdir(), "report_plots", "rds", "")
+#' dir.create(output_rds_path, recursive = TRUE)
+#' plot_read_length_dist(res_all$read_stats$rld, "root", output_rds_path)
+#' create_pdfs_from_rds_objects(output_rds_path)
+#' list.files(file.path(tempdir(), "report_plots", "pdf"))
 #' @export
 
 create_pdfs_from_rds_objects <- function(output_rds_path){
@@ -182,9 +185,9 @@ create_pdfs_from_rds_objects <- function(output_rds_path){
 #'
 #' @seealso \code{\link{create_html_report}}
 #' @examples
-#'
-#' @examples
-#' rdata_list <- generate_rdata_list("root_results_RiboseQC")
+#' rdata_list <- generate_rdata_list(c(
+#'   root = system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC")))
+#' names(rdata_list)
 #' @export
 
 generate_rdata_list <- function(input_files){
@@ -221,9 +224,8 @@ generate_rdata_list <- function(input_files){
 #' @seealso \code{\link{create_html_report}}
 #'
 #' @examples
-#' data(res_all)
-#' plot_read_biotype_dist_1(
-#'   res_all$read_stats$positions, 'shoot', paste0('myfigpath', "rds/"))
+#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+#' plot_read_biotype_dist_1(res_all$read_stats$positions, "root")
 #' @export
 
 plot_read_biotype_dist_1 <- function(pos, sample, output_rds_path=""){
@@ -283,8 +285,8 @@ plot_read_biotype_dist_1 <- function(pos, sample, output_rds_path=""){
 #'
 #' @seealso \code{\link{create_html_report}}
 #' @examples
-#' data(res_all)
-#' plot_read_biotype_dist_2(list(res_all), paste0('myfigpath', "rds/"))
+#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+#' plot_read_biotype_dist_2(list(root = res_all))
 #' @export
 
 plot_read_biotype_dist_2 <- function(rdata_list, output_rds_path=""){
@@ -383,8 +385,8 @@ plot_read_biotype_dist_2 <- function(rdata_list, output_rds_path=""){
 #'
 #' @seealso \code{\link{create_html_report}}
 #' @examples
-#' data(res_all)
-#' plot_read_length_dist(res_all$read_stats$rld, 'shoot', paste0('myfigpath', "rds/"))
+#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+#' plot_read_length_dist(res_all$read_stats$rld, "root")
 #' @export
 
 plot_read_length_dist <- function(rld, sample, output_rds_path=""){
@@ -483,8 +485,8 @@ plot_read_length_dist <- function(rld, sample, output_rds_path=""){
 #'
 #' @seealso \code{\link{create_html_report}}
 #' @examples
-#' data(res_all)
-#' plot_read_length_dist_by_biotype(res_all$read_stats$reads_summary, 'shoot', paste0('myfigpath', "rds/"))
+#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+#' plot_read_length_dist_by_biotype(res_all$read_stats$reads_summary, "root")
 #' @export
 
 plot_read_length_dist_by_biotype <- function(reads_summary, sample, output_rds_path=""){
@@ -589,8 +591,8 @@ plot_read_length_dist_by_biotype <- function(reads_summary, sample, output_rds_p
 #'
 #' @seealso \code{\link{create_html_report}}
 #' @examples
-#' data(res_all)
-#' plot_read_biotype_dist_by_length(res_all$read_stats$reads_summary, 'shoot', paste0('myfigpath', "rds/"))
+#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+#' plot_read_biotype_dist_by_length(res_all$read_stats$reads_summary, "root")
 #' @export
 
 plot_read_biotype_dist_by_length <- function(reads_summary, sample, output_rds_path=""){
@@ -857,8 +859,8 @@ get_metagene_data <- function(data, profile_type, res, comp){
 #'
 #' @seealso \code{\link{create_html_report}}, \code{\link{get_metagene_data}}, \code{\link{plot_metagene_hm}}
 #' @examples
-#' data(res_all)
-#' plot_metagene_hm_rmd(res_all, "profiles_fivepr", 'shoot', paste0('myfigpath', "rds/"))
+#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+#' plot_metagene_hm_rmd(res_all, "profiles_fivepr", "root")
 #' @export
 
 plot_metagene_hm_rmd <- function(data, profile_type, sample="", output_rds_path=""){
@@ -1053,8 +1055,9 @@ plot_metagene_hm <- function(metagene_data, scal, sample="", output_rds_path="")
 #'
 #' @seealso \code{\link{create_html_report}}
 #' @examples
-#' data(res_all)
-#' plot_metagene_hm_rmd(res_all, "profiles_fivepr", 'shoot', paste0('myfigpath', "rds/"))
+#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+#' metagene_data <- get_metagene_data(res_all, "profiles_fivepr", "five_prime_subcodon", "nucl")
+#' plot_metagene_bar_rmd(metagene_data, "root")
 #' @export
 
 plot_metagene_bar_rmd <- function(metagene_data, sample="", output_rds_path="") {
@@ -1230,8 +1233,8 @@ plot_metagene_bar <- function(metagene_data, rl, sample="", output_rds_path="") 
 #'
 #' @seealso \code{\link{create_html_report}}
 #' @examples
-#' data(res_all)
-#' plot_frame_dist_boxplot_rmd(res_all$selection_cutoffs$analysis_frame_cutoff, 'shoot', paste0('myfigpath', "rds/"))
+#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+#' plot_frame_dist_boxplot_rmd(res_all$selection_cutoffs$analysis_frame_cutoff, "root")
 #' @export
 
 plot_frame_dist_boxplot_rmd <- function(analysis_frame_cutoff, sample="", output_rds_path=""){
@@ -1639,8 +1642,11 @@ get_codon_usage_data <- function(data, data_type, comp, rl) {
 #'
 #' @seealso \code{\link{create_html_report}}
 #' @examples
-#' data(res_all)
-#' plot_codon_usage_positional_rmd(res_all, 'shoot', paste0('myfigpath', "rds/"))
+#' \dontrun{
+#' # This draws all plots of section 7 of the report: about 10 min on the bundled data.
+#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+#' plot_codon_usage_positional_rmd(res_all, "root")
+#' }
 #' @export
 
 plot_codon_usage_positional_rmd <- function(data, sample="", output_rds_path="") {
@@ -1730,7 +1736,9 @@ plot_codon_usage_positional_rmd <- function(data, sample="", output_rds_path="")
 #'
 #' @seealso \code{\link{create_html_report}}
 #' @examples
-#' data(res_all)
+#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+#' codon_usage_data <- get_codon_usage_data(res_all, "P_sites_percodon", "nucl", "all")
+#' plot_codon_usage_positional(codon_usage_data, "zscore", "root")
 #' @export
 
 plot_codon_usage_positional <- function(codon_usage_data, scal, sample="", output_rds_path="") {
@@ -1857,8 +1865,11 @@ plot_codon_usage_positional <- function(codon_usage_data, scal, sample="", outpu
 #'
 #' @seealso \code{\link{create_html_report}}, \code{\link{get_metagene_data}}, \code{\link{plot_metagene_hm}}
 #' @examples
-#' data(res_all)
-#' plot_codon_usage_bulk_rmd(res_all, 'shoot', paste0('myfigpath', "rds/"))
+#' \dontrun{
+#' # This draws all plots of section 8 of the report: about 1.5 min on the bundled data.
+#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+#' plot_codon_usage_bulk_rmd(res_all, "root")
+#' }
 #' @export
 
 plot_codon_usage_bulk_rmd <- function(data, sample="", output_rds_path="") {
@@ -1934,8 +1945,9 @@ plot_codon_usage_bulk_rmd <- function(data, sample="", output_rds_path="") {
 #'
 #' @seealso \code{\link{create_html_report}}
 #' @examples
-#' data(res_all)
-#' plot_codon_usage_bulk_rmd(res_all, 'shoot', paste0('myfigpath', "rds/"))
+#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+#' codon_usage_data <- get_codon_usage_data(res_all, "P_sites_percodon", "nucl", "all")
+#' plot_codon_usage_bulk(codon_usage_data, "root")
 #' @export
 
 plot_codon_usage_bulk <- function(codon_usage_data, sample="", output_rds_path="") {
@@ -2053,8 +2065,13 @@ kmeans_seeded<-function(...){
 #' the set of chosen read lengths with cutoffs, and \code{data}, the complete stats for each selection method
 #' @seealso \code{\link{calc_cutoffs_from_profiles}}
 #' @examples
-#' data(res_all)
-#' choose_readlengths(res_all$results_cutoffs,choice="max_coverage",nt_signals=res_all$profiles_fivepr[["five_prime_subcodon"]])
+#' \dontrun{
+#' # The 5' profiles of each transcript are only in the *_results_RiboseQC_all file
+#' # (RiboseQC_analysis() with write_tmp_files = TRUE).
+#' load("my_sample_results_RiboseQC_all")
+#' choose_readlengths(res_all$selection_cutoffs$results_cutoffs, choice = "max_coverage",
+#'   nt_signals = res_all$profiles_fivepr[["five_prime_subcodon"]])
+#' }
 #' @export
 
 choose_readlengths<-function(summary_data,choice="max_coverage",nt_signals){
@@ -2301,8 +2318,16 @@ get_ps_fromsplicemin<-function(x,cutoff){
 #' The function also assigns the two objects to \code{GTF_annotation} and \code{genome_seq} in \code{envir}.
 #' @seealso \code{\link{prepare_annotation_files}}
 #' @examples
-#' data(res_all)
-#' load_annotation('test_arabidopsis.gtf.gz_Rannot')
+#' # An uncompressed copy of the bundled FASTA file
+#' fasta <- file.path(tempdir(), "simp_arab.fa")
+#' Biostrings::writeXStringSet(Biostrings::readDNAStringSet(
+#'   system.file("ext_data", "simp_arab.fa.gz", package = "RiboseQC")), fasta)
+#' annot_file <- prepare_annotation_files(annotation_directory = tempdir(),
+#'   gtf_file = system.file("ext_data", "simp_arab.gtf.gz", package = "RiboseQC"),
+#'   genome_seq = fasta)
+#' load_annotation(annot_file)
+#' GTF_annotation$genetic_codes
+#' genome_seq
 #' @export
 
 load_annotation<-function(path,envir=parent.frame()){
@@ -2350,8 +2375,13 @@ load_annotation<-function(path,envir=parent.frame()){
 #' and profiles around start codons in  \code{profiles_start}.
 #' @seealso \code{\link{RiboseQC_analysis}}
 #' @examples
-#' data(profiles_fivepr)
-#' calc_cutoffs_from_profiles(profiles_fivepr[["five_prime_subcodon"]][[1]][[1]],length_max = 100)
+#' \dontrun{
+#' # The 5' profiles of each transcript are only in the *_results_RiboseQC_all file
+#' # (RiboseQC_analysis() with write_tmp_files = TRUE).
+#' load("my_sample_results_RiboseQC_all")
+#' calc_cutoffs_from_profiles(res_all$profiles_fivepr[["five_prime_subcodon"]][["nucl"]][["28"]],
+#'   length_max = 28)
+#' }
 #' @export
 
 calc_cutoffs_from_profiles<-function(reads_profile,length_max){
@@ -2513,15 +2543,14 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
 #' @return a TxDb file and a *Rannot files are created in the specified \code{annotation_directory}.
 #' @seealso \code{\link{load_annotation}}, \code{\link[txdbmaker]{makeTxDbFromGFF}}.
 #' @examples
-#' gtf_file <- system.file("extdata", "example.gtf",
-#' package = "RiboseQC",mustWork = TRUE)
-#' twobit_file <- system.file("extdata", "example.2bit",
-#'                            package = "RiboseQC",mustWork = TRUE)
-#' output_dir <- tempdir()
-#' prepare_annotation_files(output_dir,twobit_file,gtf_file,
-#'                    scientific_name = "Arabidopsis.thaliana",
-#'                    annotation_name = "tair10.42" )
-#'
+#' # An uncompressed copy of the bundled FASTA file
+#' fasta <- file.path(tempdir(), "simp_arab.fa")
+#' Biostrings::writeXStringSet(Biostrings::readDNAStringSet(
+#'   system.file("ext_data", "simp_arab.fa.gz", package = "RiboseQC")), fasta)
+#' annot_file <- prepare_annotation_files(annotation_directory = tempdir(),
+#'   gtf_file = system.file("ext_data", "simp_arab.gtf.gz", package = "RiboseQC"),
+#'   genome_seq = fasta)
+#' annot_file
 #' @export
 
 

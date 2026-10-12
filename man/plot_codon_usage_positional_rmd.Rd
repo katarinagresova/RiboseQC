@@ -26,8 +26,11 @@ and scaling method (none, log2, zscale). \cr \cr
 These plots are displayed in the RiboseQC report in section 7.
 }
 \examples{
-data(res_all)
-plot_codon_usage_positional_rmd(res_all, 'shoot', paste0('myfigpath', "rds/"))
+\dontrun{
+# This draws all plots of section 7 of the report: about 10 min on the bundled data.
+load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+plot_codon_usage_positional_rmd(res_all, "root")
+}
 }
 \seealso{
 \code{\link{create_html_report}}

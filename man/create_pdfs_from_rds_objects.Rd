@@ -18,7 +18,12 @@ it's essentially a workaround for  difficulty integrating pdfs into
 html reports.
 }
 \examples{
-create_pdfs_from_rds_objects(paste('test_root_shoots.html',"_plots/rds/",sep=""))
+load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+output_rds_path <- file.path(tempdir(), "report_plots", "rds", "")
+dir.create(output_rds_path, recursive = TRUE)
+plot_read_length_dist(res_all$read_stats$rld, "root", output_rds_path)
+create_pdfs_from_rds_objects(output_rds_path)
+list.files(file.path(tempdir(), "report_plots", "pdf"))
 }
 \seealso{
 \code{\link{create_html_report}}

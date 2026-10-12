@@ -22,8 +22,8 @@ for all input samples. \cr \cr
 This plot is used in the RiboseQC report in section 1.2.
 }
 \examples{
-data(res_all)
-plot_read_biotype_dist_2(list(res_all), paste0('myfigpath', "rds/"))
+load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
+plot_read_biotype_dist_2(list(root = res_all))
 }
 \seealso{
 \code{\link{create_html_report}}
