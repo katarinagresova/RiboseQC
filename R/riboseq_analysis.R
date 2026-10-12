@@ -2169,7 +2169,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                   gcall <- paste(gco, names(gco), sep = ";")
                   
                   #remove 'Ns' our counts
-                  non_n_rows <- grep(x=rownames(psit_counts),v=TRUE,patt='N',inv=T)
+                  non_n_rows <- grep(x=rownames(psit_counts),value=TRUE,pattern='N',invert=T)
                   psit_counts <- psit_counts[non_n_rows,]
                   asit_counts <- asit_counts[non_n_rows,]
                   esit_counts <- esit_counts[non_n_rows,]
