@@ -172,3 +172,7 @@
   `stop_codon` lines are used. The help of `getSeq()` for `FaFile_Circ` now
   says how it reads ranges past the end of a circular chromosome, and what it
   returns.
+
+# RiboseQC 0.99.0
+
+- Submitted to Bioconductor (2018-05-15).
