@@ -137,6 +137,10 @@
 - The help pages are made again from the source (with roxygen2 8.1.0; they
   were from 2019). They now describe all arguments, for example
   `genome_seq`, `stranded`, `normalize_cov` and `offsets_df` of
-  `RiboseQC_analysis()`, and their usage sections match the functions. Most
-  of the examples that they now show don't run yet: they use data that the
-  package doesn't have (`data(res_all)`) or files that don't exist.
+  `RiboseQC_analysis()`, and their usage sections match the functions. The
+  examples now run on the bundled data. Before, they used data that the
+  package doesn't have (`data(res_all)`) or files that don't exist. Four of
+  them are not run: those of `plot_codon_usage_positional_rmd()` and
+  `plot_codon_usage_bulk_rmd()` take minutes, and those of
+  `calc_cutoffs_from_profiles()` and `choose_readlengths()` need a
+  `*_results_RiboseQC_all` file.
