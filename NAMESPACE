@@ -42,7 +42,6 @@ import(Biostrings)
 import(DT)
 import(GenomicAlignments)
 import(GenomicFeatures)
-import(GenomicFiles)
 import(GenomicRanges)
 import(Rsamtools)
 import(ggplot2)
@@ -80,6 +79,7 @@ importFrom(Seqinfo,
   seqlengths,
   seqlevels
 )
+importFrom(SummarizedExperiment,assay)
 importFrom(grDevices,
   dev.off,
   pdf,

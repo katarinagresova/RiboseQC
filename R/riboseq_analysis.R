@@ -333,7 +333,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         cat(paste("Extracting read lengths from ", bam_file, " ... ", date(), "\n", 
             sep = ""))
-        maxmin <- reduceByYield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc)
+        maxmin <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc)
         cat(paste("Extracting read lengths --- Done! ", date(), "\n", sep = ""))
         readlengths <- seq(maxmin[[2]], maxmin[[1]])
         
@@ -721,7 +721,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         cat(paste("Analyzing BAM file:", bam_file, "...", date(), "\n"))
         
-        read_stats <- reduceByYield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc)
+        read_stats <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc)
         names(read_stats) <- c("rld", "rld_unq", "positions", "positions_unq", "reads_pos1", 
             "counts_cds_genes", "counts_cds_genes_unq", "counts_all_genes", "counts_all_genes_unq", 
             "reads_summary", "reads_summary_unq")
@@ -1715,7 +1715,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         }
         cat(paste("Calculating P-sites positions and junctions ...", date(), "\n"))
         
-        P_sites_stats <- reduceByYield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc)
+        P_sites_stats <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc)
         
         save(P_sites_stats, file = paste(dira, "P_sites_stats", sep = "/"))
         
@@ -2528,3 +2528,23 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
 
 
 
+
+# Read the BamFile X in chunks with YIELD, run MAP on each chunk and combine the results with
+# REDUCE. This is the loop of GenomicFiles::reduceByYield(), which RiboseQC used before.
+reduce_by_yield <- function(X, YIELD, MAP, REDUCE) {
+    if (!isOpen(X)) {
+        open(X)
+        on.exit(close(X))
+    }
+    data <- YIELD(X)
+    if (length(data) == 0L) 
+        return(list())
+    result <- MAP(data)
+    repeat {
+        data <- YIELD(X)
+        if (length(data) == 0L) 
+            break
+        result <- REDUCE(result, MAP(data))
+    }
+    result
+}

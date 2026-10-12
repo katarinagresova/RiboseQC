@@ -10,7 +10,7 @@
   `cigarRangesAlongQuerySpace()` and `cigarRangesAlongReferenceSpace()`,
   which are deprecated. So `RiboseQC_analysis()`, `get_ps_fromspliceplus()`
   and `get_ps_fromsplicemin()` no longer give deprecation warnings.
-- devtools is no longer needed.
+- devtools and GenomicFiles are no longer needed.
 - `prepare_annotation_files()` no longer forges and installs a BSgenome
   package from a 2bit file: this failed with current BSgenomeForge versions
   (#21, #23). Give the genome as a FASTA file (`genome_seq`); `twoBitToFa` of

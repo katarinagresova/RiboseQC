@@ -5,7 +5,6 @@
 #' @import DT
 #' @import GenomicAlignments
 #' @import GenomicFeatures
-#' @import GenomicFiles
 #' @import GenomicRanges
 #' @import Rsamtools
 #' @import ggplot2
@@ -22,6 +21,7 @@
 #' @importFrom S4Vectors runValue<- DataFrame aggregate cbind.DataFrame
 #' @importFrom S4Vectors endoapply queryHits runLength runValue subjectHits
 #' @importFrom Seqinfo seqlengths<- Seqinfo isCircular seqlengths seqlevels
+#' @importFrom SummarizedExperiment assay
 #' @importFrom grDevices dev.off pdf rainbow
 #' @importFrom methods as is new representation setMethod setRefClass
 #' @importFrom stats kmeans
