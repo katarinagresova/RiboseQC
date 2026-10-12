@@ -1,8 +1,18 @@
 library(RiboseQC)
 library(testthat)
 
-data(res_all)
-data(profiles_fivepr)
+# The 5' profiles of each transcript: RiboseQC_analysis() on the bundled root BAM
+# (about 2 min). normalize_cov = FALSE: the default fails on this BAM (#15).
+tmp_dir <- tempfile()
+dir.create(tmp_dir)
+arab_fasta <- file.path(tmp_dir,'simp_arab.fa')
+Biostrings::writeXStringSet(Biostrings::readDNAStringSet(system.file(package='RiboseQC',"ext_data","simp_arab.fa.gz")),arab_fasta)
+annotation <- prepare_annotation_files(annotation_directory = tmp_dir,genome_seq = arab_fasta,
+                                       gtf_file = system.file(package='RiboseQC',"ext_data","simp_arab.gtf.gz"))
+RiboseQC_analysis(annotation,bam_files = system.file(package='RiboseQC',"ext_data","simp_arab_root.bam"),
+                  dest_names = file.path(tmp_dir,'root'),normalize_cov = FALSE,create_report = FALSE)
+load(file.path(tmp_dir,'root_results_RiboseQC_all'))
+profiles_fivepr <- res_all$profiles_fivepr
 
 context("Analysis Working")
 
@@ -27,14 +37,12 @@ test_that("calc_cutoffs_from_profiles works as expected", {
   expect_lt( outcutoff_ap$frames_res['mean_pct_max_frame'] ,80 )
   
   
-  testrl_sel_data <- list(matrix(ncol=2,c(
+  testrl_sel_data <- setNames(list(matrix(ncol=2,c(
     outcutoff$final_cutoff,
-    outcutoff$frames_res['mean_pct_max_frame'])
-    )%>%
-    set_colnames(c('cutoff','frame_preference'))%>%
-    set_rownames(c(testlen))
-  )%>%
-  setNames(names(profiles_fivepr[[1]])[1])
+    outcutoff$frames_res['mean_pct_max_frame']),
+    dimnames=list(testlen,c('cutoff','frame_preference')))
+  ),
+  names(profiles_fivepr[[1]])[1])
   
   len_sel <- choose_readlengths(testrl_sel_data,'max_coverage',profiles_fivepr$five_prime_subcodon['nucl'])
   
@@ -42,14 +50,12 @@ test_that("calc_cutoffs_from_profiles works as expected", {
   
   
   #Now create fake data for choose_readlengths
-  testrl_sel_dataap <- list(matrix(ncol=2,c(
+  testrl_sel_dataap <- setNames(list(matrix(ncol=2,c(
     outcutoff_ap$final_cutoff,
-    outcutoff_ap$frames_res['mean_pct_max_frame'])
-  )%>%
-    set_colnames(c('cutoff','frame_preference'))%>%
-    set_rownames(c(testlen))
-  )%>%
-    setNames(names(profiles_fivepr[[1]])[1])
+    outcutoff_ap$frames_res['mean_pct_max_frame']),
+    dimnames=list(testlen,c('cutoff','frame_preference')))
+  ),
+    names(profiles_fivepr[[1]])[1])
   
   len_sel <- choose_readlengths(testrl_sel_dataap,'max_coverage',profiles_fivepr$five_prime_subcodon['nucl'])
   
