@@ -5,7 +5,12 @@
 - RiboseQC installs and runs again on current Bioconductor (3.22). Before,
   `prepare_annotation_files()` failed there, because GenomicFeatures'
   `makeTxDbFromGFF()` is defunct; it now comes from txdbmaker.
-- devtools is no longer needed.
+- RiboseQC now needs Bioconductor 3.22 (R 4.5) or later. It uses the
+  cigarillo package, new in 3.22, in place of GenomicAlignments'
+  `cigarRangesAlongQuerySpace()` and `cigarRangesAlongReferenceSpace()`,
+  which are deprecated. So `RiboseQC_analysis()`, `get_ps_fromspliceplus()`
+  and `get_ps_fromsplicemin()` no longer give deprecation warnings.
+- devtools and GenomicFiles are no longer needed.
 - `prepare_annotation_files()` no longer forges and installs a BSgenome
   package from a 2bit file: this failed with current BSgenomeForge versions
   (#21, #23). Give the genome as a FASTA file (`genome_seq`); `twoBitToFa` of
@@ -14,6 +19,23 @@
   with this advice. `twobit_file`, `scientific_name` and `annotation_name`
   are no longer used. Annotations that earlier versions made with a forged
   BSgenome package still load.
+- `library(RiboseQC)` now attaches only GenomicRanges and the packages it
+  attaches (IRanges, S4Vectors, Seqinfo, BiocGenerics, generics and stats4).
+  Before, it attached the 18 packages of its Depends field and theirs. They
+  are now imported, so RiboseQC still uses them. Scripts that relied on
+  `library(RiboseQC)` to attach others, for example Biostrings,
+  rtracklayer, Rsamtools or ggplot2, need their own `library()` calls. The
+  vignette now calls `Biostrings::getGeneticCode()` and
+  `ggpubr::as_ggplot()`. jsonlite is no longer needed: RiboseQC didn't use
+  it.
+- Loading RiboseQC no longer warns "replacing previous import" for
+  `combine` and `Position`.
+- A new run of roxygen2 on the source no longer breaks the install (#24).
+  Before, it added an import of `DEFAULT_CIRC_SEQS` from GenomicFeatures,
+  which no longer has it. This list of circular chromosome names (the
+  default of `circ_chroms` in `prepare_annotation_files()`) is now a
+  constant of RiboseQC, with the same names. `NAMESPACE` and the help pages
+  are now made with roxygen2 from the source.
 
 ## Changes in results
 
@@ -110,3 +132,20 @@
 - The `getSeq()` error for ranges that wrap twice around a circular
   chromosome now reads "Ranges wrapping twice isn't implemented yet...",
   without the stray quote, line break and spaces it had.
+- RiboseQC now imports all the functions that it uses from other packages,
+  for example `Seqinfo()`, `isCircular()` and `saveDb()`. Before, R found
+  some of them only because `library(RiboseQC)` attached the packages in
+  `Depends`. When RiboseQC was only loaded (with `RiboseQC::`, with
+  `loadNamespace()` or as an import of another package), functions such as
+  `seqinfo()` of a `FaFile_Circ` stopped with `could not find function
+  "Seqinfo"`.
+- The help pages are made again from the source (with roxygen2 8.1.0; they
+  were from 2019). They now describe all arguments, for example
+  `genome_seq`, `stranded`, `normalize_cov` and `offsets_df` of
+  `RiboseQC_analysis()`, and their usage sections match the functions. The
+  examples now run on the bundled data. Before, they used data that the
+  package doesn't have (`data(res_all)`) or files that don't exist. Four of
+  them are not run: those of `plot_codon_usage_positional_rmd()` and
+  `plot_codon_usage_bulk_rmd()` take minutes, and those of
+  `calc_cutoffs_from_profiles()` and `choose_readlengths()` need a
+  `*_results_RiboseQC_all` file.

@@ -7,7 +7,7 @@ testthat::test_that("Test the getSeq methods with out FaFile_circ works properly
   #First veryify this functionality is missing
 
   # REF<-Rsamtools::FaFile('pipeline/my_hg19.fa')
-  REF<-'test.fa'
+  REF<-tempfile(fileext='.fa')
   writeXStringSet(setNames(DNAStringSet('AAAAAAAAGG'),'chrM'),filepath=REF)
   indexFa(REF)
   seqinfo(FaFile(REF))
@@ -39,10 +39,10 @@ testthat::test_that("Test the getSeq methods with out FaFile_circ works properly
   isCircular(grs@seqinfo)<-TRUE
   seqlengths(grs@seqinfo)<-10
 
-  writeXStringSet(setNames(DNAStringSet(c('AAAAAAAAGG','AAAAAAAAGG')),c('chrM','chr2')),filepath='test.fa')
-  Rsamtools::indexFa('test.fa')
+  writeXStringSet(setNames(DNAStringSet(c('AAAAAAAAGG','AAAAAAAAGG')),c('chrM','chr2')),filepath=REF)
+  Rsamtools::indexFa(REF)
 
-  cREF<-FaFile_Circ(Rsamtools::FaFile('test.fa'),circularRanges='chrM')
+  cREF<-FaFile_Circ(Rsamtools::FaFile(REF),circularRanges='chrM')
 
   expect_true(isCircular(seqinfo(cREF))['chrM'])
   expect_false(isCircular(seqinfo(cREF))['chr2'])

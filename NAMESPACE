@@ -37,20 +37,61 @@ exportClasses(FaFile_Circ)
 exportMethods(getSeq)
 exportMethods(seqinfo)
 import(BSgenome)
-import(BiocGenerics)
+import(BiocGenerics, except = c(combine, Position))
 import(Biostrings)
 import(DT)
 import(GenomicAlignments)
 import(GenomicFeatures)
-import(GenomicFiles)
 import(GenomicRanges)
 import(Rsamtools)
-import(rmarkdown)
-import(gridExtra)
-import(ggpubr)
-import(reshape2)
 import(ggplot2)
+import(ggpubr)
+import(gridExtra)
 import(knitr)
+import(reshape2)
+import(rmarkdown)
 import(rtracklayer)
 import(viridis)
-importFrom(Rsamtools,FaFile)
+importFrom(AnnotationDbi,saveDb)
+importFrom(IRanges,
+  "%over%",
+  CharacterList,
+  DataFrameList,
+  IRanges,
+  IntegerList,
+  LogicalList
+)
+importFrom(S4Vectors,
+  "runValue<-",
+  DataFrame,
+  aggregate,
+  cbind.DataFrame,
+  endoapply,
+  queryHits,
+  runLength,
+  runValue,
+  subjectHits
+)
+importFrom(Seqinfo,
+  "seqlengths<-",
+  Seqinfo,
+  isCircular,
+  seqlengths,
+  seqlevels
+)
+importFrom(SummarizedExperiment,assay)
+importFrom(grDevices,
+  dev.off,
+  pdf,
+  rainbow
+)
+importFrom(methods,
+  as,
+  is,
+  new,
+  representation,
+  setMethod,
+  setRefClass
+)
+importFrom(stats,kmeans)
+importFrom(utils,write.table)

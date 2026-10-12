@@ -4,11 +4,19 @@
 \alias{prepare_annotation_files}
 \title{Prepare comprehensive sets of annotated genomic features}
 \usage{
-prepare_annotation_files(annotation_directory, twobit_file = NULL, gtf_file,
-  scientific_name = "Homo.sapiens", annotation_name = "genc25",
-  export_bed_tables_TxDb = TRUE, forge_BSgenome = FALSE,
-  genome_seq = NULL, circ_chroms = DEFAULT_CIRC_SEQS,
-  create_TxDb = TRUE, annot_file = NULL)
+prepare_annotation_files(
+  annotation_directory,
+  twobit_file = NULL,
+  gtf_file,
+  scientific_name = "Homo.sapiens",
+  annotation_name = "genc25",
+  export_bed_tables_TxDb = TRUE,
+  forge_BSgenome = FALSE,
+  genome_seq = NULL,
+  circ_chroms = DEFAULT_CIRC_SEQS,
+  create_TxDb = TRUE,
+  annot_file = NULL
+)
 }
 \arguments{
 \item{annotation_directory}{The target directory which will contain the output files}
@@ -44,14 +52,18 @@ This function processes a gtf file and a FASTA file of the genome to create a co
 }
 \details{
 This function uses the \code{makeTxDbFromGFF} function to  create a TxDb object and extract
-genomic regions and other info to a *Rannot R file; the \code{mapToTranscripts} and \code{mapFromTranscripts} functions are used to 
-map features to genomic or transcript-level coordinates. GTF file mist contain "exon" and "CDS" lines,
+genomic regions and other info to a *Rannot R file; the \code{mapToTranscripts} and \code{mapFromTranscripts} functions are used to
+map features to genomic or transcript-level coordinates. GTF file must contain "exon" and "CDS" lines,
 where each line contains "transcript_id" and "gene_id" values. The CDS should include the stop codon, or the file should have
 "stop_codon" lines, which are added to the CDS (as in GENCODE, Ensembl and RefSeq files). If most CDS end before their stop codon
 (e.g. CDS lines made by factR, or a GENCODE file without its "stop_codon" lines), \code{stop_in_gtf} is \code{NA}, and
 ORFquant's \code{annotate_ORFs} uses the codon after each CDS as its stop codon. In ORFquant, a file with both kinds of CDS gives
-wrong categories to ORFs at the stop codons of the smaller part, e.g. "C_extension" instead of "ORF_annotated".
-Additional values such as "gene_biotype" or "gene_name" are also extracted.
+wrong categories to ORFs at the stop codons of the smaller part, e.g. "C_extension" instead of "ORF_annotated". Biotypes and gene names are read
+from "gene_biotype" or "gene_type", "transcript_biotype" or "transcript_type", and "gene_name", "gene_symbol", "gene" (NCBI) or
+"ref_gene_name" (StringTie) values, on any line of the transcript or (for genes) of the gene. Missing biotypes are "no_type", apart
+from those of transcripts with CDS lines and of their genes, which are "protein_coding" (without biotypes, e.g. in UCSC's GTFs,
+transcripts with a CDS that GENCODE calls "nonsense_mediated_decay" are "protein_coding" too). The transcript biotype "mRNA" (NCBI)
+is read as "protein_coding"; if no gene has a name, all are "no_name". Transcripts with a CDS shorter than 3 nt are removed.
 The genome sequence is read from the FASTA file \code{genome_seq}.\cr\cr
 The resulting GTF_annotation object (obtained after runnning \code{load_annotation}) contains:\cr\cr
 \code{txs}: annotated transcript boundaries.\cr
@@ -66,7 +78,7 @@ the most upstream/downstream start/stop codons and the start/stop codons residin
 \code{exons_txs}: GRangesList including exons grouped by transcript.\cr
 \code{exons_bins}: the list of exonic bins with associated transcripts and genes.\cr
 \code{junctions}: the list of annotated splice junctions, with associated transcripts and genes.\cr
-\code{genes}: annotated genes coordinates.\cr
+\code{genes}: annotated genes coordinates, without genes with exons on both strands or on more than one chromosome.\cr
 \code{threeutrs}: collapsed set of 3'UTR regions, with correspinding gene_ids. This set does not overlap CDS region.\cr
 \code{fiveutrs}: collapsed set of 5'UTR regions, with correspinding gene_ids. This set does not overlap CDS region.\cr
 \code{ncIsof}: collapsed set of exonic regions of protein_coding genes, with correspinding gene_ids. This set does not overlap CDS region.\cr
@@ -78,13 +90,23 @@ the most upstream/downstream start/stop codons and the start/stop codons residin
 \code{genetic_codes}: an object containing the list of genetic code ids used for each chromosome/organelle. see GENETIC_CODE_TABLE for more info.\cr
 \code{genome_package}: \code{NULL}. In annotations made by ORFquant with \code{forge_BSgenome=TRUE}, the name of the forged
 BSgenome package, which \code{load_annotation} loads.\cr
-\code{genome}: the genome sequence, an FaFile_Circ object. Loaded with \code{load_annotation} function.\cr
 \code{stop_in_gtf}: \code{"*"} if most CDS end with a stop codon, \code{NA} if most end before it.\cr
+\code{genome}: the genome sequence, an FaFile_Circ object. Loaded with \code{load_annotation} function.\cr
+}
+\examples{
+# An uncompressed copy of the bundled FASTA file
+fasta <- file.path(tempdir(), "simp_arab.fa")
+Biostrings::writeXStringSet(Biostrings::readDNAStringSet(
+  system.file("ext_data", "simp_arab.fa.gz", package = "RiboseQC")), fasta)
+annot_file <- prepare_annotation_files(annotation_directory = tempdir(),
+  gtf_file = system.file("ext_data", "simp_arab.gtf.gz", package = "RiboseQC"),
+  genome_seq = fasta)
+annot_file
 }
 \seealso{
-\code{\link{load_annotation}}, \code{\link{makeTxDbFromGFF}}.
+\code{\link{load_annotation}}, \code{\link[txdbmaker]{makeTxDbFromGFF}}.
 }
 \author{
 Lorenzo Calviello, \email{calviello.l.bio@gmail.com}
 }
-\keyword{Ribo-seQC}
+\keyword{RiboseQC}

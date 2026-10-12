@@ -4,23 +4,53 @@ Version: 0.99.0
 Author: "Lorenzo Calviello", "Dominique Sydow", "Dermot Harnett"
 Authors@R: c(person("Lorenzo", "Calviello", email = "calviello.l.bio@gmail.com", role = c("aut")),
     person("Dominique", "Sydow", email = "dominique.sydow@posteo.de", role = c("aut")),
-    person("Dermott", "Harnett", email = "Dermot.Harnett@mdc-berlin.de", role = c("ctb","cre")),
+    person("Dermot", "Harnett", email = "Dermot.Harnett@mdc-berlin.de", role = c("ctb","cre")),
     person("Uwe", "Ohler", email = "Uwe.Ohler@mdc-berlin.de", role = c("rev","fnd")))
 Maintainer: Dermot Harnett <dermot.harnett@mdc-berlin.de>
-Description: A powerful analysis tool for the analysis of Ribo-seq data, which is able to provide read-length specific analysis of both cytoplasmic and organellar ribosome, and provides interactive visualization of results in a dynamic html report
-Imports: GenomicRanges,Rsamtools,rtracklayer, methods, withr, txdbmaker
+Description: A powerful analysis tool for the analysis of Ribo-seq data, which is able to provide read-length specific analysis of both cytoplasmic and organellar ribosome, and provides interactive visualization of results in a dynamic html report.
+Imports:
+    AnnotationDbi,
+    BiocGenerics,
+    Biostrings,
+    BSgenome,
+    cigarillo,
+    DT,
+    GenomicAlignments,
+    GenomicFeatures,
+    ggplot2,
+    ggpubr,
+    grDevices,
+    gridExtra,
+    IRanges,
+    knitr,
+    methods,
+    reshape2,
+    rmarkdown,
+    Rsamtools,
+    rtracklayer,
+    S4Vectors,
+    scales,
+    Seqinfo,
+    stats,
+    SummarizedExperiment,
+    txdbmaker,
+    utils,
+    viridis,
+    withr
 biocViews: RiboSeq, Sequencing, QualityControl, DataImport, GenomeAnnotation, Transcriptomics, Software, Coverage, RNASeq
-Depends: Rsamtools,rmarkdown, rtracklayer, GenomicAlignments, BSgenome, GenomicFiles, reshape2, ggplot2, knitr, DT, gridExtra, ggpubr, viridis, Biostrings, GenomicFeatures, BiocGenerics, jsonlite, methods
-License: GPL-3 or above
+Depends:
+    R (>= 4.5.0),
+    GenomicRanges
+License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: FALSE
-RoxygenNote: 6.1.1
 VignetteBuilder: knitr
 Suggests: 
     testthat
 Collate: 
     'FaFile_Circ.R'
+    'RiboseQC-package.R'
     'checks.R'
     'riboseqc.R'
     'riboseq_analysis.R'
-
+Config/roxygen2/version: 8.1.0

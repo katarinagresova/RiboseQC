@@ -4,10 +4,12 @@
 \alias{plot_metagene_hm}
 \title{Plot 5'/P-site profiles (for all read lengths) as heatmap}
 \usage{
-plot_metagene_hm(metagene_data, scal, sample = "",
-  output_rds_path = "")
+plot_metagene_hm(metagene_data, scal, sample = "", output_rds_path = "")
 }
 \arguments{
+\item{metagene_data}{Profile data for a specific originating compartment and resolution type,
+generated using \code{\link{get_metagene_data}}.}
+
 \item{scal}{Scaling method:
 no scaling (\code{none}), log2 scaling (\code{log2}), or z scoring (\code{zscore}).}
 
@@ -16,9 +18,6 @@ iven in the \code{input_sample_names} parameter of \code{create_html_report}).}
 
 \item{output_rds_path}{String; full path to output folder for RDS object files created by this function.
 Defaults to NOT save RDS; to save RDS, provide path to destination folder.}
-
-\item{data_profile}{Profile data for a specific originating compartment and resolution type,
-generated using \code{\link{get_metagene_data}}.}
 }
 \value{
 This function returns a plot that can be integrated in the html report and  #' that can be saved as RDS object file.
@@ -26,7 +25,7 @@ This function returns a plot that can be integrated in the html report and  #' t
 \description{
 This function plots a 5' or P-site profiles for all read lengths as heatmap
 (for a specific originating compartment, resolution type, and scaling method). \cr \cr
-This plot is used in the Ribo-seQC report in section 4.1/4.3.
+This plot is used in the RiboseQC report in section 4.1/4.3.
 }
 \seealso{
 \code{\link{create_html_report}}
@@ -34,4 +33,4 @@ This plot is used in the Ribo-seQC report in section 4.1/4.3.
 \author{
 Dominique Sydow, \email{dominique.sydow@posteo.de}
 }
-\keyword{Ribo-seQC}
+\keyword{RiboseQC}

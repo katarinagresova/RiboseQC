@@ -23,10 +23,22 @@ Reads the *Rannot files of all versions of RiboseQC and ORFquant: with the name 
 \code{genome_package} (from RiboseQC 1.2.0, and ORFquant) or in \code{genome} (RiboseQC before 1.2.0), or with an
 \code{FaFile_Circ} object in \code{genome}.
 }
+\examples{
+# An uncompressed copy of the bundled FASTA file
+fasta <- file.path(tempdir(), "simp_arab.fa")
+Biostrings::writeXStringSet(Biostrings::readDNAStringSet(
+  system.file("ext_data", "simp_arab.fa.gz", package = "RiboseQC")), fasta)
+annot_file <- prepare_annotation_files(annotation_directory = tempdir(),
+  gtf_file = system.file("ext_data", "simp_arab.gtf.gz", package = "RiboseQC"),
+  genome_seq = fasta)
+load_annotation(annot_file)
+GTF_annotation$genetic_codes
+genome_seq
+}
 \seealso{
 \code{\link{prepare_annotation_files}}
 }
 \author{
 Lorenzo Calviello, \email{calviello.l.bio@gmail.com}
 }
-\keyword{Ribo-seQC}
+\keyword{RiboseQC}
