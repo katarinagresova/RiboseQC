@@ -98,6 +98,7 @@ create_html_report <- function(input_files, input_sample_names, output_file,exte
     dir.create(paste0(output_fig_path, "rds/"), recursive=TRUE, showWarnings=FALSE)
     dir.create(paste0(output_fig_path, "pdf/"), recursive=TRUE, showWarnings=FALSE)
     sink(file = paste(output_file,"_report_text_output.txt",sep = ""))
+    on.exit(sink())
     # render RMarkdown file > html report
     knitclean<-knitr::knit_meta(class=NULL, clean = TRUE)
     suppressWarnings(render(rmd_path,
@@ -107,7 +108,6 @@ create_html_report <- function(input_files, input_sample_names, output_file,exte
            output_file = output_file,
            intermediates_dir = tempdir()))
     gici<-gc()
-    sink()
 }
 
 
