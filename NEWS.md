@@ -165,3 +165,14 @@
   `plot_codon_usage_bulk_rmd()` take minutes, and those of
   `calc_cutoffs_from_profiles()` and `choose_readlengths()` need a
   `*_results_RiboseQC_all` file.
+- `?generate_rdata_list` is now installed with the package. Before,
+  `R CMD build`, which `remotes::install_github()` also runs, left it out.
+- `?prepare_annotation_files` now says what `stop_in_gtf` holds (`"*"` if
+  most CDS end with a stop codon, `NA` if most end before it) and how
+  `stop_codon` lines are used. The help of `getSeq()` for `FaFile_Circ` now
+  says how it reads ranges past the end of a circular chromosome, and what it
+  returns.
+
+# RiboseQC 0.99.0
+
+- Submitted to Bioconductor (2018-05-15).
