@@ -1743,7 +1743,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         es_codons_counts <- list()
         
         if (length(ps) == 0) {
-            print("Not enough signal or low frame preference, skipped P-sites & codon occupancy calculation. \n Set 'all' in the 'choose_readlengths' choice to ignore this warning and get P-sites positions in a new run")
+            warning("Not enough signal or low frame preference, skipped P-sites & codon occupancy calculation. Set readlength_choice_method = 'all' to ignore this warning and get P-sites positions in a new run")
         }
         if (length(ps) > 0) {
             
@@ -2336,8 +2336,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             okround <- nchar(format(okround/correction, digits = 3, nsmall = 2)) - 
                 2
             
-            runValue(bwpl) <- round(runValue(bwpl)/correction, digits = okround)
-            runValue(bwmn) <- round(runValue(bwmn)/correction, digits = okround)
+            runValue(bwpl) <- round(as(runValue(bwpl), "NumericList")/correction, digits = okround)
+            runValue(bwmn) <- round(as(runValue(bwmn), "NumericList")/correction, digits = okround)
             
             export(bwpl, con = paste(dest_name, "_coverage_plus.bedgraph", sep = ""))
             export(bwmn, con = paste(dest_name, "_coverage_minus.bedgraph", sep = ""))
@@ -2352,8 +2352,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             okround <- nchar(format(okround/correction, digits = 3, nsmall = 2)) - 
                 2
             
-            runValue(bwpl) <- round(runValue(bwpl)/correction, digits = okround)
-            runValue(bwmn) <- round(runValue(bwmn)/correction, digits = okround)
+            runValue(bwpl) <- round(as(runValue(bwpl), "NumericList")/correction, digits = okround)
+            runValue(bwmn) <- round(as(runValue(bwmn), "NumericList")/correction, digits = okround)
             
             export(bwpl, con = paste(dest_name, "_coverage_uniq_plus.bedgraph", sep = ""))
             export(bwmn, con = paste(dest_name, "_coverage_uniq_minus.bedgraph", 

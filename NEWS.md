@@ -11,6 +11,22 @@
   `*_P_sites_calcs`: that file lists the offsets of the analysis for all
   read lengths, and not only those that were used for the P-sites.
 
+## Changes in results
+
+- `RiboseQC_analysis()` with `normalize_cov = TRUE` (the default) no longer
+  stops at "Exporting files" with `Scores must be non-NA numeric values`
+  (#15). This error came when the coverage summed to less than 1 million,
+  for example on the bundled root BAM. The normalised coverage tracks
+  (`*_coverage_plus.bedgraph`, `*_coverage_minus.bedgraph`,
+  `*_coverage_uniq_plus.bedgraph` and `*_coverage_uniq_minus.bedgraph`) now
+  sum to 1 million, as documented. Before, the function divided the integer
+  coverage by the correction factor (the sum of the coverage / 1 million),
+  and IRanges first rounded this factor down to an integer. A factor below 1
+  gave a division by 0. A factor of 1 or more gave values that were too
+  large, by the factor divided by its integer part (less than 2 times). So
+  the values in these four files change. The tracks of
+  `normalize_cov = FALSE` and the other output files don't change.
+
 ## Bug fixes
 
 - The HTML report (`create_html_report()`, and `RiboseQC_analysis()` with
@@ -21,6 +37,10 @@
 - After a report fails, R output goes to the console again. Before,
   `create_html_report()` left its text-output file open, so R wrote all
   later output of the session into it.
+- When `RiboseQC_analysis()` skips the P-sites and the codon occupancy (not
+  enough signal or a low frame preference), it now gives a warning, not a
+  printed message. The message now names the correct argument,
+  `readlength_choice_method = 'all'`. Before, it named `choose_readlengths`.
 
 # RiboseQC 1.2.0
 
