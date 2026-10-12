@@ -1,5 +1,16 @@
 # RiboseQC 1.2.1
 
+## New output file
+
+- `RiboseQC_analysis()` writes the new file `<dest_name>_P_sites_offsets.tsv`.
+  It has the offsets that it used to calculate the P-sites, with the columns
+  `read_length`, `cutoff` and `compartment` (`nucl` or the name of a circular
+  chromosome). It includes the offsets of `offsets_df`, and with
+  `rescue_all_rls = TRUE` the offset 12 of the other read lengths. It is the
+  cutoff file of ORFquant's `prepare_for_ORFquant()`. Use it, not
+  `*_P_sites_calcs`: that file lists the offsets of the analysis for all
+  read lengths, and not only those that were used for the P-sites.
+
 ## Bug fixes
 
 - The HTML report (`create_html_report()`, and `RiboseQC_analysis()` with
