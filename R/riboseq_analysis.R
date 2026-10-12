@@ -28,6 +28,9 @@ NULL
 #' @return the function saves a 'results_RiboseQC_all' R file appended to the bam_files path including the complete list of outputs described here.
 #' In addition, bedgraph files for coverage value and P_sites position is appended to the bam_files path, including also a summary of P_sites selection statistics,
 #' a smaller 'results_RiboseQC' R file used for creating a dynamic html report, and a 'for_ORFquant' R object that can be used in the ORFquant pipeline.
+#' The tab-separated file 'P_sites_offsets.tsv' has the offsets that were used to calculate the P_sites, with the columns 'read_length', 'cutoff' and 'compartment'
+#' (\code{"nucl"} or the name of a circular chromosome): one row for each read length and compartment, including the read lengths of \code{offsets_df} and of \code{rescue_all_rls}.
+#' It is the cutoff file that ORFquant's \code{prepare_for_ORFquant} reads, and it gives the P_sites_all and P_sites_uniq of 'for_ORFquant'.
 #' @details This function loads different genomic regions created in the \code{prepare_annotation_files} step,
 #' separating features on different recognized organelles. The bam files is then analyzed in chunks to minimize RAM usage.\cr
 #' The complete list of analysis and output is as follows:\cr\cr
@@ -2459,8 +2462,23 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         if (write_tmp_files) {
             save(res_all, file = paste(dest_name, "_results_RiboseQC_all", sep = ""))
         }
-        write.table(finn, file = paste(dest_name, "_P_sites_calcs", sep = ""), sep = "\t", 
+        write.table(finn, file = paste(dest_name, "_P_sites_calcs", sep = ""), sep = "\t",
             quote = FALSE, row.names = FALSE, col.names = TRUE)
+        # the offsets used for the P-sites, in the cutoff table format of ORFquant
+        offs <- lapply(names(rl_cutoffs_comp), function(comp) {
+            x <- rl_cutoffs_comp[[comp]]
+            if (is.null(x) || nrow(x) == 0) {
+                return(NULL)
+            }
+            data.frame(read_length = as.numeric(x$read_length), cutoff = as.numeric(x$cutoff),
+                compartment = comp)
+        })
+        offs <- do.call(rbind, offs)
+        if (is.null(offs)) {
+            offs <- data.frame(read_length = numeric(), cutoff = numeric(), compartment = character())
+        }
+        write.table(offs, file = paste(dest_name, "_P_sites_offsets.tsv", sep = ""),
+            sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
         unlink(dira, recursive = TRUE)
         res_all$read_stats$reads_pos1 <- ""
         res_all$P_sites_stats <- ""
