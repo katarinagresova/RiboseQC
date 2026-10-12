@@ -17,3 +17,7 @@
 ^CLAUDE\.md$
 ^PLAN\.md$
 ^\.claude$
+^ex$
+^RiboseQC-manual\.pdf$
+^RiboseQC\.R$
+^RiboseQC\.Rmd$
