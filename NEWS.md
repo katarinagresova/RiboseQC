@@ -71,6 +71,20 @@
     and their genes are `protein_coding`. Before, they were `no_type`, so all
     exonic regions outside the CDS were `ncRNAs` and none were `ncIsof`. For
     such GTFs, the reads counted in these regions and biotypes change.
+- `prepare_annotation_files()` now chooses the representative transcript of
+  each gene from that gene's own start and stop codons. Before, when the
+  start and stop codons of two genes alternated along a chromosome (for
+  example in overlapping genes), the flags for a gene's most common and
+  outermost codons could go to the other gene's codons. So `upstr_stasto`,
+  `mostfreq_stasto` and the columns `reprentative_mostcommon`,
+  `reprentative_boundaries` and `reprentative_5len` were wrong for some
+  transcripts and genes: on GENCODE v47, 339 of 20,503 genes get another
+  `reprentative_mostcommon` transcript. `RiboseQC_analysis()` takes these
+  transcripts for the metagene of the nuclear CDS, so with a new annotation
+  its 5' profiles, P-site offsets, P-sites, bedgraphs, `*_for_ORFquant` files,
+  results files and report plots can change. The annotation of the bundled
+  example doesn't change. Annotations made by earlier versions keep their
+  values, and give the same results as before.
 
 ## Annotation files
 
@@ -91,7 +105,9 @@
   `GTF_annotation` alone, invisibly, which was not documented: a script that
   used this value must now take `$GTF_annotation` of the list.
 - The other files that `prepare_annotation_files()` writes don't change,
-  apart from the biotypes in `table_gene_tx_IDs` (see "Changes in results").
+  apart from the biotypes in `table_gene_tx_IDs` and the columns
+  `upstr_stasto`, `mostfreq_stasto` and `reprentative_*` in
+  `cds_txs_coords_similbed.bed` (see "Changes in results").
 
 ## Bug fixes
 
