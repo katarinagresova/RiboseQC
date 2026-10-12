@@ -7,18 +7,17 @@
 plot_metagene_bar(metagene_data, rl, sample = "", output_rds_path = "")
 }
 \arguments{
+\item{metagene_data}{Profile data for a specific originating compartment and resolution type,
+generated using \code{\link{get_metagene_data}}.}
+
+\item{rl}{String for read length: \code{"all"} (all read lengths) or a read length, for example \code{"30"}. \cr
+Check for available read lengths using: \code{names(metagene_data$data_bar)}}
+
 \item{sample}{String; sample name (selected from the input names
 iven in the \code{input_sample_names} parameter of \code{create_html_report}).}
 
 \item{output_rds_path}{String; full path to output folder for RDS object files created by this function.
 Defaults to NOT save RDS; to save RDS, provide path to destination folder.}
-
-\item{data}{Profile data for a resolution type, specific originating compartment, and read length. \cr \cr
-Example: \cr
-\code{\strong{res_all$profiles_fivepr}$five_prime_subcodon$nucl$'30'} \cr or \cr
-\code{\strong{res_all$profiles_P_sites}$five_prime_subcodon$nucl$'30'} \cr \cr
-Shown in bold are fixed list names, remaining list names should be adapted to
-the resolution type, specific originating compartment, and read length of interest.}
 }
 \value{
 This function returns a plot that can be integrated in the html report and that can be saved as RDS object file.
