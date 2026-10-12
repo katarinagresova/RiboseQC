@@ -5,6 +5,11 @@
 - RiboseQC installs and runs again on current Bioconductor (3.22). Before,
   `prepare_annotation_files()` failed there, because GenomicFeatures'
   `makeTxDbFromGFF()` is defunct; it now comes from txdbmaker.
+- RiboseQC now needs Bioconductor 3.22 (R 4.5) or later. It uses the
+  cigarillo package, new in 3.22, in place of GenomicAlignments'
+  `cigarRangesAlongQuerySpace()` and `cigarRangesAlongReferenceSpace()`,
+  which are deprecated. So `RiboseQC_analysis()`, `get_ps_fromspliceplus()`
+  and `get_ps_fromsplicemin()` no longer give deprecation warnings.
 - devtools is no longer needed.
 - `prepare_annotation_files()` no longer forges and installs a BSgenome
   package from a 2bit file: this failed with current BSgenomeForge versions

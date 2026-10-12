@@ -13,6 +13,7 @@ Imports:
     BiocGenerics,
     Biostrings,
     BSgenome,
+    cigarillo,
     DT,
     GenomicAlignments,
     GenomicFeatures,
@@ -38,6 +39,7 @@ Imports:
     withr
 biocViews: RiboSeq, Sequencing, QualityControl, DataImport, GenomeAnnotation, Transcriptomics, Software, Coverage, RNASeq
 Depends:
+    R (>= 4.5.0),
     GenomicRanges
 License: GPL (>= 3)
 Encoding: UTF-8

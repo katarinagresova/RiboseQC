@@ -2220,7 +2220,7 @@ choose_readlengths<-function(summary_data,choice="max_coverage",nt_signals){
 #' @export
 
 get_ps_fromspliceplus<-function(x,cutoff){
-    rang<-cigarRangesAlongReferenceSpace(cigar(x), pos=start(x),ops="M")
+    rang<-cigarillo::cigars_as_ranges_along_ref(cigar(x), lmmpos=start(x),ops="M")
     cs<-lapply(rang,function(x){cumsum(x@width)})
     rangok<-lapply(which(IntegerList(cs)>cutoff),"[[",1)
     rangok<-unlist(rangok)
@@ -2262,7 +2262,7 @@ get_ps_fromspliceplus<-function(x,cutoff){
 #' @export
 
 get_ps_fromsplicemin<-function(x,cutoff){
-    rang<-cigarRangesAlongReferenceSpace(cigar(x), pos=start(x),ops="M")
+    rang<-cigarillo::cigars_as_ranges_along_ref(cigar(x), lmmpos=start(x),ops="M")
     rang<-endoapply(rang,rev)
     cs<-lapply(rang,function(x){cumsum(x@width)})
     rangok<-lapply(which(IntegerList(cs)>cutoff),"[[",1)

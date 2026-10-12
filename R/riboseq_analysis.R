@@ -320,7 +320,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             }
             
             
-            clipp <- width(cigarRangesAlongQuerySpace(x@cigar, ops = "S"))
+            clipp <- width(cigarillo::cigars_as_ranges_along_query(x@cigar, ops = "S"))
             clipp[elementNROWS(clipp) == 0] <- 0
             len_adj <- qwidth(x) - sum(clipp)
             mcols(x)$len_adj <- len_adj
@@ -468,7 +468,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             # softclipping part
             
             
-            clipp <- width(cigarRangesAlongQuerySpace(x@cigar, ops = "S"))
+            clipp <- width(cigarillo::cigars_as_ranges_along_query(x@cigar, ops = "S"))
             clipp[elementNROWS(clipp) == 0] <- 0
             len_adj <- qwidth(x) - sum(clipp)
             mcols(x)$len_adj <- len_adj
@@ -1344,7 +1344,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             # softclipping
             
             
-            clipp <- width(cigarRangesAlongQuerySpace(x@cigar, ops = "S"))
+            clipp <- width(cigarillo::cigars_as_ranges_along_query(x@cigar, ops = "S"))
             clipp[elementNROWS(clipp) == 0] <- 0
             len_adj <- qwidth(x) - sum(clipp)
             mcols(x)$len_adj <- len_adj
