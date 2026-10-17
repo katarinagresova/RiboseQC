@@ -68,7 +68,7 @@ In addition, bedgraph files for coverage value and P_sites position is appended 
 a smaller 'results_RiboseQC' R file used for creating a dynamic html report, and a 'for_ORFquant' R object that can be used in the ORFquant pipeline.
 The tab-separated file 'P_sites_offsets.tsv' has the offsets that were used to calculate the P_sites, with the columns 'read_length', 'cutoff' and 'compartment'
 (\code{"nucl"} or the name of a circular chromosome): one row for each read length and compartment, including the read lengths of \code{offsets_df} and of \code{rescue_all_rls}.
-It is the cutoff file that ORFquant's \code{prepare_for_ORFquant} reads, and it gives the P_sites_all and P_sites_uniq of 'for_ORFquant'.
+It is the cutoff file that ORFquant's \code{prepare_for_ORFquant} reads, and it gives the P_sites_all, P_sites_uniq and P_sites_uniq_mm of 'for_ORFquant'.
 }
 \description{
 This function loads annotation created by the prepare_annotation_files function, and analyzes a BAM file.

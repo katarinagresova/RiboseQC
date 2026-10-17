@@ -26,6 +26,20 @@
   large, by the factor divided by its integer part (less than 2 times). So
   the values in these four files change. The tracks of
   `normalize_cov = FALSE` and the other output files don't change.
+- `RiboseQC_analysis()` calculates the P-sites of uniquely mapping reads with
+  mismatches (`P_sites_uniq_mm` in `<dest_name>_for_ORFquant` and in
+  `<dest_name>_results_RiboseQC_all`) as ORFquant's `prepare_for_ORFquant()`
+  does. With the offsets of `<dest_name>_P_sites_offsets.tsv`, the two
+  functions now give the same `P_sites_uniq_mm`. Before, the values were
+  wrong. On the minus strand, the function kept the reads and not their
+  P-sites, so each position of a read counted. On the plus strand, it
+  selected the P-sites of other reads. A read has mismatches when its MD tag
+  has more than 3 characters. Before, 3 characters were enough (for example
+  `5A5`). This difference applies only to reads shorter than 20 nt and reads
+  of 100 nt or more. BAM files without MD tags give no `P_sites_uniq_mm`, as
+  before. In ORFquant, these P-sites give only the column
+  `P_sites_raw_uniq_mm`. The other P-sites and the other output files don't
+  change.
 
 ## Bug fixes
 
