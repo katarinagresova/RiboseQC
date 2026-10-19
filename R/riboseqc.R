@@ -2035,6 +2035,8 @@ plot_codon_usage_bulk <- function(codon_usage_data, sample="", output_rds_path="
 ######################################################################################################
 
 
+# unlist(x) gives x back when x is a GRanges or a GAlignments. ORFquant has no copy of
+# these methods: run_ORFquant() uses the method for GRanges.
 setMethods(f = "unlist","GRanges",function(x){return(x)})
 
 setMethods(f = "unlist","GAlignments",function(x){return(x)})
@@ -2294,13 +2296,6 @@ get_ps_fromsplicemin<-function(x,cutoff){
 
     }
     ps<-sort(c(psones,psmores))
-    return(ps)
-
-
-    if(rangok!=1){
-
-        ps<-shift(resize(GRanges(rang[rangok],seqnames=seqnames(x),strand=strand(x),seqlengths=seqlengths(x)),width=1,fix="start"),shift=-(cutoff-sum(rang[seq_len(rangok-1)]@width)))
-    }
     return(ps)
 }
 
