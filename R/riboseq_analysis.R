@@ -2545,21 +2545,40 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
 
 
 # Read the BamFile X in chunks with YIELD, run MAP on each chunk and combine the results with
-# REDUCE. This is the loop of GenomicFiles::reduceByYield(), which RiboseQC used before.
-reduce_by_yield <- function(X, YIELD, MAP, REDUCE) {
+# REDUCE, in the order of the chunks. This is the loop of GenomicFiles::reduceByYield(), which
+# RiboseQC used before. With n_cores > 1, forked processes run MAP on the chunks, at most n_cores
+# at a time, while the next ones are read (the loop of prepare_for_ORFquant(), from ORFquant).
+reduce_by_yield <- function(X, YIELD, MAP, REDUCE, n_cores = 1) {
     if (!isOpen(X)) {
         open(X)
         on.exit(close(X))
     }
-    data <- YIELD(X)
-    if (length(data) == 0L) 
-        return(list())
-    result <- MAP(data)
-    repeat {
-        data <- YIELD(X)
-        if (length(data) == 0L) 
-            break
-        result <- REDUCE(result, MAP(data))
+    result <- list()
+    n_chunks <- 0
+    jobs <- list()
+    eof <- FALSE
+    while (!eof || length(jobs) > 0) {
+        if (!eof && length(jobs) < n_cores) {
+            data <- YIELD(X)
+            eof <- length(data) == 0L
+            if (!eof)
+                jobs[[length(jobs) + 1]] <- mc_job(MAP(data), n_cores)
+            rm(data)
+        }
+        # the results of the oldest jobs that are done, so that their processes end; wait for the
+        # oldest when n_cores are running or all chunks are read
+        while (length(jobs) > 0) {
+            res <- mc_value(jobs[[1]], wait = eof || length(jobs) >= n_cores)
+            if (is.null(res))
+                break
+            jobs <- jobs[-1]
+            n_chunks <- n_chunks + 1
+            if (n_chunks == 1) {
+                result <- res
+            } else {
+                result <- REDUCE(result, res)
+            }
+        }
     }
     result
 }

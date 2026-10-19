@@ -572,43 +572,25 @@ prepare_for_ORFquant<-function(annotation_file,bam_file,path_to_rl_cutoff_file=N
     return(list_res)
   }
   
-  message("Calculating P-sites positions and junctions ... ", date())
-  
-  #read the BAM in chunks of chunk_size alignments, same as GenomicFiles::reduceByYield. With
-  #n_cores>1, forked processes run mapp() on the chunks, at most n_cores at a time, while the next
-  #ones are read. The junction reads are added up chunk by chunk, and the P-sites of all chunks once,
-  #below: adding each chunk to the P-sites of the earlier ones took longer with each chunk. The sums
-  #don't depend on the chunks.
+  #the junction reads are added up chunk by chunk, and the P-sites of all chunks once, below: adding
+  #each chunk to the P-sites of the earlier ones took longer with each chunk. The sums don't depend
+  #on the chunks.
 
-  open(opts)
-  on.exit(if(Rsamtools::isOpen(opts)){close(opts)})
-  for_ORFquant<-list()
-  chunks_ps<-list()
-  jobs<-list()
-  eof<-FALSE
-  while(!eof || length(jobs)>0){
-    if(!eof && length(jobs)<n_cores){
-      chunk<-yiel(opts)
-      eof<-length(chunk)==0
-      if(!eof){jobs[[length(jobs)+1]]<-mc_job(mapp(chunk),n_cores)}
-      rm(chunk)
-    }
-    #the results of the oldest jobs that are done, so that their processes end; wait for the oldest
-    #when n_cores are running or all chunks are read
-    while(length(jobs)>0){
-      res<-mc_value(jobs[[1]],wait=eof || length(jobs)>=n_cores)
-      if(is.null(res)){break}
-      jobs<-jobs[-1]
-      if(length(for_ORFquant)==0){
-        for_ORFquant<-res
-      }else{
-        for_ORFquant$junctions$reads<-for_ORFquant$junctions$reads+res$junctions$reads
-        for_ORFquant$junctions$unique_reads<-for_ORFquant$junctions$unique_reads+res$junctions$unique_reads
-      }
-      chunks_ps[[length(chunks_ps)+1]]<-res[c("P_sites_all","P_sites_uniq","P_sites_uniq_mm")]
-    }
+  reduc<-function(x,y){
+    if(is.null(x$chunks_ps)){x$chunks_ps<-list(x[c("P_sites_all","P_sites_uniq","P_sites_uniq_mm")])}
+    x$junctions$reads<-x$junctions$reads+y$junctions$reads
+    x$junctions$unique_reads<-x$junctions$unique_reads+y$junctions$unique_reads
+    x$chunks_ps[[length(x$chunks_ps)+1]]<-y[c("P_sites_all","P_sites_uniq","P_sites_uniq_mm")]
+    x
   }
-  close(opts)
+
+  message("Calculating P-sites positions and junctions ... ", date())
+
+  #read the BAM in chunks of chunk_size alignments; with n_cores>1, forked processes run mapp() on
+  #the chunks
+  for_ORFquant<-reduce_by_yield(X=opts,YIELD=yiel,MAP=mapp,REDUCE=reduc,n_cores=n_cores)
+  chunks_ps<-for_ORFquant$chunks_ps
+  for_ORFquant$chunks_ps<-NULL
   if(length(chunks_ps)>1){
     for(n in names(chunks_ps[[1]])){
       ps<-lapply(chunks_ps,function(x){unlist(x[[n]])})
