@@ -37,6 +37,17 @@
   it installed lcalviell/Ribo-seQC, which has older code. It also runs the
   analysis on the example data included in the package, and describes the
   input and output files.
+- The repository no longer holds `RiboseQC-manual.pdf`. It was the manual of
+  version 0.99.0 from February 2019, without the changes to the help pages
+  since then. Read the help pages with `help(package = "RiboseQC")`.
+- The old vignette, `RiboseQC.Rmd`, and its code, `RiboseQC.R`, are
+  removed. The vignette was not installed with the package. It downloaded
+  its data from a server that no longer answers, and forged BSgenome
+  packages, which RiboseQC no longer does.
+- The example data no longer include `shoots_results_RiboseQC`: no example
+  used it. The repository no longer holds `ex/`, the output files of an old
+  analysis of the example data. The removed files are still in the
+  repository's history, for example at commit `7d2eeac`.
 
 # RiboseQC 1.3.0
 
