@@ -104,6 +104,7 @@ prepare_for_ORFquant<-function(annotation_file,bam_file,path_to_rl_cutoff_file=N
   
   GTF_annotation<-load_annotation(annotation_file,envir = globalenv())$GTF_annotation
   
+  rl_cutoffs_comp<-NULL
   if(!is.na(path_to_rl_cutoff_file)){
     rl_cutoff<-read.table(path_to_rl_cutoff_file,header = T,sep = "\t",stringsAsFactors = F)
     
@@ -214,362 +215,9 @@ prepare_for_ORFquant<-function(annotation_file,bam_file,path_to_rl_cutoff_file=N
   #operations on the chunk (here count reads and whatnot)
   
   mapp<-function(x){
-    
-    mcols(x)$MD[which(is.na(mcols(x)$MD))]<-"NO"
-    
     x<-x[seqnames(x)%in%seqnames(GTF_annotation$seqinfo)]
     seqlevels(x)<-seqlevels(GTF_annotation$seqinfo)
-    x_I<-x[grep("I",cigar(x))]
-    
-    if(length(x_I)>0){
-      x<-x[grep("I",cigar(x),invert=T)]
-      
-    }
-    x_D<-x[grep("D",cigar(x))]
-    if(length(x_D)>0){
-      x<-x[grep("D",cigar(x),invert=T)]
-      
-    }
-    
-    # softclipping
-    
-    clipp <- width(cigarillo::cigars_as_ranges_along_query(x@cigar, ops="S"))
-    clipp[elementNROWS(clipp)==0] <- 0
-    len_adj <- qwidth(x)-sum(clipp)
-    mcols(x)$len_adj <- len_adj
-    
-    # Remove S from Cigar (read positions/length are already adjusted)
-    # it helps calculating P-sites positions for spliced reads
-    
-    cigg<-cigar(x)
-    cigg_s<-grep(cigg,pattern = "S")
-    if(length(cigg_s)>0){
-      cigs<-cigg[cigg_s]
-      cigs<-gsub(cigs,pattern = "^[0-9]+S",replacement = "")
-      cigs<-gsub(cigs,pattern = "[0-9]+S$",replacement = "")
-      cigg[cigg_s]<-cigs
-      x@cigar<-cigg
-    }
-    mcols(x)$cigar_str<-x@cigar
-    x_uniq<-x[x@elementMetadata$mapq>50]
-    
-    pos<-x[strand(x)=="+"]
-    neg<-x[strand(x)=="-"]
-    
-    
-    
-    # junctions
-    
-    juns<-summarizeJunctions(x)
-    juns_pos<-juns
-    juns_neg<-juns
-    mcols(juns_pos)<-NULL
-    mcols(juns_neg)<-NULL
-    juns_pos$reads<-juns$plus_score
-    juns_neg$reads<-juns$minus_score
-    strand(juns_pos)<-"+"
-    strand(juns_neg)<-"-"
-    juns<-sort(c(juns_pos,juns_neg))
-    juns<-juns[juns$reads>0]
-    
-    uniq_juns<-summarizeJunctions(x_uniq)
-    uniq_juns_pos<-uniq_juns
-    uniq_juns_neg<-uniq_juns
-    mcols(uniq_juns_pos)<-NULL
-    mcols(uniq_juns_neg)<-NULL
-    uniq_juns_pos$reads<-uniq_juns$plus_score
-    uniq_juns_neg$reads<-uniq_juns$minus_score
-    strand(uniq_juns_pos)<-"+"
-    strand(uniq_juns_neg)<-"-"
-    uniq_juns<-sort(c(uniq_juns_pos,uniq_juns_neg))
-    uniq_juns<-uniq_juns[uniq_juns$reads>0]
-    if(length(juns)>0){
-      juns$unique_reads<-0
-      mat<-match(uniq_juns,juns)
-      juns$unique_reads[mat]<-uniq_juns$reads
-    }
-    rang_jun<-GTF_annotation$junctions
-    rang_jun$reads<-0
-    rang_jun$unique_reads<-0
-    if(length(juns)>0){
-      mat<-match(juns,rang_jun)
-      juns<-juns[!is.na(mat)]
-      mat<-mat[!is.na(mat)]
-      rang_jun$reads[mat]<-juns$reads
-      rang_jun$unique_reads[mat]<-juns$unique_reads
-    }
-    
-    
-    # P-sites calculation
-    all_ps_comps<-GRanges()
-    seqlevels(all_ps_comps)<-seqllll
-    seqlengths(all_ps_comps)<-seqleee
-    
-    uniq_ps_comps<-GRanges()
-    seqlevels(uniq_ps_comps)<-seqllll
-    seqlengths(uniq_ps_comps)<-seqleee
-    
-    uniq_mm_ps_comps<-GRanges()
-    seqlevels(uniq_mm_ps_comps)<-seqllll
-    seqlengths(uniq_mm_ps_comps)<-seqleee
-    
-    if(!is.na(path_to_rl_cutoff_file)){
-      list_pss<-list()
-      for(comp in names(rl_cutoffs_comp)){
-        all_rl_ps<-GRangesList()
-        uniq_rl_ps<-GRangesList()
-        uniq_rl_mm_ps<-GRangesList()
-        
-        seqlevels(all_rl_ps)<-seqllll
-        seqlevels(uniq_rl_ps)<-seqllll
-        seqlevels(uniq_rl_mm_ps)<-seqllll
-        
-        seqlengths(all_rl_ps)<-seqleee
-        seqlengths(uniq_rl_ps)<-seqleee
-        seqlengths(uniq_rl_mm_ps)<-seqleee
-        
-        
-        chroms<-comp
-        
-        if(comp=="nucl"){chroms=seqlevels(x)[!seqlevels(x)%in%circs]}
-        resul<-rl_cutoffs_comp[[comp]]
-        
-        for(i in seq_along(resul$read_length)){
-          
-          all_ps<-GRangesList()
-          uniq_ps<-GRangesList()
-          uniq_mm_ps<-GRangesList()
-          seqlevels(all_ps)<-seqllll
-          seqlevels(uniq_ps)<-seqllll
-          seqlevels(uniq_mm_ps)<-seqllll
-          
-          seqlengths(all_ps)<-seqleee
-          seqlengths(uniq_ps)<-seqleee
-          seqlengths(uniq_mm_ps)<-seqleee
-          
-          rl<-as.numeric(resul$read_length[i])
-          ct<-as.numeric(resul$cutoff[i])
-          ok_reads<-pos[mcols(pos)$len_adj%in%rl]
-          ok_reads<-ok_reads[as.vector(seqnames(ok_reads))%in%chroms]
-          
-          ps_plus<-GRanges()
-          seqlevels(ps_plus)<-seqllll
-          seqlengths(ps_plus)<-seqleee
-          ps_plus_uniq<-ps_plus
-          ps_plus_uniq_mm<-ps_plus
-          
-          if(length(ok_reads)>0){
-            unspl<-ok_reads[grep(pattern="N",x=cigar(ok_reads),invert=T)]
-            
-            ps_unspl<-shift(resize(GRanges(unspl),width=1,fix="start"),shift=ct)
-            
-            spl<-ok_reads[grep(pattern="N",x=cigar(ok_reads))]
-            firstb<-as.numeric(sapply(strsplit(cigar(spl),"M"),"[[",1))
-            lastb<-as.numeric(sapply(strsplit(cigar(spl),"M"),function(x){gsub(x[length(x)],pattern="^[^_]*N",replacement="")}))
-            firstok<-spl[firstb>ct]
-            firstok<-shift(resize(GRanges(firstok),width=1,fix="start"),shift=ct)
-            
-            lastok<-spl[lastb>=rl-ct]
-            lastok<-shift(resize(GRanges(lastok),width=1,fix="end"),shift=-(rl-ct-1))
-            
-            
-            multi<-spl[firstb<=ct & lastb<rl-ct]
-            
-            
-            ps_spl<-GRanges()
-            seqlevels(ps_spl)<-seqllll
-            seqlengths(ps_spl)<-seqleee
-            
-            if(length(multi)>0){
-              ps_spl<-get_ps_fromspliceplus(multi,cutoff=ct)
-              
-            }
-            mcols(ps_spl)<-mcols(multi)
-            
-            seqlevels(firstok)<-seqllll
-            seqlevels(lastok)<-seqllll
-            seqlevels(ps_unspl)<-seqllll
-            seqlevels(ps_spl)<-seqllll
-            
-            seqlengths(firstok)<-seqleee
-            seqlengths(lastok)<-seqleee
-            seqlengths(ps_unspl)<-seqleee
-            seqlengths(ps_spl)<-seqleee
-            
-            
-            ps_plus<-c(ps_unspl,firstok,lastok,ps_spl)
-            ps_plus_uniq<-ps_plus[mcols(ps_plus)$mapq>50]
-            ps_plus_uniq_mm<-ps_plus[mcols(ps_plus)$mapq>50 & nchar(mcols(ps_plus)$MD)>3]
-            
-            mcols(ps_plus)<-NULL
-            mcols(ps_plus_uniq)<-NULL
-            mcols(ps_plus_uniq_mm)<-NULL
-            
-          }
-          ok_reads<-neg[mcols(neg)$len_adj%in%rl]
-          ok_reads<-ok_reads[as.vector(seqnames(ok_reads))%in%chroms]
-          
-          ps_neg<-GRanges()
-          seqlevels(ps_neg)<-seqllll
-          seqlengths(ps_neg)<-seqleee
-          ps_neg_uniq<-ps_neg
-          ps_neg_uniq_mm<-ps_neg
-          
-          if(length(ok_reads)>0){
-            unspl<-ok_reads[grep(pattern="N",x=cigar(ok_reads),invert=T)]
-            
-            ps_unspl<-shift(resize(GRanges(unspl),width=1,fix="start"),shift=-ct)
-            
-            spl<-ok_reads[grep(pattern="N",x=cigar(ok_reads))]
-            
-            firstb<-as.numeric(sapply(strsplit(cigar(spl),"M"),"[[",1))
-            lastb<-as.numeric(sapply(strsplit(cigar(spl),"M"),function(x){gsub(x[length(x)],pattern="^[^_]*N",replacement="")}))
-            lastok<-spl[lastb>ct]
-            lastok<-shift(resize(GRanges(lastok),width=1,fix="start"),shift=-ct)
-            
-            firstok<-spl[firstb>=rl-ct]
-            firstok<-shift(resize(GRanges(firstok),width=1,fix="end"),shift=(rl-ct-1))
-            
-            multi<-spl[firstb<rl-ct & lastb<=ct]
-            
-            
-            ps_spl<-GRanges()
-            seqlevels(ps_spl)<-seqllll
-            seqlengths(ps_spl)<-seqleee
-            
-            
-            if(length(multi)>0){
-              ps_spl<-get_ps_fromsplicemin(multi,cutoff=ct)
-            }
-            mcols(ps_spl)<-mcols(multi)
-            
-            seqlevels(firstok)<-seqllll
-            seqlevels(lastok)<-seqllll
-            seqlevels(ps_unspl)<-seqllll
-            seqlevels(ps_spl)<-seqllll
-            
-            seqlengths(firstok)<-seqleee
-            seqlengths(lastok)<-seqleee
-            seqlengths(ps_unspl)<-seqleee
-            seqlengths(ps_spl)<-seqleee
-            
-            ps_neg<-c(ps_unspl,firstok,lastok,ps_spl)
-            ps_neg_uniq<-ps_neg[mcols(ps_neg)$mapq>50]
-            ps_neg_uniq_mm<-ps_neg[mcols(ps_neg)$mapq>50 & nchar(mcols(ps_neg)$MD)>3]
-            
-            mcols(ps_neg)<-NULL
-            mcols(ps_neg_uniq)<-NULL
-            mcols(ps_neg_uniq_mm)<-NULL
-          }
-          
-          all_ps<-sort(c(ps_plus,ps_neg))
-          uniq_ps<-sort(c(ps_plus_uniq,ps_neg_uniq))
-          uniq_mm_ps<-sort(c(ps_plus_uniq_mm,ps_neg_uniq_mm))
-          if(length(all_ps)>0){
-            ps_res<-unique(all_ps)
-            ps_res$score<-countOverlaps(ps_res,all_ps,type="equal")
-            all_ps<-ps_res
-          }
-          if(length(uniq_ps)>0){
-            ps_res<-unique(uniq_ps)
-            ps_res$score<-countOverlaps(ps_res,uniq_ps,type="equal")
-            uniq_ps<-ps_res
-            
-          }
-          if(length(uniq_mm_ps)>0){
-            ps_res<-unique(uniq_mm_ps)
-            ps_res$score<-countOverlaps(ps_res,uniq_mm_ps,type="equal")
-            uniq_mm_ps<-ps_res
-            
-          }
-          all_rl_ps[[as.character(rl)]]<-all_ps
-          uniq_rl_ps[[as.character(rl)]]<-uniq_ps
-          uniq_rl_mm_ps[[as.character(rl)]]<-uniq_mm_ps
-          
-          
-        }
-        #here comps
-        list_rlct<-list(all_rl_ps,uniq_rl_ps,uniq_rl_mm_ps)
-        names(list_rlct)<-c("P_sites_all","P_sites_uniq","P_sites_uniq_mm")
-        list_pss[[comp]]<-list_rlct
-      }
-      #for rl, merge psites
-      
-      
-      all_ps_comps<-GRangesList()
-      seqlevels(all_ps_comps)<-seqllll
-      seqlengths(all_ps_comps)<-seqleee
-      rls_comps<-unique(unlist(lapply(list_pss,FUN=function(x) names(x[["P_sites_all"]]) )))
-      for(rl in rls_comps){
-        reads_rl_comp<-GRanges()
-        seqlevels(reads_rl_comp)<-seqllll
-        seqlengths(reads_rl_comp)<-seqleee
-        for(comp in names(list_pss)){
-          if(sum(rl%in%names(list_pss[[comp]][["P_sites_all"]]))>0){
-            oth<-list_pss[[comp]][["P_sites_all"]][[rl]]
-            
-            if(!is.null(oth)){
-              seqlevels(oth)<-seqllll
-              seqlengths(oth)<-seqleee
-              reads_rl_comp<-c(reads_rl_comp,oth)
-            }
-          }          
-          all_ps_comps[[rl]]<-reads_rl_comp
-        }
-        
-      }
-      
-      uniq_ps_comps<-GRangesList()
-      seqlevels(uniq_ps_comps)<-seqllll
-      seqlengths(uniq_ps_comps)<-seqleee
-      rls_comps<-unique(unlist(lapply(list_pss,FUN=function(x) names(x[["P_sites_uniq"]]) )))
-      for(rl in rls_comps){
-        reads_rl_comp<-GRanges()
-        seqlevels(reads_rl_comp)<-seqllll
-        seqlengths(reads_rl_comp)<-seqleee
-        for(comp in names(list_pss)){
-          if(sum(rl%in%names(list_pss[[comp]][["P_sites_uniq"]]))>0){
-            oth<-list_pss[[comp]][["P_sites_uniq"]][[rl]]
-            
-            if(!is.null(oth)){
-              seqlevels(oth)<-seqllll
-              seqlengths(oth)<-seqleee
-              reads_rl_comp<-c(reads_rl_comp,oth)
-            }
-          }          
-          uniq_ps_comps[[rl]]<-reads_rl_comp
-        }
-        
-      }
-      
-      uniq_mm_ps_comps<-GRangesList()
-      seqlevels(uniq_mm_ps_comps)<-seqllll
-      seqlengths(uniq_mm_ps_comps)<-seqleee
-      rls_comps<-unique(unlist(lapply(list_pss,FUN=function(x) names(x[["P_sites_uniq_mm"]]) )))
-      for(rl in rls_comps){
-        reads_rl_comp<-GRanges()
-        seqlevels(reads_rl_comp)<-seqllll
-        seqlengths(reads_rl_comp)<-seqleee
-        for(comp in names(list_pss)){
-          if(sum(rl%in%names(list_pss[[comp]][["P_sites_uniq_mm"]]))>0){
-            oth<-list_pss[[comp]][["P_sites_uniq_mm"]][[rl]]
-            if(!is.null(oth)){
-              seqlevels(oth)<-seqllll
-              seqlengths(oth)<-seqleee
-              reads_rl_comp<-c(reads_rl_comp,oth)
-            }
-          }          
-          uniq_mm_ps_comps[[rl]]<-reads_rl_comp
-        }
-        
-      }
-      
-    }
-    
-    list_res<-list(all_ps_comps,uniq_ps_comps,uniq_mm_ps_comps,rang_jun)
-    names(list_res)<-c("P_sites_all","P_sites_uniq","P_sites_uniq_mm","junctions")
-    
-    return(list_res)
+    psites_of_chunk(x,rl_cutoffs_comp,circs,seqllll,seqleee,GTF_annotation$junctions)
   }
   
   #the junction reads are added up chunk by chunk, and the P-sites of all chunks once, below: adding
@@ -678,4 +326,379 @@ prepare_for_ORFquant<-function(annotation_file,bam_file,path_to_rl_cutoff_file=N
   
   save(for_ORFquant,file = paste(dest_name,"for_ORFquant",sep = "_"))
   invisible(paste(dest_name,"for_ORFquant",sep = "_"))
+}
+
+# The P-sites of each read length and the junction reads of x, a chunk of alignments (GAlignments),
+# for prepare_for_ORFquant() and RiboseQC_analysis(). rl_cutoffs_comp: the read lengths and cutoffs of
+# each compartment ("nucl" or a circular chromosome of circs), NULL for no P-sites; seqllll, seqleee:
+# the chromosomes of the P-sites and their lengths; junctions: the junctions of the annotation. With
+# with_coverage=TRUE, also the coverage of all reads and of the uniquely mapping reads on each strand,
+# for RiboseQC_analysis().
+psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with_coverage=FALSE){
+  
+  mcols(x)$MD[which(is.na(mcols(x)$MD))]<-"NO"
+  
+  x_I<-x[grep("I",cigar(x))]
+  
+  if(length(x_I)>0){
+    x<-x[grep("I",cigar(x),invert=T)]
+    
+  }
+  x_D<-x[grep("D",cigar(x))]
+  if(length(x_D)>0){
+    x<-x[grep("D",cigar(x),invert=T)]
+    
+  }
+  
+  # softclipping
+  
+  clipp <- width(cigarillo::cigars_as_ranges_along_query(x@cigar, ops="S"))
+  clipp[elementNROWS(clipp)==0] <- 0
+  len_adj <- qwidth(x)-sum(clipp)
+  mcols(x)$len_adj <- len_adj
+  
+  # Remove S from Cigar (read positions/length are already adjusted)
+  # it helps calculating P-sites positions for spliced reads
+  
+  cigg<-cigar(x)
+  cigg_s<-grep(cigg,pattern = "S")
+  if(length(cigg_s)>0){
+    cigs<-cigg[cigg_s]
+    cigs<-gsub(cigs,pattern = "^[0-9]+S",replacement = "")
+    cigs<-gsub(cigs,pattern = "[0-9]+S$",replacement = "")
+    cigg[cigg_s]<-cigs
+    x@cigar<-cigg
+  }
+  mcols(x)$cigar_str<-x@cigar
+  x_uniq<-x[x@elementMetadata$mapq>50]
+  
+  pos<-x[strand(x)=="+"]
+  neg<-x[strand(x)=="-"]
+  
+  if(with_coverage){
+    covuni_plus<-coverage(x_uniq[strand(x_uniq)=="+"])
+    covuni_min<-coverage(x_uniq[strand(x_uniq)=="-"])
+    covall_plus<-coverage(pos)
+    covall_min<-coverage(neg)
+  }
+  
+  
+  
+  # junctions
+  
+  juns<-summarizeJunctions(x)
+  juns_pos<-juns
+  juns_neg<-juns
+  mcols(juns_pos)<-NULL
+  mcols(juns_neg)<-NULL
+  juns_pos$reads<-juns$plus_score
+  juns_neg$reads<-juns$minus_score
+  strand(juns_pos)<-"+"
+  strand(juns_neg)<-"-"
+  juns<-sort(c(juns_pos,juns_neg))
+  juns<-juns[juns$reads>0]
+  
+  uniq_juns<-summarizeJunctions(x_uniq)
+  uniq_juns_pos<-uniq_juns
+  uniq_juns_neg<-uniq_juns
+  mcols(uniq_juns_pos)<-NULL
+  mcols(uniq_juns_neg)<-NULL
+  uniq_juns_pos$reads<-uniq_juns$plus_score
+  uniq_juns_neg$reads<-uniq_juns$minus_score
+  strand(uniq_juns_pos)<-"+"
+  strand(uniq_juns_neg)<-"-"
+  uniq_juns<-sort(c(uniq_juns_pos,uniq_juns_neg))
+  uniq_juns<-uniq_juns[uniq_juns$reads>0]
+  if(length(juns)>0){
+    juns$unique_reads<-0
+    mat<-match(uniq_juns,juns)
+    juns$unique_reads[mat]<-uniq_juns$reads
+  }
+  rang_jun<-junctions
+  rang_jun$reads<-0
+  rang_jun$unique_reads<-0
+  if(length(juns)>0){
+    mat<-match(juns,rang_jun)
+    juns<-juns[!is.na(mat)]
+    mat<-mat[!is.na(mat)]
+    rang_jun$reads[mat]<-juns$reads
+    rang_jun$unique_reads[mat]<-juns$unique_reads
+  }
+  
+  
+  # P-sites calculation
+  all_ps_comps<-GRanges()
+  seqlevels(all_ps_comps)<-seqllll
+  seqlengths(all_ps_comps)<-seqleee
+  
+  uniq_ps_comps<-GRanges()
+  seqlevels(uniq_ps_comps)<-seqllll
+  seqlengths(uniq_ps_comps)<-seqleee
+  
+  uniq_mm_ps_comps<-GRanges()
+  seqlevels(uniq_mm_ps_comps)<-seqllll
+  seqlengths(uniq_mm_ps_comps)<-seqleee
+  
+  if(!is.null(rl_cutoffs_comp)){
+    list_pss<-list()
+    for(comp in names(rl_cutoffs_comp)){
+      all_rl_ps<-GRangesList()
+      uniq_rl_ps<-GRangesList()
+      uniq_rl_mm_ps<-GRangesList()
+      
+      seqlevels(all_rl_ps)<-seqllll
+      seqlevels(uniq_rl_ps)<-seqllll
+      seqlevels(uniq_rl_mm_ps)<-seqllll
+      
+      seqlengths(all_rl_ps)<-seqleee
+      seqlengths(uniq_rl_ps)<-seqleee
+      seqlengths(uniq_rl_mm_ps)<-seqleee
+      
+      
+      chroms<-comp
+      
+      if(comp=="nucl"){chroms=seqlevels(x)[!seqlevels(x)%in%circs]}
+      resul<-rl_cutoffs_comp[[comp]]
+      
+      for(i in seq_along(resul$read_length)){
+        
+        all_ps<-GRangesList()
+        uniq_ps<-GRangesList()
+        uniq_mm_ps<-GRangesList()
+        seqlevels(all_ps)<-seqllll
+        seqlevels(uniq_ps)<-seqllll
+        seqlevels(uniq_mm_ps)<-seqllll
+        
+        seqlengths(all_ps)<-seqleee
+        seqlengths(uniq_ps)<-seqleee
+        seqlengths(uniq_mm_ps)<-seqleee
+        
+        rl<-as.numeric(resul$read_length[i])
+        ct<-as.numeric(resul$cutoff[i])
+        ok_reads<-pos[mcols(pos)$len_adj%in%rl]
+        ok_reads<-ok_reads[as.vector(seqnames(ok_reads))%in%chroms]
+        
+        ps_plus<-GRanges()
+        seqlevels(ps_plus)<-seqllll
+        seqlengths(ps_plus)<-seqleee
+        ps_plus_uniq<-ps_plus
+        ps_plus_uniq_mm<-ps_plus
+        
+        if(length(ok_reads)>0){
+          unspl<-ok_reads[grep(pattern="N",x=cigar(ok_reads),invert=T)]
+          
+          ps_unspl<-shift(resize(GRanges(unspl),width=1,fix="start"),shift=ct)
+          
+          spl<-ok_reads[grep(pattern="N",x=cigar(ok_reads))]
+          firstb<-as.numeric(sapply(strsplit(cigar(spl),"M"),"[[",1))
+          lastb<-as.numeric(sapply(strsplit(cigar(spl),"M"),function(x){gsub(x[length(x)],pattern="^[^_]*N",replacement="")}))
+          firstok<-spl[firstb>ct]
+          firstok<-shift(resize(GRanges(firstok),width=1,fix="start"),shift=ct)
+          
+          lastok<-spl[lastb>=rl-ct]
+          lastok<-shift(resize(GRanges(lastok),width=1,fix="end"),shift=-(rl-ct-1))
+          
+          
+          multi<-spl[firstb<=ct & lastb<rl-ct]
+          
+          
+          ps_spl<-GRanges()
+          seqlevels(ps_spl)<-seqllll
+          seqlengths(ps_spl)<-seqleee
+          
+          if(length(multi)>0){
+            ps_spl<-get_ps_fromspliceplus(multi,cutoff=ct)
+            
+          }
+          mcols(ps_spl)<-mcols(multi)
+          
+          seqlevels(firstok)<-seqllll
+          seqlevels(lastok)<-seqllll
+          seqlevels(ps_unspl)<-seqllll
+          seqlevels(ps_spl)<-seqllll
+          
+          seqlengths(firstok)<-seqleee
+          seqlengths(lastok)<-seqleee
+          seqlengths(ps_unspl)<-seqleee
+          seqlengths(ps_spl)<-seqleee
+          
+          
+          ps_plus<-c(ps_unspl,firstok,lastok,ps_spl)
+          ps_plus_uniq<-ps_plus[mcols(ps_plus)$mapq>50]
+          ps_plus_uniq_mm<-ps_plus[mcols(ps_plus)$mapq>50 & nchar(mcols(ps_plus)$MD)>3]
+          
+          mcols(ps_plus)<-NULL
+          mcols(ps_plus_uniq)<-NULL
+          mcols(ps_plus_uniq_mm)<-NULL
+          
+        }
+        ok_reads<-neg[mcols(neg)$len_adj%in%rl]
+        ok_reads<-ok_reads[as.vector(seqnames(ok_reads))%in%chroms]
+        
+        ps_neg<-GRanges()
+        seqlevels(ps_neg)<-seqllll
+        seqlengths(ps_neg)<-seqleee
+        ps_neg_uniq<-ps_neg
+        ps_neg_uniq_mm<-ps_neg
+        
+        if(length(ok_reads)>0){
+          unspl<-ok_reads[grep(pattern="N",x=cigar(ok_reads),invert=T)]
+          
+          ps_unspl<-shift(resize(GRanges(unspl),width=1,fix="start"),shift=-ct)
+          
+          spl<-ok_reads[grep(pattern="N",x=cigar(ok_reads))]
+          
+          firstb<-as.numeric(sapply(strsplit(cigar(spl),"M"),"[[",1))
+          lastb<-as.numeric(sapply(strsplit(cigar(spl),"M"),function(x){gsub(x[length(x)],pattern="^[^_]*N",replacement="")}))
+          lastok<-spl[lastb>ct]
+          lastok<-shift(resize(GRanges(lastok),width=1,fix="start"),shift=-ct)
+          
+          firstok<-spl[firstb>=rl-ct]
+          firstok<-shift(resize(GRanges(firstok),width=1,fix="end"),shift=(rl-ct-1))
+          
+          multi<-spl[firstb<rl-ct & lastb<=ct]
+          
+          
+          ps_spl<-GRanges()
+          seqlevels(ps_spl)<-seqllll
+          seqlengths(ps_spl)<-seqleee
+          
+          
+          if(length(multi)>0){
+            ps_spl<-get_ps_fromsplicemin(multi,cutoff=ct)
+          }
+          mcols(ps_spl)<-mcols(multi)
+          
+          seqlevels(firstok)<-seqllll
+          seqlevels(lastok)<-seqllll
+          seqlevels(ps_unspl)<-seqllll
+          seqlevels(ps_spl)<-seqllll
+          
+          seqlengths(firstok)<-seqleee
+          seqlengths(lastok)<-seqleee
+          seqlengths(ps_unspl)<-seqleee
+          seqlengths(ps_spl)<-seqleee
+          
+          ps_neg<-c(ps_unspl,firstok,lastok,ps_spl)
+          ps_neg_uniq<-ps_neg[mcols(ps_neg)$mapq>50]
+          ps_neg_uniq_mm<-ps_neg[mcols(ps_neg)$mapq>50 & nchar(mcols(ps_neg)$MD)>3]
+          
+          mcols(ps_neg)<-NULL
+          mcols(ps_neg_uniq)<-NULL
+          mcols(ps_neg_uniq_mm)<-NULL
+        }
+        
+        all_ps<-sort(c(ps_plus,ps_neg))
+        uniq_ps<-sort(c(ps_plus_uniq,ps_neg_uniq))
+        uniq_mm_ps<-sort(c(ps_plus_uniq_mm,ps_neg_uniq_mm))
+        if(length(all_ps)>0){
+          ps_res<-unique(all_ps)
+          ps_res$score<-countOverlaps(ps_res,all_ps,type="equal")
+          all_ps<-ps_res
+        }
+        if(length(uniq_ps)>0){
+          ps_res<-unique(uniq_ps)
+          ps_res$score<-countOverlaps(ps_res,uniq_ps,type="equal")
+          uniq_ps<-ps_res
+          
+        }
+        if(length(uniq_mm_ps)>0){
+          ps_res<-unique(uniq_mm_ps)
+          ps_res$score<-countOverlaps(ps_res,uniq_mm_ps,type="equal")
+          uniq_mm_ps<-ps_res
+          
+        }
+        all_rl_ps[[as.character(rl)]]<-all_ps
+        uniq_rl_ps[[as.character(rl)]]<-uniq_ps
+        uniq_rl_mm_ps[[as.character(rl)]]<-uniq_mm_ps
+        
+        
+      }
+      #here comps
+      list_rlct<-list(all_rl_ps,uniq_rl_ps,uniq_rl_mm_ps)
+      names(list_rlct)<-c("P_sites_all","P_sites_uniq","P_sites_uniq_mm")
+      list_pss[[comp]]<-list_rlct
+    }
+    #for rl, merge psites
+    
+    
+    all_ps_comps<-GRangesList()
+    seqlevels(all_ps_comps)<-seqllll
+    seqlengths(all_ps_comps)<-seqleee
+    rls_comps<-unique(unlist(lapply(list_pss,FUN=function(x) names(x[["P_sites_all"]]) )))
+    for(rl in rls_comps){
+      reads_rl_comp<-GRanges()
+      seqlevels(reads_rl_comp)<-seqllll
+      seqlengths(reads_rl_comp)<-seqleee
+      for(comp in names(list_pss)){
+        if(sum(rl%in%names(list_pss[[comp]][["P_sites_all"]]))>0){
+          oth<-list_pss[[comp]][["P_sites_all"]][[rl]]
+          
+          if(!is.null(oth)){
+            seqlevels(oth)<-seqllll
+            seqlengths(oth)<-seqleee
+            reads_rl_comp<-c(reads_rl_comp,oth)
+          }
+        }          
+        all_ps_comps[[rl]]<-reads_rl_comp
+      }
+      
+    }
+    
+    uniq_ps_comps<-GRangesList()
+    seqlevels(uniq_ps_comps)<-seqllll
+    seqlengths(uniq_ps_comps)<-seqleee
+    rls_comps<-unique(unlist(lapply(list_pss,FUN=function(x) names(x[["P_sites_uniq"]]) )))
+    for(rl in rls_comps){
+      reads_rl_comp<-GRanges()
+      seqlevels(reads_rl_comp)<-seqllll
+      seqlengths(reads_rl_comp)<-seqleee
+      for(comp in names(list_pss)){
+        if(sum(rl%in%names(list_pss[[comp]][["P_sites_uniq"]]))>0){
+          oth<-list_pss[[comp]][["P_sites_uniq"]][[rl]]
+          
+          if(!is.null(oth)){
+            seqlevels(oth)<-seqllll
+            seqlengths(oth)<-seqleee
+            reads_rl_comp<-c(reads_rl_comp,oth)
+          }
+        }          
+        uniq_ps_comps[[rl]]<-reads_rl_comp
+      }
+      
+    }
+    
+    uniq_mm_ps_comps<-GRangesList()
+    seqlevels(uniq_mm_ps_comps)<-seqllll
+    seqlengths(uniq_mm_ps_comps)<-seqleee
+    rls_comps<-unique(unlist(lapply(list_pss,FUN=function(x) names(x[["P_sites_uniq_mm"]]) )))
+    for(rl in rls_comps){
+      reads_rl_comp<-GRanges()
+      seqlevels(reads_rl_comp)<-seqllll
+      seqlengths(reads_rl_comp)<-seqleee
+      for(comp in names(list_pss)){
+        if(sum(rl%in%names(list_pss[[comp]][["P_sites_uniq_mm"]]))>0){
+          oth<-list_pss[[comp]][["P_sites_uniq_mm"]][[rl]]
+          if(!is.null(oth)){
+            seqlevels(oth)<-seqllll
+            seqlengths(oth)<-seqleee
+            reads_rl_comp<-c(reads_rl_comp,oth)
+          }
+        }          
+        uniq_mm_ps_comps[[rl]]<-reads_rl_comp
+      }
+      
+    }
+    
+  }
+  
+  list_res<-list(all_ps_comps,uniq_ps_comps,uniq_mm_ps_comps,rang_jun)
+  names(list_res)<-c("P_sites_all","P_sites_uniq","P_sites_uniq_mm","junctions")
+  
+  if(with_coverage){
+    list_res<-c(list_res,list(coverage_all_plus=covall_plus,coverage_all_minus=covall_min,
+                              coverage_uniq_plus=covuni_plus,coverage_uniq_minus=covuni_min))
+  }
+  
+  return(list_res)
 }
