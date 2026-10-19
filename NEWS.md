@@ -9,6 +9,22 @@
   results are the same as with 1 core. Forked processes are not available
   on Windows.
 
+## Changes in results
+
+- `RiboseQC_analysis()` and `prepare_for_ORFquant()` find the uniquely
+  mapping reads with mismatches (`P_sites_uniq_mm` in
+  `<dest_name>_for_ORFquant`, and in `<dest_name>_results_RiboseQC_all`) by
+  the mismatches in the MD tag: a number and then a base. Before, a read had
+  mismatches when its MD tag had more than 3 characters. So a read shorter
+  than 20 nt with 1 mismatch (for example `5A9`) did not count, and a read of
+  1,000 nt or more without mismatches did. Only these reads change. A read
+  shorter than 20 nt gets a P-site only when its read length has a cutoff:
+  in `RiboseQC_analysis()`, for example with `rescue_all_rls = TRUE` or
+  `offsets_df`, and in `prepare_for_ORFquant()`, in the cutoff file. BAM
+  files without MD tags give no `P_sites_uniq_mm`, as before. In ORFquant,
+  these P-sites give only the column `P_sites_raw_uniq_mm`. The other P-sites
+  and the other output files don't change.
+
 # RiboseQC 1.3.0
 
 ## New functions

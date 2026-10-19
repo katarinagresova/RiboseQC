@@ -39,3 +39,25 @@ test_that("get_ps_fromsplicemin() counts the offset from the end of the read, ac
   expect_identical(as.character(strand(ps)), c("-", "-"))
   expect_identical(seqlengths(ps), c(chr1 = 1000L))
 })
+
+# psites_of_chunk(), for RiboseQC_analysis() and prepare_for_ORFquant(): P_sites_uniq_mm has the
+# P-sites of the uniquely mapping reads (mapq more than 50) with mismatches in the MD tag
+
+test_that("psites_of_chunk() finds the reads with mismatches by the MD tag, also in short reads", {
+  # 15-nt reads at 101, 201, ..., 601. 1 mismatch in an MD tag of 3 characters (5A9, 9A5) or of 4
+  # (0A14), no mismatch, no MD tag, and 1 mismatch in a read that does not map uniquely
+  md <- c("5A9", "9A5", "0A14", "15", NA, "5A9")
+  x <- GenomicAlignments::GAlignments(seqnames = S4Vectors::Rle("chr1", 6), pos = 100L * (1:6) + 1L,
+                                      cigar = rep("15M", 6),
+                                      strand = GenomicRanges::strand(c("+", "-", "+", "+", "+", "+")),
+                                      seqlengths = c(chr1 = 1000L))
+  S4Vectors::mcols(x) <- S4Vectors::DataFrame(mapq = c(255L, 255L, 255L, 255L, 255L, 3L), MD = md)
+  junctions <- GenomicRanges::GRanges("chr1", IRanges::IRanges(800, 900), "+", seqlengths = c(chr1 = 1000L))
+  res <- psites_of_chunk(x, list(nucl = S4Vectors::DataFrame(read_length = 15, cutoff = 6)), character(),
+                         "chr1", c(chr1 = 1000L), junctions)
+  # The P-site is 6 nt from the 5' end: 101 + 6 on the plus strand, 215 - 6 on the minus strand
+  p_sites <- function(set) sort(start(res[[set]][["15"]]))
+  expect_identical(p_sites("P_sites_all"), c(107L, 209L, 307L, 407L, 507L, 607L))
+  expect_identical(p_sites("P_sites_uniq"), c(107L, 209L, 307L, 407L, 507L))
+  expect_identical(p_sites("P_sites_uniq_mm"), c(107L, 209L, 307L))
+})

@@ -501,7 +501,8 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
           
           ps_plus<-c(ps_unspl,firstok,lastok,ps_spl)
           ps_plus_uniq<-ps_plus[mcols(ps_plus)$mapq>50]
-          ps_plus_uniq_mm<-ps_plus[mcols(ps_plus)$mapq>50 & nchar(mcols(ps_plus)$MD)>3]
+          # reads with mismatches: in the MD tag, each mismatch is a number and then a base ("NO": no MD tag)
+          ps_plus_uniq_mm<-ps_plus[mcols(ps_plus)$mapq>50 & grepl("[0-9][A-Z]",mcols(ps_plus)$MD)]
           
           mcols(ps_plus)<-NULL
           mcols(ps_plus_uniq)<-NULL
@@ -557,7 +558,7 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
           
           ps_neg<-c(ps_unspl,firstok,lastok,ps_spl)
           ps_neg_uniq<-ps_neg[mcols(ps_neg)$mapq>50]
-          ps_neg_uniq_mm<-ps_neg[mcols(ps_neg)$mapq>50 & nchar(mcols(ps_neg)$MD)>3]
+          ps_neg_uniq_mm<-ps_neg[mcols(ps_neg)$mapq>50 & grepl("[0-9][A-Z]",mcols(ps_neg)$MD)]
           
           mcols(ps_neg)<-NULL
           mcols(ps_neg_uniq)<-NULL
