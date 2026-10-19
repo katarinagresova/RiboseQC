@@ -31,6 +31,13 @@
   these P-sites give only the column `P_sites_raw_uniq_mm`. The other P-sites
   and the other output files don't change.
 
+## Documentation
+
+- The README now installs RiboseQC from this repository (#7, #19). Before,
+  it installed lcalviell/Ribo-seQC, which has older code. It also runs the
+  analysis on the example data included in the package, and describes the
+  input and output files.
+
 # RiboseQC 1.3.0
 
 ## New functions
