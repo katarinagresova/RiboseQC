@@ -24,6 +24,7 @@ Imports:
     IRanges,
     knitr,
     methods,
+    parallel,
     reshape2,
     rmarkdown,
     Rsamtools,
@@ -51,6 +52,8 @@ Collate:
     'FaFile_Circ.R'
     'RiboseQC-package.R'
     'checks.R'
+    'forked.R'
+    'prepare_for_ORFquant.R'
     'riboseqc.R'
     'riboseq_analysis.R'
 Config/roxygen2/version: 8.1.0

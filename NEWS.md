@@ -1,3 +1,19 @@
+# RiboseQC 1.3.0
+
+## New functions
+
+- `prepare_for_ORFquant()` comes from ORFquant, with the same code and the
+  same results. It calculates the P-sites and the junction reads of a BAM
+  file with a cutoff table, for example `<dest_name>_P_sites_offsets.tsv` of
+  `RiboseQC_analysis()`, and writes the file `<dest_name>_for_ORFquant` that
+  ORFquant's `run_ORFquant()` reads. With `n_cores` more than 1, it reads the
+  BAM file in chunks and calculates the P-sites of the chunks in forked
+  processes. ORFquant imports it from RiboseQC and exports it again, so
+  scripts that call it after `library(ORFquant)` don't change.
+- RiboseQC exports `check_n_cores()`, `check_output_dir()`, `mc_job()`,
+  `mc_value()` and `mc_lapply()` for ORFquant, which uses them too. They are
+  not for users, and their help pages are not in the index.
+
 # RiboseQC 1.2.1
 
 ## New output file

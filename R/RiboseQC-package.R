@@ -25,7 +25,7 @@
 #' @importFrom grDevices dev.off pdf rainbow
 #' @importFrom methods as is new representation setMethod setRefClass
 #' @importFrom stats kmeans
-#' @importFrom utils write.table
+#' @importFrom utils read.table write.table
 NULL
 
 # Column names used in aes() and mutate(), which R CMD check takes for globals.

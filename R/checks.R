@@ -33,6 +33,37 @@ check_files_exist<-function(files){
   }
 }
 
+#' Checks of the input, for ORFquant
+#'
+#' \code{check_n_cores()} stops if \code{n_cores} is not one number, 1 or more.
+#' \code{check_output_dir()} stops if the directory of \code{prefix} does not exist or cannot be
+#' written to: the output files are written at the end of a run.
+#' \code{\link{prepare_for_ORFquant}} uses them. RiboseQC exports them for ORFquant.
+#' @param n_cores the number of cores
+#' @param prefix the prefix of the output files, with their directory
+#' @return \code{NULL}, invisibly, if the input is correct
+#' @keywords internal
+#' @name input_checks
+NULL
+
+#' @rdname input_checks
+#' @export
+check_n_cores<-function(n_cores){
+  if(missing(n_cores) || !is.numeric(n_cores) || length(n_cores)!=1 || is.na(n_cores) || n_cores<1){
+    stop("n_cores must be a number, 1 or more!",call. = FALSE)
+  }
+}
+
+#the output files are written at the end of a run: their directory must exist and be writable
+#' @rdname input_checks
+#' @export
+check_output_dir<-function(prefix){
+  out_dir<-dirname(prefix)
+  if(!dir.exists(out_dir) || file.access(out_dir,2)==-1){
+    stop("Cannot write the output files, ",out_dir," is not a directory that exists and can be written to (",prefix,")",call. = FALSE)
+  }
+}
+
 #the first exon line of the GTF file, which must have transcript_id and gene_id, tells the file apart from an empty
 #one, or one without exon lines; this stops reading at that line
 check_gtf<-function(gtf_file){
