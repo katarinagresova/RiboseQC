@@ -1,5 +1,11 @@
 # RiboseQC (development version)
 
+## Installation
+
+- The new file `environment.yml` describes a conda environment with R 4.5,
+  Bioconductor 3.22, the packages that RiboseQC needs and pandoc. The README
+  shows how to install RiboseQC into it from GitHub, or with BiocManager.
+
 ## New arguments
 
 - `RiboseQC_analysis()` has the new argument `n_cores` (default 1). With

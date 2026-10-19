@@ -21,3 +21,4 @@
 ^RiboseQC-manual\.pdf$
 ^RiboseQC\.R$
 ^RiboseQC\.Rmd$
+^environment\.yml$

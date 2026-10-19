@@ -1,0 +1,48 @@
+# Conda environment with everything RiboseQC needs: R 4.5, Bioconductor 3.22,
+# the packages in DESCRIPTION's Depends and Imports, and pandoc for the HTML
+# report. RiboseQC itself is installed from GitHub (see README.md):
+#
+#   conda env create -f environment.yml
+#   conda activate riboseqc
+#   Rscript -e 'remotes::install_github("katarinagresova/RiboseQC", upgrade = "never")'
+name: riboseqc
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - r-base=4.5
+  - bioconductor-biocversion=3.22
+
+  # Depends and Imports
+  - bioconductor-annotationdbi
+  - bioconductor-biocgenerics
+  - bioconductor-biostrings
+  - bioconductor-bsgenome
+  - bioconductor-cigarillo
+  - r-dt
+  - bioconductor-genomicalignments
+  - bioconductor-genomicfeatures
+  - bioconductor-genomicranges
+  - r-ggplot2
+  - r-ggpubr
+  - r-gridextra
+  - bioconductor-iranges
+  - r-knitr
+  - r-reshape2
+  - r-rmarkdown
+  - bioconductor-rsamtools
+  - bioconductor-rtracklayer
+  - bioconductor-s4vectors
+  - r-scales
+  - bioconductor-seqinfo
+  - bioconductor-summarizedexperiment
+  - bioconductor-txdbmaker
+  - r-viridis
+  - r-withr
+
+  # For the HTML report
+  - pandoc
+
+  # To install RiboseQC from GitHub
+  - r-remotes
