@@ -2295,13 +2295,6 @@ get_ps_fromsplicemin<-function(x,cutoff){
     }
     ps<-sort(c(psones,psmores))
     return(ps)
-
-
-    if(rangok!=1){
-
-        ps<-shift(resize(GRanges(rang[rangok],seqnames=seqnames(x),strand=strand(x),seqlengths=seqlengths(x)),width=1,fix="start"),shift=-(cutoff-sum(rang[seq_len(rangok-1)]@width)))
-    }
-    return(ps)
 }
 
 #' Load genomic features and genome sequence
