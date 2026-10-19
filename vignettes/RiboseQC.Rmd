@@ -1,0 +1,292 @@
+---
+title: "RiboseQC: quality control of Ribo-seq data"
+author: "Katarina Gresova"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{RiboseQC: quality control of Ribo-seq data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup_vig, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+## Introduction
+
+*RiboseQC* analyses Ribo-seq data [1] for each read length, in the genomic
+regions where the reads map (CDS, UTRs, introns, non-coding RNAs and
+intergenic regions) and in each compartment of the cell: the nuclear genome,
+and the circular genomes of organelles such as mitochondria and chloroplasts.
+It calculates the P-site offset of each read length, selects the read lengths
+whose reads show the reading frame, gives their P-sites, and creates an HTML
+report that compares samples [2].
+
+This vignette runs the two steps of an analysis on the small example data
+included in the package:
+
+1. `prepare_annotation_files()`: parse the annotation and link it to the genome
+   sequence, once per annotation;
+2. `RiboseQC_analysis()`: analyse one or more BAM files with this annotation.
+
+Then it shows some of the results, with the functions that make the plots of
+the HTML report.
+
+```{r load_lib, message = FALSE}
+library(RiboseQC)
+```
+
+
+## Example data
+
+The example data are Ribo-seq reads from roots and shoots of *Arabidopsis
+thaliana* [3], on 309 genes: 99 on the five nuclear chromosomes, 88 on the
+chloroplast genome (`ChrC`) and 122 on the mitochondrial genome (`ChrM`).
+
+- `simp_arab.gtf.gz`: the annotation of these genes, from Araport11 [4];
+- `simp_arab.fa.gz`: the genome sequence (TAIR10 [5]), with the bases away
+  from these genes replaced by N (99.6% of the genome);
+- `simp_arab_root.bam` and `simp_arab_shoots.bam`: the Ribo-seq reads of a
+  root and a shoot sample, aligned to the genome, with their indexes;
+- `root_results_RiboseQC`: the results of an earlier analysis of the root
+  sample, which the examples of the help pages use.
+
+```{r example_data}
+ext_data <- system.file("ext_data", package = "RiboseQC")
+list.files(ext_data)
+```
+
+All output files go to a temporary directory:
+
+```{r out_dir}
+out_dir <- file.path(tempdir(), "RiboseQC_example")
+dir.create(out_dir)
+```
+
+
+## Prepare the annotation
+
+`prepare_annotation_files()` reads a GTF file and the genome sequence, and
+writes a *TxDb* and an `_Rannot` file to `annotation_directory`. The `_Rannot`
+file holds the annotated features (transcripts, exons, CDS, UTRs, introns,
+start and stop codons, ...) that `RiboseQC_analysis()` uses, and refers to the
+genome sequence by its path. The genome sequence must be a FASTA file that
+*Rsamtools* can read; the example one is compressed with gzip, so we write an
+uncompressed copy first.
+
+```{r prepare_annotation, results = "hide", message = FALSE, warning = FALSE}
+genome_fasta <- file.path(out_dir, "simp_arab.fa")
+Biostrings::writeXStringSet(Biostrings::readDNAStringSet(file.path(ext_data, "simp_arab.fa.gz")),
+                            genome_fasta)
+annotation_file <- prepare_annotation_files(annotation_directory = out_dir,
+                                            gtf_file = file.path(ext_data, "simp_arab.gtf.gz"),
+                                            genome_seq = genome_fasta)
+```
+
+(*txdbmaker* warns that some CDS phases are missing and that the *TxDb* has no
+genome version; *RiboseQC* uses neither.)
+
+`load_annotation()` loads the annotation into two variables of the environment
+that calls it: `GTF_annotation`, a list of the annotated features, and
+`genome_seq`, the genome sequence. `RiboseQC_analysis()` loads the annotation
+itself; here we only look at it. The chloroplast and mitochondrial genomes are
+circular, and each circular chromosome is a compartment of its own in the
+analysis. `genetic_codes` gives the genetic code of each chromosome, here the
+standard code (`1`) for all:
+
+```{r load_annotation, message = FALSE}
+load_annotation(annotation_file)
+GTF_annotation$genetic_codes
+```
+
+
+## Analyse the BAM files
+
+`RiboseQC_analysis()` reads each BAM file in chunks of `chunk_size` alignments
+(with `n_cores` above 1, it analyses the chunks in parallel), and writes its
+output files with the prefix given in `dest_names`. Then, with
+`create_report = TRUE` (the default), it creates one HTML report of all
+samples. The report includes all plots, so it is large (about 60 MB for these
+two samples); here we create no report.
+
+```{r analysis, results = "hide", message = FALSE}
+RiboseQC_analysis(annotation_file = annotation_file,
+                  bam_files = file.path(ext_data, c("simp_arab_root.bam", "simp_arab_shoots.bam")),
+                  dest_names = file.path(out_dir, c("root", "shoots")),
+                  sample_names = c("root", "shoots"),
+                  create_report = FALSE)
+```
+
+```{r output_files}
+list.files(out_dir, pattern = "^(root|shoots)_")
+```
+
+`<dest_name>_results_RiboseQC_all` holds all results, in the list `res_all`;
+the *Details* section of `?RiboseQC_analysis` describes its elements.
+`<dest_name>_results_RiboseQC` is a smaller copy of it, without the P-sites,
+which the HTML report uses, and so do we here:
+
+```{r load_results}
+root <- get(load(file.path(out_dir, "root_results_RiboseQC")))
+shoots <- get(load(file.path(out_dir, "shoots_results_RiboseQC")))
+names(shoots)
+```
+
+
+## Read lengths and compartments
+
+`read_stats$positions` counts the reads in each genomic region and compartment.
+As expected for green tissue, the shoot sample has many more reads on the
+chloroplast genome than the root sample:
+
+```{r compartments}
+sapply(list(root = root, shoots = shoots), function(x) colSums(x$read_stats$positions))
+shoots$read_stats$positions
+```
+
+Most reads of the organelles are on CDS. The example BAM files also have reads
+outside the 309 genes of the example annotation, so here many reads of the
+nuclear genome are intergenic.
+
+The plot functions of the report draw the same data. (They use the `size`
+aesthetic for lines, which *ggplot2* 3.4.0 deprecated; this vignette hides
+these warnings.) The read length distribution of each compartment shows that
+the chloroplast ribosomes protect fragments of more lengths than the
+cytoplasmic ribosomes (`nucl`):
+
+```{r read_lengths, results = "hide", warning = FALSE, fig.width = 10, fig.height = 5, out.width = "100%"}
+plot_read_length_dist(shoots$read_stats$rld, "shoots")
+```
+
+
+## P-site offsets
+
+For each compartment and read length, `RiboseQC_analysis()` calculates the
+P-site offset (`cutoff`, the distance of the P-site from the read's 5' end)
+from the 5' ends of the reads around start codons. Then it selects the read
+lengths with in-frame signal, as `readlength_choice_method` says (by default
+`"max_coverage"`). `<dest_name>_P_sites_offsets.tsv` has the offsets of the
+selected read lengths, which it used for the P-sites:
+
+```{r offsets}
+read.delim(file.path(out_dir, "root_P_sites_offsets.tsv"))
+read.delim(file.path(out_dir, "shoots_P_sites_offsets.tsv"))
+```
+
+In both samples, the 28-nt reads of the cytoplasmic ribosomes have the offset
+12. In the shoot sample, 9 read lengths of the chloroplast are selected too. No
+read length of the mitochondrion is selected, in either sample.
+`<dest_name>_P_sites_calcs` has more data on each read length, such as its
+frame preference, its percentage of the reads of its compartment (`pct_map`),
+and for each method of `readlength_choice_method` if it selects the read
+length. Some of its columns:
+
+```{r calcs}
+calcs <- read.delim(file.path(out_dir, "shoots_P_sites_calcs"))
+calcs[, c("comp", "read_length", "cutoff", "frame_preference", "pct_map", "max_coverage")]
+```
+
+The 5' ends of the 28-nt reads are mostly in one frame of the CDS:
+
+```{r frames, results = "hide", warning = FALSE, fig.width = 7, fig.height = 5}
+plot_frame_dist_boxplot(shoots$selection_cutoffs$analysis_frame_cutoff, "nucl", "shoots")
+```
+
+So their P-sites show the reading frame. Here are the P-sites of the 28-nt
+reads around the start and stop codons of the nuclear genes, coloured by
+their frame:
+
+```{r metagene, results = "hide", warning = FALSE, fig.width = 10, fig.height = 5, out.width = "100%"}
+psites_nucl <- get_metagene_data(shoots, "profiles_P_sites", "P_sites_subcodon", "nucl")
+plot_metagene_bar(psites_nucl, "28", "shoots")
+```
+
+
+## The HTML report
+
+`create_html_report()` creates the report from the `_results_RiboseQC` files
+of one or more samples; `RiboseQC_analysis()` calls it with
+`create_report = TRUE`. It needs [pandoc](https://pandoc.org):
+
+```{r report, eval = FALSE}
+create_html_report(input_files = file.path(out_dir, c("root_results_RiboseQC", "shoots_results_RiboseQC")),
+                   input_sample_names = c("root", "shoots"),
+                   output_file = file.path(out_dir, "report.html"))
+```
+
+It also saves each plot as an R object in `<output_file>_plots/rds/`;
+`create_pdfs_from_rds_objects()` makes PDF files of them (`RiboseQC_analysis()`
+does this with `pdf_plots = TRUE`).
+
+
+## P-sites for ORFquant
+
+*ORFquant* [6] finds and quantifies translated ORFs. It reads the P-sites and
+the junction reads of a sample from `<dest_name>_for_ORFquant`.
+`prepare_for_ORFquant()` creates the same file from a BAM file and the offsets
+in `<dest_name>_P_sites_offsets.tsv`:
+
+```{r for_orfquant, results = "hide", message = FALSE}
+prepare_for_ORFquant(annotation_file = annotation_file,
+                     bam_file = file.path(ext_data, "simp_arab_shoots.bam"),
+                     path_to_rl_cutoff_file = file.path(out_dir, "shoots_P_sites_offsets.tsv"),
+                     dest_name = file.path(out_dir, "shoots_prepared"))
+```
+
+```{r compare_for_orfquant}
+from_analysis <- get(load(file.path(out_dir, "shoots_for_ORFquant")))
+from_prepare <- get(load(file.path(out_dir, "shoots_prepared_for_ORFquant")))
+names(from_analysis)
+all.equal(from_analysis, from_prepare)
+```
+
+
+## Running RiboseQC on your own data
+
+Your data need:
+
+- a GTF file with `exon` and `CDS` lines, each with `transcript_id` and
+  `gene_id`;
+- the genome sequence as an uncompressed FASTA file, with the same chromosome
+  names as the GTF and the BAM files. Give its absolute path: the `_Rannot`
+  file refers to it by the path that you give;
+- the Ribo-seq reads aligned to the genome (not to the transcriptome) with a
+  spliced aligner such as STAR, sorted by coordinate and indexed with
+  `samtools index`.
+
+The [README](https://github.com/katarinagresova/RiboseQC#readme) describes the
+input and output files. A whole genome takes much longer than this example;
+`n_cores` above 1 analyses the chunks of a BAM file in forked processes, on
+Linux or macOS. Without `dest_names`, the output files go next to the BAM
+files.
+
+
+## References
+
+1. Ingolia NT, Ghaemmaghami S, Newman JRS, Weissman JS (2009). Genome-wide
+   analysis in vivo of translation with nucleotide resolution using ribosome
+   profiling. *Science* 324, 218–223.
+2. Calviello L, Sydow D, Harnett D, Ohler U (2019). Ribo-seQC: comprehensive
+   analysis of cytoplasmic and organellar ribosome profiling data. *bioRxiv*
+   601468.
+3. Hsu PY, Calviello L, Wu HL, Li FW, Rothfels CJ, Ohler U, Benfey PN (2016).
+   Super-resolution ribosome profiling reveals unannotated translation events
+   in *Arabidopsis*. *PNAS* 113, E7126–E7135.
+4. Cheng CY, Krishnakumar V, Chan AP, Thibaud-Nissen F, Schobel S, Town CD
+   (2017). Araport11: a complete reannotation of the *Arabidopsis thaliana*
+   reference genome. *The Plant Journal* 89, 789–804.
+5. Lamesch P et al. (2012). The Arabidopsis Information Resource (TAIR):
+   improved gene annotation and new tools. *Nucleic Acids Research* 40,
+   D1202–D1210.
+6. Calviello L, Hirsekorn A, Ohler U (2020). Quantification of translation
+   uncovers the functions of the alternative transcriptome. *Nature
+   Structural & Molecular Biology* 27, 717–725.
+
+
+## Session info
+
+```{r session_info}
+sessionInfo()
+```

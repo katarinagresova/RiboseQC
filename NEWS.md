@@ -33,6 +33,11 @@
 
 ## Documentation
 
+- The new vignette, `vignette("RiboseQC")`, runs the analysis on the example
+  data included in the package, and shows some of the results: the reads of
+  each compartment, the read lengths, the P-site offsets and the frame of the
+  P-sites. It also shows that `prepare_for_ORFquant()` gives the same P-sites
+  as `RiboseQC_analysis()`. To install it, see the README.
 - The README now installs RiboseQC from this repository (#7, #19). Before,
   it installed lcalviell/Ribo-seQC, which has older code. It also runs the
   analysis on the example data included in the package, and describes the
