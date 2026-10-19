@@ -10,6 +10,7 @@ NULL
 #' @param annotation_file Full path to the annotation file (*Rannot). Or, a vector with paths to one annotation file per bam file.
 #' @param bam_files character vector containing the full path to the bam files
 #' @param chunk_size the number of alignments to read at each iteration, defaults to 5000000, increase when more RAM is available. Must be between 10000 and 100000000
+#' @param n_cores number of cores to use, each for one chunk of \code{chunk_size} alignments at a time, in forked processes (not on Windows). Each core needs the memory for one chunk. The results do not depend on it. Defaults to 1
 #' @param read_subset Select readlengths up to 99 percent of the reads, defaults to \code{TRUE}. Must be of length 1 or same length as bam_files.
 #' @param readlength_choice_method Method used to subset relevant read lengths (see \code{choose_readlengths} function); defaults to 'max_coverage'. Must be of length 1 or same length as bam_files.
 #' @param rescue_all_rls Set cutoff of 12 for read lengths ignored because of insufficient coverage. Defaults to \code{FALSE}. Must be of length 1 or same length as bam_files.
@@ -67,8 +68,10 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
     genome_seq = NULL, stranded = TRUE, normalize_cov = TRUE, chunk_size = 5000000L, 
     write_tmp_files = TRUE, dest_names = NA, rescue_all_rls = FALSE, fast_mode = TRUE, 
     create_report = TRUE, sample_names = NA, report_file = NA, extended_report = FALSE, 
-    pdf_plots = TRUE, offsets_df = NULL) {
-    
+    pdf_plots = TRUE, offsets_df = NULL, n_cores = 1) {
+
+    check_n_cores(n_cores)
+
     if (length(dest_names) == 1) {
         if (is.na(dest_names)) {
             dest_names = bam_files
@@ -336,7 +339,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         cat(paste("Extracting read lengths from ", bam_file, " ... ", date(), "\n", 
             sep = ""))
-        maxmin <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc)
+        maxmin <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc, n_cores = n_cores)
         cat(paste("Extracting read lengths --- Done! ", date(), "\n", sep = ""))
         readlengths <- seq(maxmin[[2]], maxmin[[1]])
         
@@ -724,7 +727,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         cat(paste("Analyzing BAM file:", bam_file, "...", date(), "\n"))
         
-        read_stats <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc)
+        read_stats <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc,
+            n_cores = n_cores)
         names(read_stats) <- c("rld", "rld_unq", "positions", "positions_unq", "reads_pos1", 
             "counts_cds_genes", "counts_cds_genes_unq", "counts_all_genes", "counts_all_genes_unq", 
             "reads_summary", "reads_summary_unq")
@@ -1336,7 +1340,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         }
         cat(paste("Calculating P-sites positions and junctions ...", date(), "\n"))
         
-        P_sites_stats <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc)
+        P_sites_stats <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc,
+            n_cores = n_cores)
         
         save(P_sites_stats, file = paste(dira, "P_sites_stats", sep = "/"))
         

@@ -1,3 +1,14 @@
+# RiboseQC (development version)
+
+## New arguments
+
+- `RiboseQC_analysis()` has the new argument `n_cores` (default 1). With
+  `n_cores` more than 1, it reads the BAM file in chunks of `chunk_size`
+  alignments, as before, and analyses the chunks in forked processes, at most
+  `n_cores` at a time. Each process needs the memory for one chunk. The
+  results are the same as with 1 core. Forked processes are not available
+  on Windows.
+
 # RiboseQC 1.3.0
 
 ## New functions

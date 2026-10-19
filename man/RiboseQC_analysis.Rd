@@ -22,7 +22,8 @@ RiboseQC_analysis(
   report_file = NA,
   extended_report = FALSE,
   pdf_plots = TRUE,
-  offsets_df = NULL
+  offsets_df = NULL,
+  n_cores = 1
 )
 }
 \arguments{
@@ -61,6 +62,8 @@ RiboseQC_analysis(
 \item{pdf_plots}{creates a pdf file for each produced plot. Defaults to \code{TRUE}}
 
 \item{offsets_df}{optionally input an offsets_df created externally, note that this does not yet fully integrate with stats such as 'proportion in phase' it will however alter the psites which are outputted. Must have cols 'read_length','cutoff'}
+
+\item{n_cores}{number of cores to use, each for one chunk of \code{chunk_size} alignments at a time, in forked processes (not on Windows). Each core needs the memory for one chunk. The results do not depend on it. Defaults to 1}
 }
 \value{
 the function saves a 'results_RiboseQC_all' R file appended to the bam_files path including the complete list of outputs described here.
