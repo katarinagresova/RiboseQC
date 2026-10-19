@@ -1,11 +1,12 @@
 Package: RiboseQC
 Title: RiboseQC, a Comprehensive Ribo-Seq Analysis Tool
 Version: 1.3.0
-Author: "Lorenzo Calviello", "Dominique Sydow", "Dermot Harnett"
+Author: "Lorenzo Calviello", "Dominique Sydow", "Dermot Harnett", "Katarina Gresova"
 Authors@R: c(person("Lorenzo", "Calviello", email = "calviello.l.bio@gmail.com", role = c("aut")),
     person("Dominique", "Sydow", email = "dominique.sydow@posteo.de", role = c("aut")),
     person("Dermot", "Harnett", email = "Dermot.Harnett@mdc-berlin.de", role = c("ctb","cre")),
-    person("Uwe", "Ohler", email = "Uwe.Ohler@mdc-berlin.de", role = c("rev","fnd")))
+    person("Uwe", "Ohler", email = "Uwe.Ohler@mdc-berlin.de", role = c("rev","fnd")),
+    person("Katarina", "Gresova", email = "katarina.gresova@mdc-berlin.de", role = c("ctb")))
 Maintainer: Dermot Harnett <dermot.harnett@mdc-berlin.de>
 Description: A powerful analysis tool for the analysis of Ribo-seq data, which is able to provide read-length specific analysis of both cytoplasmic and organellar ribosome, and provides interactive visualization of results in a dynamic html report.
 Imports:
@@ -43,6 +44,8 @@ Depends:
     R (>= 4.5.0),
     GenomicRanges
 License: GPL (>= 3)
+URL: https://github.com/katarinagresova/RiboseQC
+BugReports: https://github.com/katarinagresova/RiboseQC/issues
 Encoding: UTF-8
 LazyData: FALSE
 VignetteBuilder: knitr
