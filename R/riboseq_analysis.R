@@ -1873,43 +1873,24 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         merged_all_ps <- unlist(P_sites_stats$P_sites_all)
         if (length(merged_all_ps) > 0) {
-            covv_pl <- coverage(merged_all_ps[strand(merged_all_ps) == "+"], weight = merged_all_ps[strand(merged_all_ps) == 
-                "+"]$score)
-            covv_pl <- GRanges(covv_pl)
-            covv_pl <- covv_pl[covv_pl$score > 0]
-            covv_min <- coverage(merged_all_ps[strand(merged_all_ps) == "-"], weight = merged_all_ps[strand(merged_all_ps) == 
-                "-"]$score)
-            covv_min <- GRanges(covv_min)
-            covv_min <- covv_min[covv_min$score > 0]
-            strand(covv_pl) <- "+"
-            strand(covv_min) <- "-"
+            ps_strands <- sum_psites(merged_all_ps)
             
-            merged_all_ps <- sort(c(covv_pl, covv_min))
+            merged_all_ps <- sort(c(ps_strands$plus, ps_strands$minus))
             
-            export(covv_pl, con = paste(dest_name, "_P_sites_plus.bedgraph", sep = ""))
-            export(covv_min, con = paste(dest_name, "_P_sites_minus.bedgraph", sep = ""))
+            export(ps_strands$plus, con = paste(dest_name, "_P_sites_plus.bedgraph", sep = ""))
+            export(ps_strands$minus, con = paste(dest_name, "_P_sites_minus.bedgraph", sep = ""))
         }
         
         merged_uniq_ps <- unlist(P_sites_stats$P_sites_uniq)
         if (length(merged_uniq_ps) > 0) {
             
-            covv_pl <- coverage(merged_uniq_ps[strand(merged_uniq_ps) == "+"], weight = merged_uniq_ps[strand(merged_uniq_ps) == 
-                "+"]$score)
-            covv_pl <- GRanges(covv_pl)
-            covv_pl <- covv_pl[covv_pl$score > 0]
-            
-            covv_min <- coverage(merged_uniq_ps[strand(merged_uniq_ps) == "-"], weight = merged_uniq_ps[strand(merged_uniq_ps) == 
-                "-"]$score)
-            covv_min <- GRanges(covv_min)
-            covv_min <- covv_min[covv_min$score > 0]
-            strand(covv_pl) <- "+"
-            strand(covv_min) <- "-"
-            merged_uniq_ps <- sort(c(covv_pl, covv_min))
+            ps_strands <- sum_psites(merged_uniq_ps)
+            merged_uniq_ps <- sort(c(ps_strands$plus, ps_strands$minus))
             
             
-            export(covv_pl, con = paste(dest_name, "_P_sites_uniq_plus.bedgraph", 
+            export(ps_strands$plus, con = paste(dest_name, "_P_sites_uniq_plus.bedgraph", 
                 sep = ""))
-            export(covv_min, con = paste(dest_name, "_P_sites_uniq_minus.bedgraph", 
+            export(ps_strands$minus, con = paste(dest_name, "_P_sites_uniq_minus.bedgraph", 
                 sep = ""))
         }
         
@@ -1917,18 +1898,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         merged_uniq_mm_ps <- unlist(P_sites_stats$P_sites_uniq_mm)
         if (length(merged_uniq_mm_ps) > 0) {
             
-            covv_pl <- coverage(merged_uniq_mm_ps[strand(merged_uniq_mm_ps) == "+"], 
-                weight = merged_uniq_mm_ps[strand(merged_uniq_mm_ps) == "+"]$score)
-            covv_pl <- GRanges(covv_pl)
-            covv_pl <- covv_pl[covv_pl$score > 0]
-            
-            covv_min <- coverage(merged_uniq_mm_ps[strand(merged_uniq_mm_ps) == "-"], 
-                weight = merged_uniq_mm_ps[strand(merged_uniq_mm_ps) == "-"]$score)
-            covv_min <- GRanges(covv_min)
-            covv_min <- covv_min[covv_min$score > 0]
-            strand(covv_pl) <- "+"
-            strand(covv_min) <- "-"
-            merged_uniq_mm_ps <- sort(c(covv_pl, covv_min))
+            ps_strands <- sum_psites(merged_uniq_mm_ps)
+            merged_uniq_mm_ps <- sort(c(ps_strands$plus, ps_strands$minus))
         }
         
         if (!normalize_cov[bammo]) {

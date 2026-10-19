@@ -252,16 +252,8 @@ prepare_for_ORFquant<-function(annotation_file,bam_file,path_to_rl_cutoff_file=N
     merged_all_ps<-unlist(for_ORFquant$P_sites_all)
     
     if(length(merged_all_ps)>0){
-      covv_pl<-coverage(merged_all_ps[strand(merged_all_ps)=="+"],weight = merged_all_ps[strand(merged_all_ps)=="+"]$score)
-      covv_pl<-GRanges(covv_pl)
-      covv_pl<-covv_pl[covv_pl$score>0]
-      covv_min<-coverage(merged_all_ps[strand(merged_all_ps)=="-"],weight = merged_all_ps[strand(merged_all_ps)=="-"]$score)
-      covv_min<-GRanges(covv_min)
-      covv_min<-covv_min[covv_min$score>0]
-      strand(covv_pl)<-"+"
-      strand(covv_min)<-"-"
-      
-      merged_all_ps<-sort(c(covv_pl,covv_min))
+      ps_strands<-sum_psites(merged_all_ps)
+      merged_all_ps<-sort(c(ps_strands$plus,ps_strands$minus))
       
     }
     for_ORFquant$P_sites_all<-merged_all_ps
@@ -272,16 +264,8 @@ prepare_for_ORFquant<-function(annotation_file,bam_file,path_to_rl_cutoff_file=N
     merged_uniq_ps<-unlist(for_ORFquant$P_sites_uniq)
     if(length(merged_uniq_ps)>0){
       
-      covv_pl<-coverage(merged_uniq_ps[strand(merged_uniq_ps)=="+"],weight = merged_uniq_ps[strand(merged_uniq_ps)=="+"]$score)
-      covv_pl<-GRanges(covv_pl)
-      covv_pl<-covv_pl[covv_pl$score>0]
-      
-      covv_min<-coverage(merged_uniq_ps[strand(merged_uniq_ps)=="-"],weight = merged_uniq_ps[strand(merged_uniq_ps)=="-"]$score)
-      covv_min<-GRanges(covv_min)
-      covv_min<-covv_min[covv_min$score>0]
-      strand(covv_pl)<-"+"
-      strand(covv_min)<-"-"
-      merged_uniq_ps<-sort(c(covv_pl,covv_min))
+      ps_strands<-sum_psites(merged_uniq_ps)
+      merged_uniq_ps<-sort(c(ps_strands$plus,ps_strands$minus))
       
     }
     for_ORFquant$P_sites_uniq<-merged_uniq_ps
@@ -291,16 +275,8 @@ prepare_for_ORFquant<-function(annotation_file,bam_file,path_to_rl_cutoff_file=N
     merged_uniq_mm_ps<-unlist(for_ORFquant$P_sites_uniq_mm)
     if(length(merged_uniq_mm_ps)>0){
       
-      covv_pl<-coverage(merged_uniq_mm_ps[strand(merged_uniq_mm_ps)=="+"],weight = merged_uniq_mm_ps[strand(merged_uniq_mm_ps)=="+"]$score)
-      covv_pl<-GRanges(covv_pl)
-      covv_pl<-covv_pl[covv_pl$score>0]
-      
-      covv_min<-coverage(merged_uniq_mm_ps[strand(merged_uniq_mm_ps)=="-"],weight = merged_uniq_mm_ps[strand(merged_uniq_mm_ps)=="-"]$score)
-      covv_min<-GRanges(covv_min)
-      covv_min<-covv_min[covv_min$score>0]
-      strand(covv_pl)<-"+"
-      strand(covv_min)<-"-"
-      merged_uniq_mm_ps<-sort(c(covv_pl,covv_min))
+      ps_strands<-sum_psites(merged_uniq_mm_ps)
+      merged_uniq_mm_ps<-sort(c(ps_strands$plus,ps_strands$minus))
     }
     for_ORFquant$P_sites_uniq_mm<-merged_uniq_mm_ps
   }
@@ -701,4 +677,19 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
   }
   
   return(list_res)
+}
+
+# The P-sites of ps (a GRanges, with the number of P-sites of each range in "score"), summed by
+# position on each strand, for the "for_ORFquant" files and the P-site tracks: a list of the P-sites
+# of the plus strand and of the minus strand.
+sum_psites<-function(ps){
+  covv_pl<-coverage(ps[strand(ps)=="+"],weight = ps[strand(ps)=="+"]$score)
+  covv_pl<-GRanges(covv_pl)
+  covv_pl<-covv_pl[covv_pl$score>0]
+  covv_min<-coverage(ps[strand(ps)=="-"],weight = ps[strand(ps)=="-"]$score)
+  covv_min<-GRanges(covv_min)
+  covv_min<-covv_min[covv_min$score>0]
+  strand(covv_pl)<-"+"
+  strand(covv_min)<-"-"
+  list(plus=covv_pl,minus=covv_min)
 }
