@@ -392,6 +392,12 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             rls <- unique(c(names(x[["reads_pos1"]]), names(y[["reads_pos1"]])))
             seql <- seqlevels(GTF_annotation$seqinfo)
             seqle <- seqlengths(GTF_annotation$seqinfo)
+            # and the chromosomes with reads that the annotation does not have, with their lengths in the
+            # BAM file: one chunk keeps these reads, so more chunks must keep them too (B6)
+            seq_extra <- c(seqlevelsInUse(x[["reads_pos1"]]), seqlevelsInUse(y[["reads_pos1"]]))
+            seq_extra <- seqlevels(seqs)[seqlevels(seqs) %in% setdiff(seq_extra, seql)]
+            seql <- c(seql, seq_extra)
+            seqle <- c(seqle, seqlengths(seqs)[seq_extra])
             for (rl in rls) {
                 reads_x <- GRanges()
                 reads_y <- GRanges()

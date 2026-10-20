@@ -20,7 +20,7 @@
 #' @importFrom IRanges LogicalList
 #' @importFrom S4Vectors runValue<- DataFrame aggregate cbind.DataFrame
 #' @importFrom S4Vectors endoapply queryHits runLength runValue subjectHits
-#' @importFrom Seqinfo seqlengths<- Seqinfo isCircular seqlengths seqlevels
+#' @importFrom Seqinfo seqlengths<- Seqinfo isCircular seqlengths seqlevels seqlevelsInUse
 #' @importFrom SummarizedExperiment assay
 #' @importFrom grDevices dev.off pdf rainbow
 #' @importFrom methods as is new representation setMethod setRefClass
