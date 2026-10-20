@@ -201,12 +201,20 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         stop(paste("length of 'sample_names' must be same as 'bam_files'.", date(), 
             "\n"))
     }
+    if (!length(annotation_file) %in% c(1, length(bam_files))) {
+        stop(paste("length of 'annotation_file' must be 1 or same as 'bam_files'.", 
+            date(), "\n"))
+    }
     
     if (sum(!readlength_choice_method %in% c("max_coverage", "max_inframe", "all")) > 
         0) {
         stop(paste("'readlength_choice_method' must be one of 'max_coverage','max_inframe','all'.", 
             date(), "\n"))
     }
+    
+    # all input files, before the first BAM file: else a missing file stops the run after the
+    # analysis of the BAM files before it
+    check_files_exist(c(annotation_file, bam_files))
     
     fastainput <- is(genome_seq, "FaFile")
     

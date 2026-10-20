@@ -1,3 +1,18 @@
+# RiboseQC (development version)
+
+## Input checks
+
+- `RiboseQC_analysis()` now checks its input before it reads the first BAM
+  file, and stops with a message that says what is wrong. The runs on correct
+  input give the same results. The checks are:
+  - Input files that don't exist (`annotation_file`, `bam_files`) are listed
+    together. Before, the error for a missing annotation file was `cannot open
+    the connection` (only a warning gave the file name), and a missing BAM
+    file stopped the run only after the analysis of the BAM files before it.
+    `annotation_file` must have 1 file, or 1 for each BAM file, as the help
+    says. Before, fewer files stopped the run at the first BAM file without
+    one, and more files than BAM files were not used.
+
 # RiboseQC 1.4.0
 
 ## Installation
