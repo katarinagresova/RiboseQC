@@ -56,6 +56,12 @@
 - The new file `README.md` of the example data (in
   `system.file("ext_data", package = "RiboseQC")`) gives the sources of the
   files, their terms of use and the papers to cite.
+- The genome sequence of the example data, `simp_arab.fa.gz`, is compressed
+  with `bgzip` (before: gzip) and comes with its indexes (`.fai`, `.gzi`). The
+  sequence is the same. `prepare_annotation_files()` reads it directly, so the
+  README, the vignette and the examples no longer write an uncompressed copy
+  first. Code that reads the file with gzip tools, for example
+  `Biostrings::readDNAStringSet()`, still works.
 
 # RiboseQC 1.3.0
 

@@ -34,7 +34,7 @@ prepare_annotation_files(
 \item{forge_BSgenome}{Not used. Earlier versions forged and installed a \code{BSgenome} package from \code{twobit_file} when it was \code{TRUE};
 this failed with current BSgenomeForge versions (ohlerlab/RiboseQC#21, #23). It defaults to \code{FALSE}}
 
-\item{genome_seq}{FASTA file of the genome sequence (a path or an \code{FaFile}). Required; \code{twoBitToFa} of the UCSC tools
+\item{genome_seq}{FASTA file of the genome sequence, uncompressed or compressed with \code{bgzip} (a path or an \code{FaFile}). Required; \code{twoBitToFa} of the UCSC tools
 (http://hgdownload.soe.ucsc.edu/admin/exe/) makes one from a twobit file}
 
 \item{circ_chroms}{Chromosomes to make circular in the genome sequence - defaults to DEFAULT_CIRC_SEQS}
@@ -94,13 +94,9 @@ BSgenome package, which \code{load_annotation} loads.\cr
 \code{genome}: the genome sequence, an FaFile_Circ object. Loaded with \code{load_annotation} function.\cr
 }
 \examples{
-# An uncompressed copy of the bundled FASTA file
-fasta <- file.path(tempdir(), "simp_arab.fa")
-Biostrings::writeXStringSet(Biostrings::readDNAStringSet(
-  system.file("ext_data", "simp_arab.fa.gz", package = "RiboseQC")), fasta)
 annot_file <- prepare_annotation_files(annotation_directory = tempdir(),
   gtf_file = system.file("ext_data", "simp_arab.gtf.gz", package = "RiboseQC"),
-  genome_seq = fasta)
+  genome_seq = system.file("ext_data", "simp_arab.fa.gz", package = "RiboseQC"))
 annot_file
 }
 \seealso{

@@ -50,16 +50,10 @@ library(RiboseQC)
 ext_data <- system.file("ext_data", package = "RiboseQC")
 dir.create("example")
 
-# The bundled genome sequence is compressed with gzip, which Rsamtools can't
-# read: write an uncompressed copy
-genome_fasta <- file.path(getwd(), "example", "simp_arab.fa")
-Biostrings::writeXStringSet(Biostrings::readDNAStringSet(file.path(ext_data, "simp_arab.fa.gz")),
-                            genome_fasta)
-
 # 1. Once for each annotation: writes example/annotation/simp_arab.gtf.gz_Rannot
 annotation_file <- prepare_annotation_files(annotation_directory = "example/annotation",
                                             gtf_file = file.path(ext_data, "simp_arab.gtf.gz"),
-                                            genome_seq = genome_fasta)
+                                            genome_seq = file.path(ext_data, "simp_arab.fa.gz"))
 
 # 2. Analyze the two BAM files: writes example/root_* and example/shoots_*,
 #    and one HTML report for both samples, example/report.html
@@ -80,7 +74,7 @@ For your own data, give your GTF, FASTA and BAM files, and a `dest_names` prefix
 ### Input files
 
 - **GTF**: `exon` and `CDS` lines, each with `transcript_id` and `gene_id`. `gene_name`, `gene_biotype` (or `gene_type`) and `transcript_biotype` (or `transcript_type`) are used when present.
-- **Genome sequence**: an uncompressed FASTA file, with the same chromosome names as the GTF and the BAM files. Give its absolute path: the `_Rannot` file refers to it by the path that you give, and `RiboseQC_analysis()` reads it from there. Chromosomes named as in `circ_chroms` (by default `chrM`, `MT`, `ChrM`, `ChrC`, `Pltd`, `Pt` and other names of mitochondria and plastids) are treated as circular, and each one is analyzed as a separate compartment. `prepare_annotation_files()` no longer forges a *BSgenome* package from a 2bit file, which failed with current Bioconductor (ohlerlab/RiboseQC#21, #23); `twoBitToFa` of the UCSC tools (http://hgdownload.soe.ucsc.edu/admin/exe/) makes a FASTA file from a 2bit file.
+- **Genome sequence**: a FASTA file, uncompressed or compressed with `bgzip` (as the example), with the same chromosome names as the GTF and the BAM files. Give its absolute path: the `_Rannot` file refers to it by the path that you give, and `RiboseQC_analysis()` reads it from there. Chromosomes named as in `circ_chroms` (by default `chrM`, `MT`, `ChrM`, `ChrC`, `Pltd`, `Pt` and other names of mitochondria and plastids) are treated as circular, and each one is analyzed as a separate compartment. `prepare_annotation_files()` no longer forges a *BSgenome* package from a 2bit file, which failed with current Bioconductor (ohlerlab/RiboseQC#21, #23); `twoBitToFa` of the UCSC tools (http://hgdownload.soe.ucsc.edu/admin/exe/) makes a FASTA file from a 2bit file.
 - **BAM**: Ribo-seq reads aligned to the genome (not to the transcriptome) with a spliced aligner (e.g. STAR), sorted by coordinate and indexed with `samtools index`. Reads flagged as duplicates, secondary alignments and alignments with an insertion or a deletion (`I` or `D` in the CIGAR) are not used. Soft-clipped bases do not count in the read length, so remove adapters and UMIs before the alignment. Reads with a mapping quality above 50 count as uniquely mapping (STAR gives them 255).
 
 
