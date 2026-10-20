@@ -31,6 +31,16 @@
   these P-sites give only the column `P_sites_raw_uniq_mm`. The other P-sites
   and the other output files don't change.
 
+## Bug fixes
+
+- `prepare_annotation_files()` stores the path of the FASTA file
+  (`genome_seq`) as an absolute path. Before, it stored the path as given, so
+  with a relative path, `load_annotation()`, `RiboseQC_analysis()` and
+  ORFquant failed in another working directory: the FASTA file did not
+  exist. Only the directories of the path are resolved, not the file name, so
+  the `.fai` and `.gzi` files next to the FASTA file are used, also when the
+  file is a symbolic link. The path of an `FaFile` is stored as it is.
+
 ## Documentation
 
 - The new vignette, `vignette("RiboseQC")`, runs the analysis on the example

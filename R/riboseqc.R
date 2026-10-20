@@ -2484,7 +2484,8 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
 #' @param forge_BSgenome Not used. Earlier versions forged and installed a \code{BSgenome} package from \code{twobit_file} when it was \code{TRUE};
 #' this failed with current BSgenomeForge versions (ohlerlab/RiboseQC#21, #23). It defaults to \code{FALSE}
 #' @param genome_seq FASTA file of the genome sequence, uncompressed or compressed with \code{bgzip} (a path or an \code{FaFile}). Required; \code{twoBitToFa} of the UCSC tools
-#' (http://hgdownload.soe.ucsc.edu/admin/exe/) makes one from a twobit file
+#' (http://hgdownload.soe.ucsc.edu/admin/exe/) makes one from a twobit file. The annotation refers to the FASTA file by its path:
+#' a relative path is stored as an absolute path, the path of an \code{FaFile} as it is
 #' @param circ_chroms Chromosomes to make circular in the genome sequence - defaults to DEFAULT_CIRC_SEQS
 #' @param create_TxDb Create a \code{TxDb} object and a *Rannot object? It defaults to \code{TRUE}
 #' @param annot_file specify an exact file name for the rds file created by this function, defaults to annotation_directory/basename(gtf)_Rannot
@@ -2563,6 +2564,8 @@ prepare_annotation_files<-function(annotation_directory,twobit_file=NULL,gtf_fil
     if(!dir.exists(annotation_directory)){dir.create(path = annotation_directory,recursive = TRUE)}
     annotation_directory<-normalizePath(annotation_directory)
     gtf_file<-normalizePath(gtf_file)
+    #the annotation stores the FASTA path: make it absolute, but keep the file name, so that the .fai and .gzi next to it are used
+    if(is.character(genome_seq)) genome_seq<-paste(normalizePath(dirname(genome_seq)),basename(genome_seq),sep="/")
 
 
     if(!is(genome_seq,'FaFile')){
