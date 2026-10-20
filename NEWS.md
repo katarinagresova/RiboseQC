@@ -1,4 +1,4 @@
-# RiboseQC (development version)
+# RiboseQC 1.4.0
 
 ## Installation
 

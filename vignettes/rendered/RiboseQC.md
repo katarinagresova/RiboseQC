@@ -386,7 +386,7 @@ sessionInfo()
 #> [8] base     
 #> 
 #> other attached packages:
-#> [1] RiboseQC_1.3.0       GenomicRanges_1.62.1 Seqinfo_1.0.0       
+#> [1] RiboseQC_1.4.0       GenomicRanges_1.62.1 Seqinfo_1.0.0       
 #> [4] IRanges_2.44.0       S4Vectors_0.48.1     BiocGenerics_0.56.0 
 #> [7] generics_0.1.4      
 #> 
