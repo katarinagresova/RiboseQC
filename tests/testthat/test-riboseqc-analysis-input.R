@@ -137,3 +137,12 @@ test_that("RiboseQC_analysis() refuses output directories that cannot be written
   expect_true(dir.exists(out))
   expect_length(list.files(out, all.files = TRUE, no.. = TRUE), 0)
 })
+
+test_that("RiboseQC_analysis() says when a BAM file has no mapped reads", {
+  empty <- file.path(work, "empty.bam")
+  Rsamtools::filterBam(bams[1], empty, filter = S4Vectors::FilterRules(list(none = function(x) rep(FALSE, nrow(x)))))
+  # Before, the run stopped with "subscript out of bounds"
+  msg <- analysis_error(annotation_file = example_annotation(), bam_files = empty,
+                        dest_names = file.path(work, "out_empty", "empty"))
+  expect_match(msg, "The BAM file .*empty\\.bam has no mapped reads")
+})

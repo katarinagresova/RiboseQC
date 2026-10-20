@@ -32,6 +32,10 @@
     directory that could not be written to stopped the run at the first file
     that it wrote, with `cannot open the connection`, and the directory of the
     report stopped it at the report, after the analysis.
+- A BAM file without mapped reads (or with only secondary alignments and
+  duplicates, which are not used) stops the run at the start of its
+  analysis, with an error that says so. Before, the error was `subscript out
+  of bounds`.
 
 # RiboseQC 1.4.0
 

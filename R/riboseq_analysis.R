@@ -374,6 +374,11 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             sep = ""))
         maxmin <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc, n_cores = n_cores)
         cat(paste("Extracting read lengths --- Done! ", date(), "\n", sep = ""))
+        # no chunk: else the next line stops with "subscript out of bounds"
+        if (length(maxmin) == 0) {
+            stop(paste("The BAM file ", bam_file, " has no mapped reads (secondary alignments and duplicates are not used). ", 
+                date(), "\n", sep = ""))
+        }
         readlengths <- seq(maxmin[[2]], maxmin[[1]])
         
         
