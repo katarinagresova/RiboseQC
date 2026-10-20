@@ -1,10 +1,7 @@
-^RiboseQC\.Rproj$
 ^\.Rproj\.user$
 ^devnotes_dermot\.txt$
 (^|/)\.DS_Store$
 ^\.git$
-^RiboseQC\.html$
-^RiboseQC\.html\.REMOVED\.git-id$
 ^vignettes/.*test
 ^vignettes/.*root
 ^vignettes/.*shoot
@@ -12,12 +9,9 @@
 (^|/)\.Rhistory$
 ^\.gitignore$
 ^RiboseQC\.Rcheck$
-^TODOS\.R$
 ^dev$
 ^CLAUDE\.md$
 ^PLAN\.md$
 ^\.claude$
-^ex$
-^RiboseQC-manual\.pdf$
-^RiboseQC\.R$
-^RiboseQC\.Rmd$
+^environment\.yml$
+^vignettes/rendered$
