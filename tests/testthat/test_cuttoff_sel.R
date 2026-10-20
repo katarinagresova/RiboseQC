@@ -5,8 +5,7 @@ library(testthat)
 # (about 2 min). normalize_cov = FALSE: the default fails on this BAM (#15).
 tmp_dir <- tempfile()
 dir.create(tmp_dir)
-arab_fasta <- file.path(tmp_dir,'simp_arab.fa')
-Biostrings::writeXStringSet(Biostrings::readDNAStringSet(system.file(package='RiboseQC',"ext_data","simp_arab.fa.gz")),arab_fasta)
+arab_fasta <- system.file(package='RiboseQC',"ext_data","simp_arab.fa.gz")
 annotation <- prepare_annotation_files(annotation_directory = tmp_dir,genome_seq = arab_fasta,
                                        gtf_file = system.file(package='RiboseQC',"ext_data","simp_arab.gtf.gz"))
 RiboseQC_analysis(annotation,bam_files = system.file(package='RiboseQC',"ext_data","simp_arab_root.bam"),

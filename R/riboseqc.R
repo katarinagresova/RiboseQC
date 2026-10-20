@@ -1643,7 +1643,7 @@ get_codon_usage_data <- function(data, data_type, comp, rl) {
 #' @seealso \code{\link{create_html_report}}
 #' @examples
 #' \dontrun{
-#' # This draws all plots of section 7 of the report: about 10 min on the bundled data.
+#' # This draws all plots of section 7 of the report: about 2 min on the bundled data.
 #' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
 #' plot_codon_usage_positional_rmd(res_all, "root")
 #' }
@@ -1865,11 +1865,9 @@ plot_codon_usage_positional <- function(codon_usage_data, scal, sample="", outpu
 #'
 #' @seealso \code{\link{create_html_report}}, \code{\link{get_metagene_data}}, \code{\link{plot_metagene_hm}}
 #' @examples
-#' \dontrun{
-#' # This draws all plots of section 8 of the report: about 1.5 min on the bundled data.
+#' # This draws all plots of section 8 of the report: 14 on the bundled data.
 #' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
 #' plot_codon_usage_bulk_rmd(res_all, "root")
-#' }
 #' @export
 
 plot_codon_usage_bulk_rmd <- function(data, sample="", output_rds_path="") {
@@ -2313,13 +2311,9 @@ get_ps_fromsplicemin<-function(x,cutoff){
 #' The function also assigns the two objects to \code{GTF_annotation} and \code{genome_seq} in \code{envir}.
 #' @seealso \code{\link{prepare_annotation_files}}
 #' @examples
-#' # An uncompressed copy of the bundled FASTA file
-#' fasta <- file.path(tempdir(), "simp_arab.fa")
-#' Biostrings::writeXStringSet(Biostrings::readDNAStringSet(
-#'   system.file("ext_data", "simp_arab.fa.gz", package = "RiboseQC")), fasta)
 #' annot_file <- prepare_annotation_files(annotation_directory = tempdir(),
 #'   gtf_file = system.file("ext_data", "simp_arab.gtf.gz", package = "RiboseQC"),
-#'   genome_seq = fasta)
+#'   genome_seq = system.file("ext_data", "simp_arab.fa.gz", package = "RiboseQC"))
 #' load_annotation(annot_file)
 #' GTF_annotation$genetic_codes
 #' genome_seq
@@ -2489,7 +2483,7 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
 #' @param export_bed_tables_TxDb Export coordinates and info about different genomic regions in the annotation_directory? It defaults to \code{TRUE}
 #' @param forge_BSgenome Not used. Earlier versions forged and installed a \code{BSgenome} package from \code{twobit_file} when it was \code{TRUE};
 #' this failed with current BSgenomeForge versions (ohlerlab/RiboseQC#21, #23). It defaults to \code{FALSE}
-#' @param genome_seq FASTA file of the genome sequence (a path or an \code{FaFile}). Required; \code{twoBitToFa} of the UCSC tools
+#' @param genome_seq FASTA file of the genome sequence, uncompressed or compressed with \code{bgzip} (a path or an \code{FaFile}). Required; \code{twoBitToFa} of the UCSC tools
 #' (http://hgdownload.soe.ucsc.edu/admin/exe/) makes one from a twobit file
 #' @param circ_chroms Chromosomes to make circular in the genome sequence - defaults to DEFAULT_CIRC_SEQS
 #' @param create_TxDb Create a \code{TxDb} object and a *Rannot object? It defaults to \code{TRUE}
@@ -2538,13 +2532,9 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
 #' @return a TxDb file and a *Rannot files are created in the specified \code{annotation_directory}.
 #' @seealso \code{\link{load_annotation}}, \code{\link[txdbmaker]{makeTxDbFromGFF}}.
 #' @examples
-#' # An uncompressed copy of the bundled FASTA file
-#' fasta <- file.path(tempdir(), "simp_arab.fa")
-#' Biostrings::writeXStringSet(Biostrings::readDNAStringSet(
-#'   system.file("ext_data", "simp_arab.fa.gz", package = "RiboseQC")), fasta)
 #' annot_file <- prepare_annotation_files(annotation_directory = tempdir(),
 #'   gtf_file = system.file("ext_data", "simp_arab.gtf.gz", package = "RiboseQC"),
-#'   genome_seq = fasta)
+#'   genome_seq = system.file("ext_data", "simp_arab.fa.gz", package = "RiboseQC"))
 #' annot_file
 #' @export
 

@@ -50,19 +50,23 @@ mitochondrial genome (`ChrM`).
 - `simp_arab.gtf.gz`: the annotation of these genes, from Araport11
   \[4\];
 - `simp_arab.fa.gz`: the genome sequence (TAIR10 \[5\]), with the bases
-  away from these genes replaced by N (99.6% of the genome);
+  away from these genes replaced by N (99.6% of the genome), compressed
+  with `bgzip` and indexed;
 - `simp_arab_root.bam` and `simp_arab_shoots.bam`: the Ribo-seq reads of
   a root and a shoot sample, aligned to the genome, with their indexes;
-- `root_results_RiboseQC`: the results of an earlier analysis of the
-  root sample, which the examples of the help pages use.
+- `root_results_RiboseQC`: the results of `RiboseQC_analysis()` on the
+  root sample, which the examples of the help pages use;
+- `README.md`: the sources of these files, their terms of use and the
+  papers to cite.
 
 ``` r
 ext_data <- system.file("ext_data", package = "RiboseQC")
 list.files(ext_data)
-#> [1] "root_results_RiboseQC"    "simp_arab_root.bam"      
-#> [3] "simp_arab_root.bam.bai"   "simp_arab_shoots.bam"    
-#> [5] "simp_arab_shoots.bam.bai" "simp_arab.fa.gz"         
-#> [7] "simp_arab.gtf.gz"
+#>  [1] "README.md"                "root_results_RiboseQC"   
+#>  [3] "simp_arab_root.bam"       "simp_arab_root.bam.bai"  
+#>  [5] "simp_arab_shoots.bam"     "simp_arab_shoots.bam.bai"
+#>  [7] "simp_arab.fa.gz"          "simp_arab.fa.gz.fai"     
+#>  [9] "simp_arab.fa.gz.gzi"      "simp_arab.gtf.gz"
 ```
 
 All output files go to a temporary directory:
@@ -79,16 +83,13 @@ and writes a *TxDb* and an `_Rannot` file to `annotation_directory`. The
 `_Rannot` file holds the annotated features (transcripts, exons, CDS,
 UTRs, introns, start and stop codons, …) that `RiboseQC_analysis()`
 uses, and refers to the genome sequence by its path. The genome sequence
-must be a FASTA file that *Rsamtools* can read; the example one is
-compressed with gzip, so we write an uncompressed copy first.
+must be a FASTA file that *Rsamtools* can read: uncompressed, or
+compressed with `bgzip`, as the example one.
 
 ``` r
-genome_fasta <- file.path(out_dir, "simp_arab.fa")
-Biostrings::writeXStringSet(Biostrings::readDNAStringSet(file.path(ext_data, "simp_arab.fa.gz")),
-                            genome_fasta)
 annotation_file <- prepare_annotation_files(annotation_directory = out_dir,
                                             gtf_file = file.path(ext_data, "simp_arab.gtf.gz"),
-                                            genome_seq = genome_fasta)
+                                            genome_seq = file.path(ext_data, "simp_arab.fa.gz"))
 ```
 
 (*txdbmaker* warns that some CDS phases are missing and that the *TxDb*
@@ -321,9 +322,10 @@ Your data need:
 
 - a GTF file with `exon` and `CDS` lines, each with `transcript_id` and
   `gene_id`;
-- the genome sequence as an uncompressed FASTA file, with the same
-  chromosome names as the GTF and the BAM files. Give its absolute path:
-  the `_Rannot` file refers to it by the path that you give;
+- the genome sequence as a FASTA file, uncompressed or compressed with
+  `bgzip`, with the same chromosome names as the GTF and the BAM files.
+  Give its absolute path: the `_Rannot` file refers to it by the path
+  that you give;
 - the Ribo-seq reads aligned to the genome (not to the transcriptome)
   with a spliced aligner such as STAR, sorted by coordinate and indexed
   with `samtools index`.

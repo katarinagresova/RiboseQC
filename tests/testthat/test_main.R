@@ -3,11 +3,7 @@
 testthat::test_that("prepare_annotation_files works as expected",{
   
   arab_fasta <- system.file(package='RiboseQC',"ext_data","simp_arab.fa.gz")
-  tmp_dir = tempdir()
-  # An uncompressed copy: Rsamtools reads only uncompressed or bgzip FASTA files
-  Biostrings::writeXStringSet(Biostrings::readDNAStringSet(arab_fasta),file.path(tmp_dir,'simp_arab.fa'))
-  arab_fasta <- file.path(tmp_dir,'simp_arab.fa')
-  
+
   arab_gtf <- system.file(package='RiboseQC',"ext_data","simp_arab.gtf.gz")
  
    

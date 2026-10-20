@@ -27,7 +27,7 @@ These plots are displayed in the RiboseQC report in section 7.
 }
 \examples{
 \dontrun{
-# This draws all plots of section 7 of the report: about 10 min on the bundled data.
+# This draws all plots of section 7 of the report: about 2 min on the bundled data.
 load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
 plot_codon_usage_positional_rmd(res_all, "root")
 }
