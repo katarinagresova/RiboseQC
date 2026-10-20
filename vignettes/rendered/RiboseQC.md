@@ -54,7 +54,7 @@ mitochondrial genome (`ChrM`).
   with `bgzip` and indexed;
 - `simp_arab_root.bam` and `simp_arab_shoots.bam`: the Ribo-seq reads of
   a root and a shoot sample, aligned to the genome, with their indexes;
-- `root_results_RiboseQC`: the results of an earlier analysis of the
+- `root_results_RiboseQC`: the results of `RiboseQC_analysis()` on the
   root sample, which the examples of the help pages use;
 - `README.md`: the sources of these files, their terms of use and the
   papers to cite.

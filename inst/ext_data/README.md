@@ -3,14 +3,14 @@
 A small data set for the vignette, the examples of the help pages and the
 tests. It covers 309 protein-coding genes of *Arabidopsis thaliana*: 99 on the
 five nuclear chromosomes, 88 on the chloroplast genome (`ChrC`) and 122 on the
-mitochondrial genome (`ChrM`). The files were made in 2019.
+mitochondrial genome (`ChrM`). The GTF, FASTA and BAM files were made in 2019.
 
 | File | Content | Source |
 |---|---|---|
 | `simp_arab.gtf.gz` | The `exon` and `CDS` lines of the 309 genes (410 transcripts). They come from a version of the Araport11 annotation, with the non-coding RNAs of TAIR10, that the authors of RiboseQC changed (the source column is `Araport_11_mod_Lorenzo`). The changes are not documented. | Araport11 [2] |
 | `simp_arab.fa.gz`, `.fai`, `.gzi` | The TAIR10 genome sequence (`Chr1` to `Chr5`, `ChrC` and `ChrM`). Only the exons of the 309 genes with 100 bp on each side, and 4 regions on `Chr4` and `Chr5` (5 kb), keep their bases. All other bases (99.6% of the genome) are N. Compressed with `bgzip` and indexed, so that *Rsamtools* can read it. | TAIR10 [3, 4] |
 | `simp_arab_root.bam`, `simp_arab_shoots.bam` and their `.bai` indexes | Ribo-seq alignments of a root sample (26,702 alignments) and a shoot sample (53,142). Most of them are on the 309 genes. The others (1,702 and 22,585) are on nuclear regions more than 50 kb from these genes, where the genome sequence is N. RiboseQC counts them as intergenic. Each alignment keeps its position, flag, mapping quality and CIGAR, but not its read name, sequence, base qualities or tags. The mapping qualities (255, 3, 1 and 0) are those of STAR. | Hsu et al. [1] |
-| `root_results_RiboseQC` | A `_results_RiboseQC` file of `RiboseQC_analysis()`, made in 2019 from an earlier and larger subset of the root sample. It is not the result of `simp_arab_root.bam`: it has, for example, 44,640 reads on the nuclear genome instead of 18,496, and offsets for 6 read lengths (3 of the nuclear genome and 3 of `ChrC`) instead of 1. The examples of the help pages use it. | RiboseQC |
+| `root_results_RiboseQC` | The `_results_RiboseQC` file of `RiboseQC_analysis()` with its default parameters on `simp_arab_root.bam`. It holds one object, `res_all`. The examples of the help pages use it. `inst/script/make_root_results.R` makes it. | RiboseQC |
 
 The reads are from GEO series GSE81332 (SRA SRP074840, BioProject
 PRJNA321304), "Ribosome profiling in Arabidopsis root and shoot" [1]. It has
@@ -18,10 +18,11 @@ three Ribo-seq replicates of roots (GSM2150567, GSM2150568, GSM2150569) and
 three of shoots (GSM2150570, GSM2150571, GSM2150572). The files do not record
 which replicate each BAM file comes from, or if the replicates were pooled.
 
-`inst/script/creating_test_data.R` shows how the files were made: it keeps the
-GTF lines of the genes with the most reads in each compartment, replaces the
-bases more than 100 bp from these lines with N, and keeps the alignments that
-overlap these lines. It does not reproduce the files exactly. It selects 20
+`inst/script/creating_test_data.R` shows how the GTF, FASTA and BAM files were
+made: it keeps the GTF lines of the genes with the most reads in each
+compartment, replaces the bases more than 100 bp from these lines with N, and
+keeps the alignments that overlap these lines. It does not reproduce the files
+exactly. It selects 20
 genes in each compartment, not 309 genes, and its BAM files have no alignments
 outside the genes. It reads the complete files, which are not in this
 repository.
