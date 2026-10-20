@@ -1,0 +1,69 @@
+# R CMD check, with the tests, the vignette and the PDF manual, on the oldest
+# and on the newest Bioconductor release that RiboseQC supports. With n_cores
+# above 1, RiboseQC forks its worker processes, which needs Linux or macOS;
+# this checks Linux.
+name: R-CMD-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  R-CMD-check:
+    name: Bioconductor ${{ matrix.bioc }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    container: bioconductor/bioconductor_docker:${{ matrix.bioc }}
+    strategy:
+      fail-fast: false
+      matrix:
+        bioc: [RELEASE_3_22, RELEASE_3_23]
+    env:
+      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install the dependencies
+        shell: Rscript {0}
+        run: |
+          BiocManager::install(c("remotes", "rcmdcheck"), ask = FALSE, update = FALSE)
+          remotes::install_deps(dependencies = TRUE, upgrade = "never",
+                                repos = BiocManager::repositories())
+
+      # The Bioconductor images have no LaTeX, which the PDF manual needs.
+      # setup-tinytex installs texinfo with apt-get, and the images have no
+      # apt package lists.
+      - name: Update the apt package lists
+        run: apt-get update
+
+      - uses: r-lib/actions/setup-tinytex@v2
+
+      - name: Check
+        shell: Rscript {0}
+        run: |
+          rcmdcheck::rcmdcheck(build_args = "--no-manual",
+                               error_on = "warning", check_dir = "check")
+
+      - name: Upload the output of the check
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: check-${{ matrix.bioc }}
+          path: check
+
+  # The R files must have LF line endings (see .gitattributes).
+  line-endings:
+    name: LF line endings
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the line endings of the R files
+        run: |
+          if git grep -l $'\r' -- '*.R'; then
+            echo "The files above have CRLF line endings."
+            exit 1
+          fi

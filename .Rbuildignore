@@ -15,3 +15,4 @@
 ^\.claude$
 ^environment\.yml$
 ^vignettes/rendered$
+^\.github$
