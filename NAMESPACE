@@ -83,7 +83,8 @@ importFrom(Seqinfo,
   Seqinfo,
   isCircular,
   seqlengths,
-  seqlevels
+  seqlevels,
+  seqlevelsInUse
 )
 importFrom(SummarizedExperiment,assay)
 importFrom(grDevices,

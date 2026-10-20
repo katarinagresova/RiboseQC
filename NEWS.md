@@ -37,6 +37,18 @@
   analysis, with an error that says so. Before, the error was `subscript out
   of bounds`.
 
+## Bug fixes
+
+- `RiboseQC_analysis()` no longer stops when the BAM file has reads on
+  chromosomes that the annotation does not have (for example scaffolds), and
+  the BAM file has more than `chunk_size` alignments, so that it is read in
+  more than one chunk. The error was `The following seqlevels are to be
+  dropped but are currently in use` (#14 reported `duplicated sequence
+  names`). These reads now count as in a run with one chunk: they give
+  P-sites and coverage on these chromosomes, and they count in the
+  percentages of `P_sites_calcs`. The runs that worked before give the same
+  results.
+
 # RiboseQC 1.4.0
 
 ## Installation
