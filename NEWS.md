@@ -67,6 +67,9 @@
   The old file came from an earlier and larger subset of the root sample, and
   from the code of 2019. The examples of the help pages use this file, so
   their plots change. `inst/script/make_root_results.R` makes the file.
+- The example of `plot_codon_usage_bulk_rmd()` runs: on the new
+  `root_results_RiboseQC`, it takes about 12 s (before: about 1.5 min, in
+  `\dontrun{}`).
 
 # RiboseQC 1.3.0
 
