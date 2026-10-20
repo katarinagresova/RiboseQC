@@ -324,8 +324,8 @@ Your data need:
   `gene_id`;
 - the genome sequence as a FASTA file, uncompressed or compressed with
   `bgzip`, with the same chromosome names as the GTF and the BAM files.
-  Give its absolute path: the `_Rannot` file refers to it by the path
-  that you give;
+  The `_Rannot` file refers to it by its absolute path, so do not move
+  it;
 - the Ribo-seq reads aligned to the genome (not to the transcriptome)
   with a spliced aligner such as STAR, sorted by coordinate and indexed
   with `samtools index`.

@@ -41,7 +41,7 @@ RiboseQC_analysis(
 
 \item{normalize_cov}{export normalized (sum to 1 million) bedgraph files for coverage tracks? Defaults to \code{TRUE}}
 
-\item{chunk_size}{the number of alignments to read at each iteration, defaults to 5000000, increase when more RAM is available. Must be between 10000 and 100000000}
+\item{chunk_size}{the number of alignments to read at each iteration, defaults to 5000000, increase when more RAM is available. Must be more than 100000 and at most 100000000}
 
 \item{write_tmp_files}{Should output all the results (in *results_RiboseQC_all)? Defaults to \code{TRUE}. Must be of length 1 or same length as bam_files.}
 
@@ -55,19 +55,20 @@ RiboseQC_analysis(
 
 \item{sample_names}{character vector containing the names for each sample analyzed (for the html report). Defaults to 'sample1', 'sample2' ...}
 
-\item{report_file}{desired filename for for the html report file. Defaults to the first entry of \code{bam_files} followed by '.html'}
+\item{report_file}{desired filename for the html report file. Defaults to the first entry of \code{bam_files} followed by '_RiboseQC_report.html'}
 
 \item{extended_report}{creates a large html report including codon occupancy for each read length. Defaults to \code{FALSE}}
 
 \item{pdf_plots}{creates a pdf file for each produced plot. Defaults to \code{TRUE}}
 
-\item{offsets_df}{optionally input an offsets_df created externally, note that this does not yet fully integrate with stats such as 'proportion in phase' it will however alter the psites which are outputted. Must have cols 'read_length','cutoff'}
+\item{offsets_df}{optionally input an offsets_df created externally, note that this does not yet fully integrate with stats such as 'proportion in phase' it will however alter the psites which are outputted. Must have cols 'read_length','cutoff'.
+A data.frame gives the offsets of the nuclear compartment (\code{"nucl"}); a list with one such table for each compartment, named as the compartments, gives the offsets of all compartments}
 
 \item{n_cores}{number of cores to use, each for one chunk of \code{chunk_size} alignments at a time, in forked processes (not on Windows). Each core needs the memory for one chunk. The results do not depend on it. Defaults to 1}
 }
 \value{
-the function saves a 'results_RiboseQC_all' R file appended to the bam_files path including the complete list of outputs described here.
-In addition, bedgraph files for coverage value and P_sites position is appended to the bam_files path, including also a summary of P_sites selection statistics,
+the function saves a 'results_RiboseQC_all' R file appended to the prefix in \code{dest_names} (by default the bam_files path) including the complete list of outputs described here.
+In addition, bedgraph files for coverage value and P_sites position is appended to the same prefix, including also a summary of P_sites selection statistics,
 a smaller 'results_RiboseQC' R file used for creating a dynamic html report, and a 'for_ORFquant' R object that can be used in the ORFquant pipeline.
 The tab-separated file 'P_sites_offsets.tsv' has the offsets that were used to calculate the P_sites, with the columns 'read_length', 'cutoff' and 'compartment'
 (\code{"nucl"} or the name of a circular chromosome): one row for each read length and compartment, including the read lengths of \code{offsets_df} and of \code{rescue_all_rls}.

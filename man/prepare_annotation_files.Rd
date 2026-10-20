@@ -35,7 +35,8 @@ prepare_annotation_files(
 this failed with current BSgenomeForge versions (ohlerlab/RiboseQC#21, #23). It defaults to \code{FALSE}}
 
 \item{genome_seq}{FASTA file of the genome sequence, uncompressed or compressed with \code{bgzip} (a path or an \code{FaFile}). Required; \code{twoBitToFa} of the UCSC tools
-(http://hgdownload.soe.ucsc.edu/admin/exe/) makes one from a twobit file}
+(http://hgdownload.soe.ucsc.edu/admin/exe/) makes one from a twobit file. The annotation refers to the FASTA file by its path:
+a relative path is stored as an absolute path, the path of an \code{FaFile} as it is}
 
 \item{circ_chroms}{Chromosomes to make circular in the genome sequence - defaults to DEFAULT_CIRC_SEQS}
 

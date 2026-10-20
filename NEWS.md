@@ -31,6 +31,16 @@
   these P-sites give only the column `P_sites_raw_uniq_mm`. The other P-sites
   and the other output files don't change.
 
+## Bug fixes
+
+- `prepare_annotation_files()` stores the path of the FASTA file
+  (`genome_seq`) as an absolute path. Before, it stored the path as given, so
+  with a relative path, `load_annotation()`, `RiboseQC_analysis()` and
+  ORFquant failed in another working directory: the FASTA file did not
+  exist. Only the directories of the path are resolved, not the file name, so
+  the `.fai` and `.gzi` files next to the FASTA file are used, also when the
+  file is a symbolic link. The path of an `FaFile` is stored as it is.
+
 ## Documentation
 
 - The new vignette, `vignette("RiboseQC")`, runs the analysis on the example
@@ -70,6 +80,16 @@
 - The example of `plot_codon_usage_bulk_rmd()` runs: on the new
   `root_results_RiboseQC`, it takes about 12 s (before: about 1.5 min, in
   `\dontrun{}`).
+- Corrections to the help pages:
+  - `?RiboseQC_analysis`: `chunk_size` must be more than 100,000 (before:
+    10,000). The output files get the prefixes of `dest_names`, which default
+    to the BAM paths (before: the BAM paths). The report is by default the
+    first BAM path followed by `_RiboseQC_report.html` (before: `.html`).
+    `offsets_df` can be a data.frame, for the offsets of `nucl`, or a list with
+    a table for each compartment.
+  - `?create_html_report`: the plots are saved as RDS files in
+    `<output_file>_plots/rds/` (before: as PDF files, in `<name>_plots/`).
+    `create_pdfs_from_rds_objects()` makes PDF files of them.
 
 # RiboseQC 1.3.0
 
