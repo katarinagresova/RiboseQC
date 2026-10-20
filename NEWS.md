@@ -53,6 +53,9 @@
   used it. The repository no longer holds `ex/`, the output files of an old
   analysis of the example data. The removed files are still in the
   repository's history, for example at commit `7d2eeac`.
+- The new file `README.md` of the example data (in
+  `system.file("ext_data", package = "RiboseQC")`) gives the sources of the
+  files, their terms of use and the papers to cite.
 
 # RiboseQC 1.3.0
 

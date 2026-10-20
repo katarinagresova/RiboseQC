@@ -43,7 +43,7 @@ To also install the vignette, add `build_vignettes = TRUE` to either install com
 
 ## Usage
 
-Two steps are required to use *RiboseQC*: `prepare_annotation_files()` reads a GTF file and the genome sequence, once for each annotation, and `RiboseQC_analysis()` analyzes one or more BAM files with this annotation and creates the HTML report. This example runs both steps on the data included in the package: Ribo-seq reads from *Arabidopsis thaliana* roots and shoots (Hsu *et al*, PNAS 2016) on 309 genes of the nuclear, mitochondrial (`ChrM`) and chloroplast (`ChrC`) chromosomes.
+Two steps are required to use *RiboseQC*: `prepare_annotation_files()` reads a GTF file and the genome sequence, once for each annotation, and `RiboseQC_analysis()` analyzes one or more BAM files with this annotation and creates the HTML report. This example runs both steps on the data included in the package: Ribo-seq reads from *Arabidopsis thaliana* roots and shoots (Hsu *et al*, PNAS 2016) on 309 genes of the nuclear, mitochondrial (`ChrM`) and chloroplast (`ChrC`) chromosomes. [inst/ext_data/README.md](inst/ext_data/README.md) gives the sources of these files, their terms of use and the papers to cite.
 
 ```r
 library(RiboseQC)
