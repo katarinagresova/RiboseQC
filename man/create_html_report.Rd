@@ -39,12 +39,13 @@ a) \code{input_files}: list of full paths to one or multiple input files
 b) \code{input_sample_names}: list of corresponding names describing the file content in max. 5 characters
 (these are used as names in the report). \cr \cr
 For the report, a RMarkdown file is rendered as html document, saved as \code{output_file}. \cr \cr
-Additionally, all figures in the report are saved as PDF figures
-in an extra folder in the same directory as the report html file. \cr \cr
+Additionally, all figures in the report are saved as RDS object files
+in an extra folder in the same directory as the report html file. \code{create_pdfs_from_rds_objects}
+makes PDF figures of them (\code{RiboseQC_analysis} does this with \code{pdf_plots = TRUE}). \cr \cr
 Example: \cr
 \code{output_file <- "\\mydir\\myreport.html"} will generate
 the html report \code{\\mydir\\myreport.html} and
-the folder \code{\\mydir\\myreport_plots\\} for the RDS object files to be stored in.
+the folder \code{\\mydir\\myreport.html_plots\\rds\\} for the RDS object files to be stored in.
 }
 \examples{
 \dontrun{
