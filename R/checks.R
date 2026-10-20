@@ -64,6 +64,23 @@ check_output_dir<-function(prefix){
   }
 }
 
+#the chromosomes of the BAM file must be chromosomes of the annotation, with the same lengths: else no read is on the
+#annotation, or the first chunk of reads stops the run with "incompatible seqlengths"
+check_bam_chromosomes<-function(bam_seqinfo,annotation_seqinfo,bam_file,annotation_file){
+  if(!any(seqlevels(bam_seqinfo)%in%seqlevels(annotation_seqinfo))){
+    stop("No chromosome of the BAM file is in the annotation: the BAM file ",bam_file," has e.g. ",paste(head(seqlevels(bam_seqinfo),3),collapse=", "),
+         " and the annotation ",annotation_file," has e.g. ",paste(head(seqlevels(annotation_seqinfo),3),collapse=", "),
+         ". The reads must be aligned to the genome of the annotation (not to its transcripts), with the same chromosome names",call. = FALSE)
+  }
+  common_chroms<-intersect(seqlevels(bam_seqinfo),seqlevels(annotation_seqinfo))
+  diff_len<-common_chroms[which(seqlengths(bam_seqinfo)[common_chroms]!=seqlengths(annotation_seqinfo)[common_chroms])]
+  if(length(diff_len)>0){
+    stop("The BAM file ",bam_file," is not on the genome of the annotation ",annotation_file,": ",length(diff_len),
+         " chromosomes have other lengths, e.g. ",diff_len[1]," has ",seqlengths(bam_seqinfo)[[diff_len[1]]]," nt in the BAM file and ",
+         seqlengths(annotation_seqinfo)[[diff_len[1]]]," nt in the annotation",call. = FALSE)
+  }
+}
+
 #the first exon line of the GTF file, which must have transcript_id and gene_id, tells the file apart from an empty
 #one, or one without exon lines; this stops reading at that line
 check_gtf<-function(gtf_file){

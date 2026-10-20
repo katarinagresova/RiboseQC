@@ -1,3 +1,42 @@
+# RiboseQC (development version)
+
+## Input checks
+
+- `RiboseQC_analysis()` now checks its input before it reads the first BAM
+  file, and stops with a message that says what is wrong. The runs on correct
+  input give the same results. The checks are:
+  - Input files that don't exist (`annotation_file`, `bam_files`) are listed
+    together. Before, the error for a missing annotation file was `cannot open
+    the connection` (only a warning gave the file name), and a missing BAM
+    file stopped the run only after the analysis of the BAM files before it.
+    `annotation_file` must have 1 file, or 1 for each BAM file, as the help
+    says. Before, fewer files stopped the run at the first BAM file without
+    one, and more files than BAM files were not used.
+  - The FASTA file of each annotation must exist. The annotation refers to it
+    by its path, so a FASTA file that was moved or deleted after
+    `prepare_annotation_files()` stopped the run near the end of the analysis
+    of the first BAM file (in the P-sites profiles), with `file(s) do not
+    exist`.
+  - Each BAM file must have a chromosome of its annotation, and the
+    chromosomes that the two have must have the same lengths. These are the
+    checks of `prepare_for_ORFquant()`. Before, a BAM file with other
+    chromosome names (`1` for `Chr1`), or aligned to the transcripts, stopped
+    the run with `1 elements in value to replace 0 elements`, and a BAM file
+    of another genome assembly with `incompatible seqlengths`. The error of
+    `prepare_for_ORFquant()` for a BAM file without a chromosome of the
+    annotation now names the two files, and says that the reads must be
+    aligned to the genome.
+  - The directories of the output files (`dest_names`, and `report_file`
+    with `create_report = TRUE`) must be writable. A directory that doesn't
+    exist is made, as before, but now before the first BAM file. Before, a
+    directory that could not be written to stopped the run at the first file
+    that it wrote, with `cannot open the connection`, and the directory of the
+    report stopped it at the report, after the analysis.
+- A BAM file without mapped reads (or with only secondary alignments and
+  duplicates, which are not used) stops the run at the start of its
+  analysis, with an error that says so. Before, the error was `subscript out
+  of bounds`.
+
 # RiboseQC 1.4.0
 
 ## Installation

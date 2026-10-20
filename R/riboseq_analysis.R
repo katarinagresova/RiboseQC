@@ -201,12 +201,20 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         stop(paste("length of 'sample_names' must be same as 'bam_files'.", date(), 
             "\n"))
     }
+    if (!length(annotation_file) %in% c(1, length(bam_files))) {
+        stop(paste("length of 'annotation_file' must be 1 or same as 'bam_files'.", 
+            date(), "\n"))
+    }
     
     if (sum(!readlength_choice_method %in% c("max_coverage", "max_inframe", "all")) > 
         0) {
         stop(paste("'readlength_choice_method' must be one of 'max_coverage','max_inframe','all'.", 
             date(), "\n"))
     }
+    
+    # all input files, before the first BAM file: else a missing file stops the run after the
+    # analysis of the BAM files before it
+    check_files_exist(c(annotation_file, bam_files))
     
     fastainput <- is(genome_seq, "FaFile")
     
@@ -224,6 +232,13 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             date(), "\n", sep = ""))
         
         load_annotation(annotation_file[annots])
+        # the annotation refers to its FASTA file by its path, and the P-sites profiles, near the end of
+        # the analysis of each BAM file, are the first step that reads it
+        if (is(genome_seq, "FaFile") && !file.exists(genome_seq$path)) {
+            stop(paste("The FASTA file of the annotation ", annotation_file[annots], " doesn't exist: ", 
+                genome_seq$path, ". The annotation refers to it by this path: move the file back, or make the annotation again. ", 
+                date(), "\n", sep = ""))
+        }
         lst <- list(GTF_annotation, genome_seq)
         names(lst) <- c("GTF_annotation", "genome_seq")
         list_annotations[[annots]] <- lst
@@ -231,6 +246,23 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
     }
     
     cat(paste("Loading annotation files --- Done! ", date(), "\n", sep = ""))
+    
+    # the chromosomes of each BAM file and of its annotation, before the first BAM file
+    for (bammo in seq_along(bam_files)) {
+        annots <- if (length(annotation_file) > 1) bammo else 1
+        check_bam_chromosomes(seqinfo(BamFile(bam_files[bammo])), list_annotations[[annots]]$GTF_annotation$seqinfo, 
+            bam_files[bammo], annotation_file[annots])
+    }
+    
+    # the output directories, which are made if they don't exist, as before, must be writable: else
+    # the run stops at the first file that it writes, and at the report after the analysis
+    out_files <- c(dest_names, if (create_report) report_file)
+    for (out_dir in unique(dirname(out_files))) {
+        suppressWarnings(dir.create(out_dir, recursive = TRUE))
+    }
+    for (out_file in out_files) {
+        check_output_dir(out_file)
+    }
     
     GTF_annotation <- list_annotations[[1]]$GTF_annotation
     genome_seq <- list_annotations[[1]]$genome_seq
@@ -342,6 +374,11 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             sep = ""))
         maxmin <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc, n_cores = n_cores)
         cat(paste("Extracting read lengths --- Done! ", date(), "\n", sep = ""))
+        # no chunk: else the next line stops with "subscript out of bounds"
+        if (length(maxmin) == 0) {
+            stop(paste("The BAM file ", bam_file, " has no mapped reads (secondary alignments and duplicates are not used). ", 
+                date(), "\n", sep = ""))
+        }
         readlengths <- seq(maxmin[[2]], maxmin[[1]])
         
         
