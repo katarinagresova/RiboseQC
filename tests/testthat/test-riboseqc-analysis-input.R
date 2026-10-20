@@ -75,9 +75,9 @@ changed_annotation <- function(change) {
   f
 }
 # The error of RiboseQC_analysis(), without its output
-analysis_error <- function(...) {
+analysis_error <- function(..., create_report = FALSE) {
   tryCatch({
-    suppressMessages(utils::capture.output(RiboseQC_analysis(..., create_report = FALSE)))
+    suppressMessages(utils::capture.output(RiboseQC_analysis(..., create_report = create_report)))
     NA_character_
   }, error = conditionMessage)
 }
@@ -115,4 +115,25 @@ test_that("RiboseQC_analysis() refuses a BAM file with other chromosome lengths 
   expect_match(msg, "7 chromosomes have other lengths, e.g. ChrC has 154478 nt in the BAM file and 154479 nt in the annotation",
                fixed = TRUE)
   expect_false(dir.exists(out))
+})
+
+test_that("RiboseQC_analysis() refuses output directories that cannot be written to, and makes those that do not exist", {
+  skip_on_os("windows")
+  read_only <- file.path(work, "read_only")
+  dir.create(read_only)
+  Sys.chmod(read_only, "555")
+  withr::defer(Sys.chmod(read_only, "755"))
+  skip_if(file.access(read_only, 2) == 0, "the user can write to a read-only directory")
+  # Before, the run stopped at the first file that it wrote, with "cannot open the connection"
+  msg <- analysis_error(annotation_file = example_annotation(), bam_files = bams[1],
+                        dest_names = file.path(read_only, "root"))
+  expect_match(msg, "Cannot write the output files, .*read_only is not a directory that exists and can be written to")
+  # The directory of the report. Before, the run stopped at the report, after the analysis. The output
+  # directory that does not exist is made, as before
+  out <- file.path(work, "out_report", "sub")
+  msg <- analysis_error(annotation_file = example_annotation(), bam_files = bams[1], dest_names = file.path(out, "root"),
+                        create_report = TRUE, report_file = file.path(read_only, "report.html"))
+  expect_match(msg, "Cannot write the output files, .*read_only is not a directory .*report\\.html")
+  expect_true(dir.exists(out))
+  expect_length(list.files(out, all.files = TRUE, no.. = TRUE), 0)
 })

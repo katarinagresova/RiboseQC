@@ -254,6 +254,16 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             bam_files[bammo], annotation_file[annots])
     }
     
+    # the output directories, which are made if they don't exist, as before, must be writable: else
+    # the run stops at the first file that it writes, and at the report after the analysis
+    out_files <- c(dest_names, if (create_report) report_file)
+    for (out_dir in unique(dirname(out_files))) {
+        suppressWarnings(dir.create(out_dir, recursive = TRUE))
+    }
+    for (out_file in out_files) {
+        check_output_dir(out_file)
+    }
+    
     GTF_annotation <- list_annotations[[1]]$GTF_annotation
     genome_seq <- list_annotations[[1]]$genome_seq
     

@@ -26,6 +26,12 @@
     `prepare_for_ORFquant()` for a BAM file without a chromosome of the
     annotation now names the two files, and says that the reads must be
     aligned to the genome.
+  - The directories of the output files (`dest_names`, and `report_file`
+    with `create_report = TRUE`) must be writable. A directory that doesn't
+    exist is made, as before, but now before the first BAM file. Before, a
+    directory that could not be written to stopped the run at the first file
+    that it wrote, with `cannot open the connection`, and the directory of the
+    report stopped it at the report, after the analysis.
 
 # RiboseQC 1.4.0
 
