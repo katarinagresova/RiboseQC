@@ -17,6 +17,15 @@
     `prepare_annotation_files()` stopped the run near the end of the analysis
     of the first BAM file (in the P-sites profiles), with `file(s) do not
     exist`.
+  - Each BAM file must have a chromosome of its annotation, and the
+    chromosomes that the two have must have the same lengths. These are the
+    checks of `prepare_for_ORFquant()`. Before, a BAM file with other
+    chromosome names (`1` for `Chr1`), or aligned to the transcripts, stopped
+    the run with `1 elements in value to replace 0 elements`, and a BAM file
+    of another genome assembly with `incompatible seqlengths`. The error of
+    `prepare_for_ORFquant()` for a BAM file without a chromosome of the
+    annotation now names the two files, and says that the reads must be
+    aligned to the genome.
 
 # RiboseQC 1.4.0
 

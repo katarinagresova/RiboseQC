@@ -48,3 +48,71 @@ test_that("RiboseQC_analysis() stops before the first BAM file when the FASTA fi
   expect_match(msg, "The FASTA file of the annotation .*simp_arab.gtf.gz_Rannot doesn't exist: .*fasta/simp_arab\\.fa\\.gz")
   expect_false(dir.exists(file.path(work, "out")))
 })
+
+# The annotation of the example data, made once for the tests below
+ext <- system.file("ext_data", package = "RiboseQC")
+bams <- file.path(ext, c("simp_arab_root.bam", "simp_arab_shoots.bam"))
+work <- tempfile("riboseqc_analysis_input_")
+dir.create(work)
+example_annotation <- local({
+  annotation <- NULL
+  function() {
+    if (is.null(annotation)) {
+      quiet(annotation <<- prepare_annotation_files(annotation_directory = file.path(work, "annotation"),
+                                                    gtf_file = file.path(ext, "simp_arab.gtf.gz"),
+                                                    genome_seq = file.path(ext, "simp_arab.fa.gz")),
+            expected = c("some CDS phases are missing", "genome version information is not available"))
+    }
+    annotation
+  }
+})
+# A copy of the annotation with the seqinfo change(seqinfo); its path
+changed_annotation <- function(change) {
+  ann <- get(load(example_annotation()))
+  ann$seqinfo <- change(ann$seqinfo)
+  f <- tempfile("changed_Rannot_", work)
+  save(ann, file = f)
+  f
+}
+# The error of RiboseQC_analysis(), without its output
+analysis_error <- function(...) {
+  tryCatch({
+    suppressMessages(utils::capture.output(RiboseQC_analysis(..., create_report = FALSE)))
+    NA_character_
+  }, error = conditionMessage)
+}
+
+test_that("RiboseQC_analysis() refuses a BAM file with other chromosomes than the annotation, before the first BAM file", {
+  other <- changed_annotation(function(si) {
+    Seqinfo::seqlevels(si) <- paste0("other", seq_along(Seqinfo::seqlevels(si)))
+    si
+  })
+  out <- file.path(work, "out_names")
+  # Before, a BAM file with other chromosome names than its annotation stopped the run in the analysis of the BAM
+  # file, with "1 elements in value to replace 0 elements". This annotation, with other names in its seqinfo only,
+  # gave no error
+  msg <- analysis_error(annotation_file = other, bam_files = bams[1], dest_names = file.path(out, "root"))
+  expect_match(msg, "No chromosome of the BAM file is in the annotation")
+  expect_match(msg, "simp_arab_root.bam has e.g. ChrC, ChrM, Chr4", fixed = TRUE)
+  expect_match(msg, "not to its transcripts")
+  # The second BAM file has its own annotation, which has other chromosomes
+  msg <- analysis_error(annotation_file = c(example_annotation(), other), bam_files = bams,
+                        dest_names = file.path(out, c("root", "shoots")))
+  expect_match(msg, "the BAM file .*simp_arab_shoots.bam has")
+  expect_false(dir.exists(out))
+})
+
+test_that("RiboseQC_analysis() refuses a BAM file with other chromosome lengths than the annotation", {
+  longer <- changed_annotation(function(si) {
+    Seqinfo::seqlengths(si) <- Seqinfo::seqlengths(si) + 1L
+    si
+  })
+  out <- file.path(work, "out_lengths")
+  # Before, a BAM file of another genome assembly stopped the run in the analysis of the BAM file, with
+  # "incompatible seqlengths". This annotation, with other lengths in its seqinfo only, gave no error
+  msg <- analysis_error(annotation_file = longer, bam_files = bams[1], dest_names = file.path(out, "root"))
+  expect_match(msg, "is not on the genome of the annotation")
+  expect_match(msg, "7 chromosomes have other lengths, e.g. ChrC has 154478 nt in the BAM file and 154479 nt in the annotation",
+               fixed = TRUE)
+  expect_false(dir.exists(out))
+})

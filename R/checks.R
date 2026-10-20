@@ -68,8 +68,9 @@ check_output_dir<-function(prefix){
 #annotation, or the first chunk of reads stops the run with "incompatible seqlengths"
 check_bam_chromosomes<-function(bam_seqinfo,annotation_seqinfo,bam_file,annotation_file){
   if(!any(seqlevels(bam_seqinfo)%in%seqlevels(annotation_seqinfo))){
-    stop("No chromosome of the BAM file is in the annotation. The BAM file has e.g. ",paste(head(seqlevels(bam_seqinfo),3),collapse=", "),
-         " and the annotation has e.g. ",paste(head(seqlevels(annotation_seqinfo),3),collapse=", "),call. = FALSE)
+    stop("No chromosome of the BAM file is in the annotation: the BAM file ",bam_file," has e.g. ",paste(head(seqlevels(bam_seqinfo),3),collapse=", "),
+         " and the annotation ",annotation_file," has e.g. ",paste(head(seqlevels(annotation_seqinfo),3),collapse=", "),
+         ". The reads must be aligned to the genome of the annotation (not to its transcripts), with the same chromosome names",call. = FALSE)
   }
   common_chroms<-intersect(seqlevels(bam_seqinfo),seqlevels(annotation_seqinfo))
   diff_len<-common_chroms[which(seqlengths(bam_seqinfo)[common_chroms]!=seqlengths(annotation_seqinfo)[common_chroms])]

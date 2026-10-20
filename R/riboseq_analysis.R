@@ -247,6 +247,13 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
     
     cat(paste("Loading annotation files --- Done! ", date(), "\n", sep = ""))
     
+    # the chromosomes of each BAM file and of its annotation, before the first BAM file
+    for (bammo in seq_along(bam_files)) {
+        annots <- if (length(annotation_file) > 1) bammo else 1
+        check_bam_chromosomes(seqinfo(BamFile(bam_files[bammo])), list_annotations[[annots]]$GTF_annotation$seqinfo, 
+            bam_files[bammo], annotation_file[annots])
+    }
+    
     GTF_annotation <- list_annotations[[1]]$GTF_annotation
     genome_seq <- list_annotations[[1]]$genome_seq
     
