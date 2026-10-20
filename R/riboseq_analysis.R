@@ -232,6 +232,13 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             date(), "\n", sep = ""))
         
         load_annotation(annotation_file[annots])
+        # the annotation refers to its FASTA file by its path, and the P-sites profiles, near the end of
+        # the analysis of each BAM file, are the first step that reads it
+        if (is(genome_seq, "FaFile") && !file.exists(genome_seq$path)) {
+            stop(paste("The FASTA file of the annotation ", annotation_file[annots], " doesn't exist: ", 
+                genome_seq$path, ". The annotation refers to it by this path: move the file back, or make the annotation again. ", 
+                date(), "\n", sep = ""))
+        }
         lst <- list(GTF_annotation, genome_seq)
         names(lst) <- c("GTF_annotation", "genome_seq")
         list_annotations[[annots]] <- lst

@@ -12,6 +12,11 @@
     `annotation_file` must have 1 file, or 1 for each BAM file, as the help
     says. Before, fewer files stopped the run at the first BAM file without
     one, and more files than BAM files were not used.
+  - The FASTA file of each annotation must exist. The annotation refers to it
+    by its path, so a FASTA file that was moved or deleted after
+    `prepare_annotation_files()` stopped the run near the end of the analysis
+    of the first BAM file (in the P-sites profiles), with `file(s) do not
+    exist`.
 
 # RiboseQC 1.4.0
 

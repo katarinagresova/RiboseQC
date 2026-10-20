@@ -28,3 +28,23 @@ test_that("RiboseQC_analysis() names all input files that do not exist, before t
   expect_match(msg, "don't exist:\n[^\n]*no2\\.bam\n$")
   expect_length(list.files(work, all.files = TRUE, no.. = TRUE), 0)
 })
+
+test_that("RiboseQC_analysis() stops before the first BAM file when the FASTA file of the annotation is gone", {
+  work <- withr::local_tempdir()
+  ext <- system.file("ext_data", package = "RiboseQC")
+  fasta <- file.path(work, "fasta", "simp_arab.fa.gz")
+  dir.create(dirname(fasta))
+  file.copy(file.path(ext, paste0("simp_arab.fa.gz", c("", ".fai", ".gzi"))), dirname(fasta))
+  quiet(annotation <- prepare_annotation_files(annotation_directory = file.path(work, "annotation"),
+                                               gtf_file = file.path(ext, "simp_arab.gtf.gz"), genome_seq = fasta),
+        expected = c("some CDS phases are missing", "genome version information is not available"))
+  unlink(dirname(fasta), recursive = TRUE)
+  # Before, the run stopped in the P-sites profiles, near the end of the analysis of the first BAM file, with
+  # "file(s) do not exist"
+  msg <- tryCatch(suppressMessages(utils::capture.output(
+    RiboseQC_analysis(annotation_file = annotation, bam_files = file.path(ext, "simp_arab_root.bam"),
+                      dest_names = file.path(work, "out", "root"), create_report = FALSE))),
+    error = conditionMessage)
+  expect_match(msg, "The FASTA file of the annotation .*simp_arab.gtf.gz_Rannot doesn't exist: .*fasta/simp_arab\\.fa\\.gz")
+  expect_false(dir.exists(file.path(work, "out")))
+})
