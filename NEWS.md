@@ -36,6 +36,12 @@
   duplicates, which are not used) stops the run at the start of its
   analysis, with an error that says so. Before, the error was `subscript out
   of bounds`.
+- `prepare_annotation_files()` warns when the lines of the GTF file do not
+  agree: when the lines of a transcript give different values of an
+  attribute (for example two biotypes), or the transcripts of a gene give
+  different gene names or biotypes. Then the order of the lines chooses the
+  value (see the help), and the warning names some of these transcripts and
+  genes. The annotation does not change.
 
 ## Bug fixes
 

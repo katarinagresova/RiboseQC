@@ -2506,7 +2506,8 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
 #' The order of the lines in the GTF file does not change the results if the lines agree: all lines of a transcript give the same
 #' values, and all transcripts of a gene the same gene name and biotype (as in GENCODE and Ensembl files). If they do not agree, the
 #' order chooses the value: a transcript gets the value of its first line with one, and the read counts of the genes and the top 50
-#' positions of \code{RiboseQC_analysis} get the gene name and biotype of the first transcript of the gene in the file.
+#' positions of \code{RiboseQC_analysis} get the gene name and biotype of the first transcript of the gene in the file. Then this
+#' function gives a warning, with some of these transcripts and genes.
 #' The genome sequence is read from the FASTA file \code{genome_seq}.\cr\cr
 #' The resulting GTF_annotation object (obtained after runnning \code{load_annotation}) contains:\cr\cr
 #' \code{txs}: annotated transcript boundaries.\cr
@@ -2714,6 +2715,7 @@ prepare_annotation_files<-function(annotation_directory,twobit_file=NULL,gtf_fil
         trann$transcript_biotype[trann$transcript_biotype=="no_type" & tx_cds]<-"protein_coding"
         trann$gene_biotype[trann$gene_biotype=="no_type" & trann$gene_id%in%trann$gene_id[tx_cds]]<-"protein_coding"
         if(all(is.na(trann$gene_name))){trann$gene_name<-"no_name"}
+        check_gtf_values(gtf_ids,trann)
 
         trann<-DataFrame(trann)
 

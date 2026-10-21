@@ -57,3 +57,18 @@ test_that("prepare_annotation_files() says when the chromosomes of the GTF are n
   expect_match(msg, "Reading the GTF file .* failed")
   expect_match(msg, "chromosome names must be those of the genome sequence \\(e\\.g\\. chr22\\)")
 })
+
+test_that("check_gtf_values() warns when the lines of a transcript, or the transcripts of a gene, do not agree", {
+  # a value on some lines only (as gffread writes them) agrees, and two transcripts can have two biotypes
+  gtf_ids <- data.frame(gene_id = "g1", transcript_id = c(NA, "t1", "t1", "t2"),
+                        transcript_type = c(NA, "protein_coding", NA, "lncRNA"))
+  trann <- data.frame(gene_id = "g1", gene_biotype = "protein_coding", gene_name = "A", transcript_id = c("t1", "t2"))
+  expect_silent(check_gtf_values(gtf_ids, trann))
+  gtf_ids$transcript_type[3] <- "lncRNA"
+  expect_warning(check_gtf_values(gtf_ids, trann),
+                 "do not agree.*the lines of 1 transcript give different values \\(e\\.g\\. t1 \\(transcript_type\\)\\)")
+  trann$gene_name[2] <- "B"
+  msg <- tryCatch(check_gtf_values(gtf_ids, trann), warning = conditionMessage)
+  expect_match(msg, "the lines of 1 transcript give")
+  expect_match(msg, "the transcripts of 1 gene give different gene names or biotypes \\(e\\.g\\. g1 \\(gene_name\\)\\)")
+})

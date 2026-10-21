@@ -163,3 +163,35 @@ test_that("load_annotation() returns the annotation invisibly, and assigns it in
   expect_identical(env$GTF_annotation, res$value$GTF_annotation)
   expect_identical(env$genome_seq, res$value$genome_seq)
 })
+
+test_that("lines that do not agree give a warning, and the first line gives the value", {
+  # a gene with two transcripts: the lines of the second get another gene name, and the last line of the
+  # first another biotype
+  gene_of <- line_attr(gtf_example, "gene_id")
+  tx_of <- line_attr(gtf_example, "transcript_id")
+  txs <- lapply(split(tx_of, gene_of), function(x) unique(stats::na.omit(x)))
+  g <- names(txs)[lengths(txs) >= 2][1]
+  t1 <- txs[[g]][1]
+  t2 <- txs[[g]][2]
+  gtf <- gtf_example
+  gtf[tx_of %in% t2] <- sub('gene_name "[^"]*"', 'gene_name "OTHER_NAME"', gtf[tx_of %in% t2])
+  last1 <- max(which(tx_of %in% t1))
+  gtf[last1] <- sub('transcript_type "[^"]*"', 'transcript_type "OTHER_TYPE"', gtf[last1])
+  dir <- file.path(work, "disagree")
+  dir.create(dir)
+  writeLines(gtf, file.path(dir, "genes.gtf"))
+  warns <- character()
+  withCallingHandlers(suppressMessages(
+    prepare_annotation_files(annotation_directory = dir, gtf_file = file.path(dir, "genes.gtf"),
+                             genome_seq = fasta, forge_BSgenome = FALSE)),
+    warning = function(w) { warns <<- c(warns, conditionMessage(w)); invokeRestart("muffleWarning") })
+  warns <- grep("do not agree", warns, value = TRUE)
+  expect_length(warns, 1)
+  expect_match(warns, paste0("the lines of 1 transcript give different values (e.g. ", t1, " (transcript_type))"), fixed = TRUE)
+  expect_match(warns, paste0("the transcripts of 1 gene give different gene names or biotypes (e.g. ", g, " (gene_name))"), fixed = TRUE)
+  # the annotation is that of the first lines
+  trann <- get(load(file.path(dir, "genes.gtf_Rannot")))$trann
+  expect_equal(trann$transcript_biotype, ann_genc$trann$transcript_biotype)
+  expect_equal(trann$gene_name[trann$transcript_id == t2], "OTHER_NAME")
+  expect_equal(trann$gene_name[match(g, trann$gene_id)], ann_genc$trann$gene_name[match(g, ann_genc$trann$gene_id)])
+})
