@@ -39,7 +39,9 @@ RiboseQC_analysis(
 \code{\link{prepare_annotation_files}}. A path or an \code{FaFile} of another file gives a warning. To use another FASTA
 file, make the annotation with it}
 
-\item{stranded}{are the analyzed libraries strand-specific? TRUE, FALSE or 'inverse'. Defaults to \code{TRUE}}
+\item{stranded}{are the analyzed libraries strand-specific? TRUE, FALSE or 'inverse'. Defaults to \code{TRUE}.
+Use \code{'inverse'} for libraries with the reads on the strand opposite to the RNA: RiboseQC inverts the strand of each read,
+then does the analysis of \code{TRUE}. So the P-sites and the coverage tracks are on the strand of the RNA}
 
 \item{normalize_cov}{export normalized (sum to 1 million) bedgraph files for coverage tracks? Defaults to \code{TRUE}}
 

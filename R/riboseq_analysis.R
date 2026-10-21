@@ -22,7 +22,9 @@ NULL
 #' @param report_file desired filename for the html report file. Defaults to the first entry of \code{bam_files} followed by '_RiboseQC_report.html'
 #' @param extended_report creates a large html report including codon occupancy for each read length. Defaults to \code{FALSE}
 #' @param pdf_plots creates a pdf file for each produced plot. Defaults to \code{TRUE}
-#' @param stranded are the analyzed libraries strand-specific? TRUE, FALSE or 'inverse'. Defaults to \code{TRUE}
+#' @param stranded are the analyzed libraries strand-specific? TRUE, FALSE or 'inverse'. Defaults to \code{TRUE}.
+#' Use \code{'inverse'} for libraries with the reads on the strand opposite to the RNA: RiboseQC inverts the strand of each read,
+#' then does the analysis of \code{TRUE}. So the P-sites and the coverage tracks are on the strand of the RNA
 #' @param normalize_cov export normalized (sum to 1 million) bedgraph files for coverage tracks? Defaults to \code{TRUE}
 #' @param offsets_df optionally input an offsets_df created externally, note that this does not yet fully integrate with stats such as 'proportion in phase' it will however alter the psites which are outputted. Must have cols 'read_length','cutoff'.
 #' A data.frame gives the offsets of the nuclear compartment (\code{"nucl"}); a list with one such table for each compartment, named as the compartments, gives the offsets of all compartments
@@ -501,7 +503,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         mapp <- function(x) {
             if (strandedness == "inverse") {
                 x <- invertStrand(x)
-                strandedness <- F
+                # the inverted reads are on the strand of the RNA: count them as a stranded library
+                strandedness <- T
             }
             
             mcols(x)$MD[which(is.na(mcols(x)$MD))] <- "NO"
@@ -1389,6 +1392,10 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         # operations on the chunk (here count reads and whatnot)
         
         mapp <- function(x) {
+            # the same strands as the offsets: mapp() of the counting pass inverts them too
+            if (strandedness == "inverse") {
+                x <- invertStrand(x)
+            }
             psites_of_chunk(x, rl_cutoffs_comp, circs, seqllll, seqleee, GTF_annotation$junctions, 
                 with_coverage = TRUE)
         }

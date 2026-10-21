@@ -143,6 +143,16 @@
   on them. Before, it used one genetic code for all chromosomes that are not
   circular, also for those without CDS. The annotations that were made
   before do not change.
+- `RiboseQC_analysis(stranded = "inverse")` now gives the results of
+  `stranded = TRUE` on the same reads with inverted strands. Before, only the
+  offsets came from the inverted reads. The P-sites, the coverage tracks and
+  the junctions came from the strands of the BAM file, so each P-site was on
+  the other strand, with its offset counted from the 3' end of the read. This
+  changed the P-site files, `for_ORFquant` and the P-site profiles and codon
+  statistics of the report. The reads of each region and gene were counted
+  on both strands, as with `stranded = FALSE`. The results of
+  `stranded = TRUE` and `FALSE` do not change. `prepare_for_ORFquant()` has
+  no `stranded` argument: it uses the strands of the BAM file.
 
 ## Documentation
 
