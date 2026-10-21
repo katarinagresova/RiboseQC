@@ -1,5 +1,16 @@
 # RiboseQC (development version)
 
+## Installation and dependencies
+
+- RiboseQC no longer has methods of `unlist()` for `GRanges` and
+  `GAlignments`. These methods made `unlist(x)` give `x` back, in the whole R
+  session, when RiboseQC or ORFquant was loaded. So they also changed
+  `unlist()` in other packages and in scripts: without them, `unlist()` of a
+  `GRanges` stops with an error, and `unlist()` of an empty `GRanges` gives
+  `NULL`. The results of RiboseQC do not change. `run_ORFquant()` of ORFquant
+  1.3.1 and older needs the method for `GRanges`, so it stops with an error
+  with this version of RiboseQC. Use ORFquant 1.3.2 or newer.
+
 ## New arguments
 
 - `prepare_annotation_files()` has the new argument `genetic_codes`: the

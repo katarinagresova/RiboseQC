@@ -238,8 +238,10 @@ prepare_for_ORFquant<-function(annotation_file,bam_file,path_to_rl_cutoff_file=N
   }
   rm(chunks_ps)
   
+  #the P-sites are a GRangesList, or with more than one chunk the GRanges of the chunks (above)
   if(length(for_ORFquant$P_sites_all)>0){
-    merged_all_ps<-unlist(for_ORFquant$P_sites_all)
+    merged_all_ps<-for_ORFquant$P_sites_all
+    if(is(merged_all_ps,"GRangesList")){merged_all_ps<-unlist(merged_all_ps)}
     
     if(length(merged_all_ps)>0){
       ps_strands<-sum_psites(merged_all_ps)
@@ -251,7 +253,8 @@ prepare_for_ORFquant<-function(annotation_file,bam_file,path_to_rl_cutoff_file=N
   
   
   if(length(for_ORFquant$P_sites_uniq)>0){
-    merged_uniq_ps<-unlist(for_ORFquant$P_sites_uniq)
+    merged_uniq_ps<-for_ORFquant$P_sites_uniq
+    if(is(merged_uniq_ps,"GRangesList")){merged_uniq_ps<-unlist(merged_uniq_ps)}
     if(length(merged_uniq_ps)>0){
       
       ps_strands<-sum_psites(merged_uniq_ps)
@@ -262,7 +265,8 @@ prepare_for_ORFquant<-function(annotation_file,bam_file,path_to_rl_cutoff_file=N
   }
   
   if(length(for_ORFquant$P_sites_uniq_mm)>0){
-    merged_uniq_mm_ps<-unlist(for_ORFquant$P_sites_uniq_mm)
+    merged_uniq_mm_ps<-for_ORFquant$P_sites_uniq_mm
+    if(is(merged_uniq_mm_ps,"GRangesList")){merged_uniq_mm_ps<-unlist(merged_uniq_mm_ps)}
     if(length(merged_uniq_mm_ps)>0){
       
       ps_strands<-sum_psites(merged_uniq_mm_ps)

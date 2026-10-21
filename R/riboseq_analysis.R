@@ -1155,8 +1155,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         param <- ScanBamParam(flag = scanBamFlag(isDuplicate = FALSE, isSecondaryAlignment = FALSE), 
             what = c("mapq"), tag = "MD")
-        seqllll <- seqlevels(unlist(unlist(read_stats$reads_pos1)))
-        seqleee <- seqlengths(unlist(unlist(read_stats$reads_pos1)))
+        seqllll <- seqlevels(unlist(read_stats$reads_pos1))
+        seqleee <- seqlengths(unlist(read_stats$reads_pos1))
         
         # if we've provided our own choice of offsets, we should repeat it for each
         # compartment, should we need to
