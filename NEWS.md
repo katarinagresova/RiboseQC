@@ -48,6 +48,13 @@
   stop codon, so the annotation was made, and ORFquant stopped later with
   `subscript contains out-of-bounds indices`. The check reads the GTF file
   until it finds an exon line and a CDS line, before the TxDb is made.
+- `RiboseQC_analysis()` warns, before the first BAM file, when a BAM file has
+  reads on chromosomes that its annotation does not have. The warning gives
+  the number of alignments on them, from the index of the BAM file. For a
+  BAM file without an index, it names the chromosomes of the BAM header that
+  the annotation does not have. These reads are used (for example in the
+  P-site and coverage tracks), but they are in no region of the annotation.
+  The results do not change.
 
 ## Changes in results
 
