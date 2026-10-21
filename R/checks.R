@@ -82,22 +82,31 @@ check_bam_chromosomes<-function(bam_seqinfo,annotation_seqinfo,bam_file,annotati
 }
 
 #the first exon line of the GTF file, which must have transcript_id and gene_id, tells the file apart from an empty
-#one, or one without exon lines; this stops reading at that line
+#one, or one without exon lines, and the first CDS line from one without CDS lines (txdbmaker makes a CDS of each
+#stop_codon line, so such a file with stop_codon lines gives CDS of 3 nt); this stops reading when it has found both
 check_gtf<-function(gtf_file){
   con<-file(gtf_file,"r")
   on.exit(close(con))
+  exon_found<-FALSE
+  cds_found<-FALSE
   repeat{
     lines<-readLines(con,n=10000)
     if(length(lines)==0){break}
     exon_line<-grep("^[^\t]*\t[^\t]*\texon\t",lines,value = TRUE)
-    if(length(exon_line)>0){
+    if(!exon_found && length(exon_line)>0){
       if(!grepl("(^|[;\t ])transcript_id[ =]",exon_line[1]) || !grepl("(^|[;\t ])gene_id[ =]",exon_line[1])){
         stop("An exon line of the GTF file ",gtf_file," has no transcript_id or gene_id: the annotation needs both on every line",call. = FALSE)
       }
-      return(invisible(TRUE))
+      exon_found<-TRUE
     }
+    #the CDS types of txdbmaker
+    cds_found<-cds_found || any(grepl("^[^\t]*\t[^\t]*\t(CDS|CDS_predicted|edited_CDS|transposable_element_CDS)\t",lines))
+    if(exon_found && cds_found){return(invisible(TRUE))}
   }
-  stop("The GTF file ",gtf_file," is empty or has no exon lines: the annotation needs the exons and the coding sequences (CDS) of the transcripts",call. = FALSE)
+  if(!exon_found){
+    stop("The GTF file ",gtf_file," is empty or has no exon lines: the annotation needs the exons and the coding sequences (CDS) of the transcripts",call. = FALSE)
+  }
+  stop("The GTF file ",gtf_file," has no CDS lines: the annotation needs the coding sequences (CDS) of the transcripts",call. = FALSE)
 }
 
 #a transcript gets the value of an attribute from its first line with one, and RiboseQC_analysis() gives a gene the

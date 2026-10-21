@@ -42,6 +42,12 @@
   different gene names or biotypes. Then the order of the lines chooses the
   value (see the help), and the warning names some of these transcripts and
   genes. The annotation does not change.
+- `prepare_annotation_files()` stops at once for a GTF file without CDS
+  lines also when the file has `start_codon` or `stop_codon` lines: `The GTF
+  file ... has no CDS lines`. Before, txdbmaker made a CDS of 3 nt from each
+  stop codon, so the annotation was made, and ORFquant stopped later with
+  `subscript contains out-of-bounds indices`. The check reads the GTF file
+  until it finds an exon line and a CDS line, before the TxDb is made.
 
 ## Bug fixes
 
