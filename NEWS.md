@@ -74,6 +74,14 @@
   transcript, or the transcripts of a gene, give different values (for
   example two gene names), the order chooses the value: the first line in
   the file gives it.
+- `?RiboseQC_analysis` now says that soft-clipped bases (`S` in the CIGAR)
+  are not counted (#12): the read length is the aligned length, and the
+  offset counts from the first aligned base at the 5' end. So a 31-nt read
+  with 2 soft-clipped bases counts as a 29-nt read. Alignments with soft
+  clipping (for example STAR's default, `--alignEndsType Local`) can give
+  other read lengths, offsets and P-sites than end-to-end alignments.
+  RiboseQC has always worked this way. `?prepare_for_ORFquant` and the
+  README already said it.
 
 # RiboseQC 1.4.0
 
