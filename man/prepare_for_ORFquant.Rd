@@ -16,7 +16,8 @@ prepare_for_ORFquant(
   path_to_P_sites_uniq_mm_plus_bw = NA,
   path_to_P_sites_uniq_mm_minus_bw = NA,
   dest_name = NA,
-  n_cores = 1
+  n_cores = 1,
+  stranded = TRUE
 )
 }
 \arguments{
@@ -43,6 +44,11 @@ prepare_for_ORFquant(
 \item{dest_name}{prefix to use for the output files. Defaults to same as \code{bam_file} (appends "for_ORFquant" to its filename)}
 
 \item{n_cores}{number of cores to use, each for one chunk of \code{chunk_size} alignments at a time. Defaults to 1}
+
+\item{stranded}{\code{TRUE}, \code{FALSE} or \code{'inverse'}, as in \code{\link{RiboseQC_analysis}}. Defaults to \code{TRUE}.
+Use \code{'inverse'} for libraries with the reads on the strand opposite to the RNA: the strand of each read is inverted
+before its P-site and its junction are calculated, as \code{\link{RiboseQC_analysis}} does. \code{TRUE} and \code{FALSE}
+use the strands of the BAM file, so they give the same results. With P-site bigWig files, it applies only to the junction reads}
 }
 \description{
 Prepare the "for_ORFquant" file
