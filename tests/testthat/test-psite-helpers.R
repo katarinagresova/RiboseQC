@@ -79,6 +79,31 @@ test_that("single_positions() gives the merge of chunks one range for each posit
   expect_identical(start(GenomicFeatures::mapToTranscripts(ps, exon)), c(11L, 12L))
 })
 
+test_that("sum_chunks() sums the chunks as the merges of two chunks did: one range for each position", {
+  ps <- function(pos, strand, score) {
+    GenomicRanges::GRanges("chr1", IRanges::IRanges(pos, width = 1L), strand = strand, score = score,
+                           seqlengths = c(chr1 = 1000L, chr2 = 500L))
+  }
+  chunk1 <- GenomicRanges::GRangesList(`29` = c(ps(c(100L, 101L), "+", c(2L, 1L)), ps(200L, "-", 1L)),
+                                       `30` = ps(300L, "+", 1L))
+  chunk2 <- GenomicRanges::GRangesList(`28` = ps(50L, "+", 1L), `29` = ps(c(100L, 102L), "+", c(1L, 1L)))
+  chunk3 <- GenomicRanges::GRangesList(`29` = ps(100L, "+", 1L)[0], `30` = ps(300L, "-", 2L),
+                                       `31` = ps(100L, "+", 1L)[0])
+  res <- sum_chunks(list(chunk1, chunk2, chunk3), c("chr1", "chr2"), c(chr1 = 1000L, chr2 = 500L))
+  # the read lengths in the order of the chunks
+  expect_identical(names(res), c("29", "30", "28", "31"))
+  # 100 has 3 reads, 101 and 102 have 1: one range for each position, not 101-102
+  expect_identical(start(res[["29"]]), c(100L, 101L, 102L, 200L))
+  expect_identical(as.character(strand(res[["29"]])), c("+", "+", "+", "-"))
+  expect_identical(res[["29"]]$score, c(3L, 1L, 1L, 1L))
+  expect_identical(as.character(strand(res[["30"]])), c("+", "-"))
+  expect_identical(res[["30"]]$score, c(1L, 2L))
+  expect_identical(res[["28"]]$score, 1L)
+  expect_length(res[["31"]], 0)
+  expect_true(all(width(unlist(res)) == 1L))
+  expect_identical(seqlengths(res), c(chr1 = 1000L, chr2 = 500L))
+})
+
 test_that("one chunk gives the 5' ends without names, as the merge of chunks: the top 50 positions get the read length", {
   # the example runs in one chunk. Before, each 5' end had the read length as its name, so len_adj of the top 50
   # positions was, for example, 29.29

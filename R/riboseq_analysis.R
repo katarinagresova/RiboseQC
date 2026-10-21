@@ -406,68 +406,13 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         # what to do with chunks: x present chunk, y old chunks (cumulative)
         reduc <- function(x, y) {
-            all_ps <- GRangesList()
-            rls <- unique(c(names(x[["reads_pos1"]]), names(y[["reads_pos1"]])))
-            seql <- seqlevels(GTF_annotation$seqinfo)
-            seqle <- seqlengths(GTF_annotation$seqinfo)
-            # and the chromosomes with reads that the annotation does not have, with their lengths in the
-            # BAM file: one chunk keeps these reads, so more chunks must keep them too
-            seq_extra <- c(seqlevelsInUse(x[["reads_pos1"]]), seqlevelsInUse(y[["reads_pos1"]]))
-            seq_extra <- seqlevels(seqs)[seqlevels(seqs) %in% setdiff(seq_extra, seql)]
-            seql <- c(seql, seq_extra)
-            seqle <- c(seqle, seqlengths(seqs)[seq_extra])
-            for (rl in rls) {
-                reads_x <- GRanges()
-                reads_y <- GRanges()
-                
-                if (sum(rl %in% names(x[["reads_pos1"]])) > 0) {
-                  reads_x <- x[["reads_pos1"]][[rl]]
-                }
-                if (sum(rl %in% names(y[["reads_pos1"]])) > 0) {
-                  reads_y <- y[["reads_pos1"]][[rl]]
-                }
-
-                #This needs to go after the above                
-                seqlevels(reads_x) <- seql
-                seqlevels(reads_y) <- seql
-                
-                seqlengths(reads_x) <- seqle
-                seqlengths(reads_y) <- seqle
-                
-                
-#                reads_y <- 
-                plx <- reads_x[strand(reads_x) == "+"]
-                mnx <- reads_x[strand(reads_x) == "-"]
-                ply <- reads_y[strand(reads_y) == "+"]
-                mny <- reads_y[strand(reads_y) == "-"]
-                if (length(plx) > 0) {
-                  covv_pl <- coverage(plx, weight = plx$score)
-                } else {
-                  covv_pl <- coverage(plx)
-                }
-                if (length(ply) > 0) {
-                  covv_pl <- covv_pl + coverage(ply, weight = ply$score)
-                }
-                covv_pl <- GRanges(covv_pl)
-                covv_pl <- covv_pl[covv_pl$score > 0]
-                
-                if (length(mnx) > 0) {
-                  covv_min <- coverage(mnx, weight = mnx$score)
-                } else {
-                  covv_min <- coverage(mnx)
-                }
-                if (length(mny) > 0) {
-                  covv_min <- covv_min + coverage(mny, weight = mny$score)
-                }
-                
-                covv_min <- GRanges(covv_min)
-                covv_min <- covv_min[covv_min$score > 0]
-                
-                strand(covv_pl) <- "+"
-                strand(covv_min) <- "-"
-                
-                all_ps[[rl]] <- single_positions(sort(c(covv_pl, covv_min)))
+            # the 5' ends of the chunks are summed after the last chunk, all at once (sum_chunks()): the
+            # merge of each chunk with the sums of the chunks before it took longer with each chunk
+            chunks_pos1 <- x[["chunks_pos1"]]
+            if (is.null(chunks_pos1)) {
+                chunks_pos1 <- list(x[["reads_pos1"]])
             }
+            chunks_pos1 <- c(chunks_pos1, list(y[["reads_pos1"]]))
             
             
             cntsss <- y[["counts_cds_genes"]]
@@ -493,11 +438,11 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             
             lis <- list((x[["rld"]] + y[["rld"]]), x[["rld_unq"]] + y[["rld_unq"]], 
                 (x[["positions"]] + y[["positions"]]), (x[["positions_unq"]] + y[["positions_unq"]]), 
-                all_ps, cntsss, cntsss_unq, cntsss_all, cntsss_all_unq, reads_summary, 
-                reads_summary_unq)
+                x[["reads_pos1"]], cntsss, cntsss_unq, cntsss_all, cntsss_all_unq, reads_summary, 
+                reads_summary_unq, chunks_pos1)
             names(lis) <- c("rld", "rld_unq", "positions", "positions_unq", "reads_pos1", 
                 "counts_cds_genes", "counts_cds_genes_unq", "counts_all_genes", "counts_all_genes_unq", 
-                "reads_summary", "reads_summary_unq")
+                "reads_summary", "reads_summary_unq", "chunks_pos1")
             lis
         }
         
@@ -793,6 +738,19 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         read_stats <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc,
             n_cores = n_cores)
+        # two or more chunks: sum the 5' ends of all chunks
+        if (!is.null(read_stats[["chunks_pos1"]])) {
+            seql <- seqlevels(GTF_annotation$seqinfo)
+            seqle <- seqlengths(GTF_annotation$seqinfo)
+            # and the chromosomes with reads that the annotation does not have, with their lengths in the
+            # BAM file: one chunk keeps these reads, so more chunks must keep them too
+            seq_extra <- unlist(lapply(read_stats$chunks_pos1, seqlevelsInUse))
+            seq_extra <- seqlevels(seqs)[seqlevels(seqs) %in% setdiff(seq_extra, seql)]
+            seql <- c(seql, seq_extra)
+            seqle <- c(seqle, seqlengths(seqs)[seq_extra])
+            read_stats$reads_pos1 <- sum_chunks(read_stats$chunks_pos1, seql, seqle)
+            read_stats$chunks_pos1 <- NULL
+        }
         names(read_stats) <- c("rld", "rld_unq", "positions", "positions_unq", "reads_pos1", 
             "counts_cds_genes", "counts_cds_genes_unq", "counts_all_genes", "counts_all_genes_unq", 
             "reads_summary", "reads_summary_unq")
@@ -1201,173 +1159,13 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         # what to do with chunks: x present chunk, y old chunks (cumulative)
         reduc <- function(x, y) {
-            # adjust merging by rls
-            all_ps <- GRangesList()
-            rls <- unique(c(names(x[["P_sites_all"]]), names(y[["P_sites_all"]])))
-            
-            for (rl in rls) {
-                reads_x <- GRanges()
-                reads_y <- GRanges()
-                
-                seqlevels(reads_x) <- seqllll
-                seqlevels(reads_y) <- seqllll
-                
-                seqlengths(reads_x) <- seqleee
-                seqlengths(reads_y) <- seqleee
-                
-                if (sum(rl %in% names(x[["P_sites_all"]])) > 0) {
-                  reads_x <- x[["P_sites_all"]][[rl]]
-                }
-                if (sum(rl %in% names(y[["P_sites_all"]])) > 0) {
-                  reads_y <- y[["P_sites_all"]][[rl]]
-                }
-                
-                plx <- reads_x[strand(reads_x) == "+"]
-                mnx <- reads_x[strand(reads_x) == "-"]
-                ply <- reads_y[strand(reads_y) == "+"]
-                mny <- reads_y[strand(reads_y) == "-"]
-                if (length(plx) > 0) {
-                  covv_pl <- coverage(plx, weight = plx$score)
-                } else {
-                  covv_pl <- coverage(plx)
-                }
-                if (length(ply) > 0) {
-                  covv_pl <- covv_pl + coverage(ply, weight = ply$score)
-                }
-                
-                covv_pl <- GRanges(covv_pl)
-                covv_pl <- covv_pl[covv_pl$score > 0]
-                
-                if (length(mnx) > 0) {
-                  covv_min <- coverage(mnx, weight = mnx$score)
-                } else {
-                  covv_min <- coverage(mnx)
-                }
-                if (length(mny) > 0) {
-                  covv_min <- covv_min + coverage(mny, weight = mny$score)
-                }
-                
-                covv_min <- GRanges(covv_min)
-                covv_min <- covv_min[covv_min$score > 0]
-                
-                strand(covv_pl) <- "+"
-                strand(covv_min) <- "-"
-                
-                all_ps[[rl]] <- single_positions(sort(c(covv_pl, covv_min)))
-                rm(covv_min, covv_pl, plx, mnx, ply, mny, reads_y, reads_x, rl)
-                
+            # the P-sites of the chunks are summed after the last chunk, all at once (sum_chunks()): the
+            # merge of each chunk with the sums of the chunks before it took longer with each chunk
+            chunks_ps <- x[["chunks_ps"]]
+            if (is.null(chunks_ps)) {
+                chunks_ps <- list(x[c("P_sites_all", "P_sites_uniq", "P_sites_uniq_mm")])
             }
-            
-            uniq_ps <- GRangesList()
-            rls <- unique(c(names(x[["P_sites_uniq"]]), names(y[["P_sites_uniq"]])))
-            
-            for (rl in rls) {
-                reads_x <- GRanges()
-                reads_y <- GRanges()
-                
-                seqlevels(reads_x) <- seqllll
-                seqlevels(reads_y) <- seqllll
-                
-                seqlengths(reads_x) <- seqleee
-                seqlengths(reads_y) <- seqleee
-                if (sum(rl %in% names(x[["P_sites_uniq"]])) > 0) {
-                  reads_x <- x[["P_sites_uniq"]][[rl]]
-                }
-                if (sum(rl %in% names(y[["P_sites_uniq"]])) > 0) {
-                  reads_y <- y[["P_sites_uniq"]][[rl]]
-                }
-                
-                plx <- reads_x[strand(reads_x) == "+"]
-                mnx <- reads_x[strand(reads_x) == "-"]
-                ply <- reads_y[strand(reads_y) == "+"]
-                mny <- reads_y[strand(reads_y) == "-"]
-                if (length(plx) > 0) {
-                  covv_pl <- coverage(plx, weight = plx$score)
-                } else {
-                  covv_pl <- coverage(plx)
-                }
-                if (length(ply) > 0) {
-                  covv_pl <- covv_pl + coverage(ply, weight = ply$score)
-                }
-                
-                covv_pl <- GRanges(covv_pl)
-                covv_pl <- covv_pl[covv_pl$score > 0]
-                
-                if (length(mnx) > 0) {
-                  covv_min <- coverage(mnx, weight = mnx$score)
-                } else {
-                  covv_min <- coverage(mnx)
-                }
-                if (length(mny) > 0) {
-                  covv_min <- covv_min + coverage(mny, weight = mny$score)
-                }
-                
-                covv_min <- GRanges(covv_min)
-                covv_min <- covv_min[covv_min$score > 0]
-                
-                strand(covv_pl) <- "+"
-                strand(covv_min) <- "-"
-                
-                uniq_ps[[rl]] <- single_positions(sort(c(covv_pl, covv_min)))
-                rm(covv_min, covv_pl, plx, mnx, ply, mny, reads_y, reads_x, rl)
-                
-                
-            }
-            
-            uniq_mm_ps <- GRangesList()
-            rls <- unique(c(names(x[["P_sites_uniq_mm"]]), names(y[["P_sites_uniq_mm"]])))
-            
-            for (rl in rls) {
-                reads_x <- GRanges()
-                reads_y <- GRanges()
-                
-                seqlevels(reads_x) <- seqllll
-                seqlevels(reads_y) <- seqllll
-                
-                seqlengths(reads_x) <- seqleee
-                seqlengths(reads_y) <- seqleee
-                if (sum(rl %in% names(x[["P_sites_uniq_mm"]])) > 0) {
-                  reads_x <- x[["P_sites_uniq_mm"]][[rl]]
-                }
-                if (sum(rl %in% names(y[["P_sites_uniq_mm"]])) > 0) {
-                  reads_y <- y[["P_sites_uniq_mm"]][[rl]]
-                }
-                
-                plx <- reads_x[strand(reads_x) == "+"]
-                mnx <- reads_x[strand(reads_x) == "-"]
-                ply <- reads_y[strand(reads_y) == "+"]
-                mny <- reads_y[strand(reads_y) == "-"]
-                if (length(plx) > 0) {
-                  covv_pl <- coverage(plx, weight = plx$score)
-                } else {
-                  covv_pl <- coverage(plx)
-                }
-                if (length(ply) > 0) {
-                  covv_pl <- covv_pl + coverage(ply, weight = ply$score)
-                }
-                
-                covv_pl <- GRanges(covv_pl)
-                covv_pl <- covv_pl[covv_pl$score > 0]
-                
-                if (length(mnx) > 0) {
-                  covv_min <- coverage(mnx, weight = mnx$score)
-                } else {
-                  covv_min <- coverage(mnx)
-                }
-                if (length(mny) > 0) {
-                  covv_min <- covv_min + coverage(mny, weight = mny$score)
-                }
-                
-                covv_min <- GRanges(covv_min)
-                covv_min <- covv_min[covv_min$score > 0]
-                
-                strand(covv_pl) <- "+"
-                strand(covv_min) <- "-"
-                
-                uniq_mm_ps[[rl]] <- single_positions(sort(c(covv_pl, covv_min)))
-                rm(covv_min, covv_pl, plx, mnx, ply, mny, reads_y, reads_x, rl)
-                
-            }
+            chunks_ps <- c(chunks_ps, list(y[c("P_sites_all", "P_sites_uniq", "P_sites_uniq_mm")]))
             
             covall_plus <- x$coverage_all_plus + y$coverage_all_plus
             covall_min <- x$coverage_all_min + y$coverage_all_min
@@ -1380,11 +1178,11 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             rang_jun$reads <- rang_jun$reads + y$junctions$reads
             rang_jun$unique_reads <- rang_jun$unique_reads + y$junctions$unique_reads
             
-            list_res <- list(all_ps, uniq_ps, uniq_mm_ps, rang_jun, covall_plus, 
-                covall_min, covuni_plus, covuni_min)
+            list_res <- list(x[["P_sites_all"]], x[["P_sites_uniq"]], x[["P_sites_uniq_mm"]], rang_jun, 
+                covall_plus, covall_min, covuni_plus, covuni_min, chunks_ps)
             names(list_res) <- c("P_sites_all", "P_sites_uniq", "P_sites_uniq_mm", 
                 "junctions", "coverage_all_plus", "coverage_all_min", "coverage_uniq_plus", 
-                "coverage_uniq_min")
+                "coverage_uniq_min", "chunks_ps")
             
             
             return(list_res)
@@ -1410,6 +1208,14 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         P_sites_stats <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc,
             n_cores = n_cores)
+        # two or more chunks: sum the P-sites of all chunks
+        if (!is.null(P_sites_stats[["chunks_ps"]])) {
+            for (ps_set in c("P_sites_all", "P_sites_uniq", "P_sites_uniq_mm")) {
+                chunks <- lapply(P_sites_stats$chunks_ps, function(x) x[[ps_set]])
+                P_sites_stats[[ps_set]] <- sum_chunks(chunks, seqllll, seqleee)
+            }
+            P_sites_stats$chunks_ps <- NULL
+        }
         
         save(P_sites_stats, file = paste(dira, "P_sites_stats", sep = "/"))
         
@@ -2224,6 +2030,48 @@ single_positions <- function(gr) {
     gr <- rep(gr, wid)
     ranges(gr) <- IRanges(start = start(gr) + sequence(wid) - 1L, width = 1L)
     gr
+}
+
+# The 5' ends or the P-sites of the chunks of a BAM file, summed: chunks is a list with a GRangesList of
+# each chunk (a GRanges with the counts in "score" for each read length). The result has the read lengths
+# in the order of the chunks, the chromosomes seql with the lengths seqle and one range for each position.
+# Before, RiboseQC_analysis() merged each chunk with the sums of the chunks before it, and each merge
+# took longer than the one before. One merge of all chunks gives the same sums.
+sum_chunks <- function(chunks, seql, seqle) {
+    all_ps <- GRangesList()
+    for (rl in unique(unlist(lapply(chunks, names)))) {
+        reads <- lapply(unname(chunks), function(x) {
+            if (rl %in% names(x)) x[[rl]]
+        })
+        reads <- reads[lengths(reads) > 0]
+        if (length(reads) > 0) {
+            reads <- do.call(c, reads)
+        } else {
+            reads <- GRanges()
+        }
+        seqlevels(reads) <- seql
+        seqlengths(reads) <- seqle
+        pl <- reads[strand(reads) == "+"]
+        mn <- reads[strand(reads) == "-"]
+        if (length(pl) > 0) {
+            covv_pl <- coverage(pl, weight = pl$score)
+        } else {
+            covv_pl <- coverage(pl)
+        }
+        covv_pl <- GRanges(covv_pl)
+        covv_pl <- covv_pl[covv_pl$score > 0]
+        if (length(mn) > 0) {
+            covv_min <- coverage(mn, weight = mn$score)
+        } else {
+            covv_min <- coverage(mn)
+        }
+        covv_min <- GRanges(covv_min)
+        covv_min <- covv_min[covv_min$score > 0]
+        strand(covv_pl) <- "+"
+        strand(covv_min) <- "-"
+        all_ps[[rl]] <- single_positions(sort(c(covv_pl, covv_min)))
+    }
+    all_ps
 }
 
 # Read the BamFile X in chunks with YIELD, run MAP on each chunk and combine the results with
