@@ -59,9 +59,35 @@
   different gene names or biotypes. Then the order of the lines chooses the
   value (see the help), and the warning names some of these transcripts and
   genes. The annotation does not change.
+- `prepare_annotation_files()` stops at once for a GTF file without CDS
+  lines also when the file has `start_codon` or `stop_codon` lines: `The GTF
+  file ... has no CDS lines`. Before, txdbmaker made a CDS of 3 nt from each
+  stop codon, so the annotation was made, and ORFquant stopped later with
+  `subscript contains out-of-bounds indices`. The check reads the GTF file
+  until it finds an exon line and a CDS line, before the TxDb is made.
+
+## Changes in results
+
+- `RiboseQC_analysis()` on a BAM file that it reads in one chunk (with at
+  most `chunk_size` alignments) gives the 5' ends of the reads
+  (`read_stats$reads_pos1` in `<dest_name>_results_RiboseQC_all`) without
+  names, as with more chunks. Before, each range and its score had its read
+  length as its name, so the read lengths of the top 50 positions (`len_adj`
+  of `sequence_analysis`, in `<dest_name>_results_RiboseQC` and
+  `<dest_name>_results_RiboseQC_all`) were, for example, `29.29` instead of
+  `29`, and their scores and percentages had names too. The positions, their
+  widths and sequences, and all other values don't change. The report does
+  not show `len_adj`.
 
 ## Bug fixes
 
+- `RiboseQC_analysis()` no longer stops with `invalid 'file' argument` when
+  `genome_seq` is an `FaFile`. The argument has no effect, as before: the
+  genome sequence is the FASTA file of the annotation. A path was ignored
+  without a message. Now a warning says so when `genome_seq` is another file
+  than the FASTA file of the annotation. To use another FASTA file, make the
+  annotation with it. The help of `genome_seq` said that it is used instead
+  of a BSgenome package; it now says that it is not used.
 - `RiboseQC_analysis()` no longer stops when the BAM file has reads on
   chromosomes that the annotation does not have (for example scaffolds), and
   the BAM file has more than `chunk_size` alignments, so that it is read in
@@ -82,6 +108,22 @@
   with it the P-site files and `for_ORFquant`) depended on `chunk_size`. The
   results of BAM files with more than `chunk_size` alignments can change. The
   results of the other BAM files do not change.
+- `prepare_annotation_files()` no longer stops on a GTF file without
+  introns, for example a GTF file of chrM only, or of transcripts with one
+  exon each. `RiboseQC_analysis()` and `prepare_for_ORFquant()` no longer
+  stop on an annotation without splice junctions, such as the annotation of
+  such a GTF file. The error was `1 elements in value to replace 0 elements`.
+  The results of the other annotations do not change.
+- `prepare_annotation_files()` no longer stops with `'id_or_name2' must be a
+  single string` or `argument is of length zero` when the chromosomes that
+  are not circular have no genetic code or more than one: for example, a GTF
+  file of chrM only with chrM circular, or a genome with chrM and
+  `circ_chroms` without chrM. To find out if the CDS include their stop
+  codons (`stop_in_gtf`), it now translates each CDS with the genetic code of
+  its chromosome, and it uses the CDS on circular chromosomes if all CDS are
+  on them. Before, it used one genetic code for all chromosomes that are not
+  circular, also for those without CDS. The annotations that were made
+  before do not change.
 
 ## Documentation
 
@@ -110,6 +152,11 @@
   alignments of the shoot sample have an insertion or a deletion. In a human
   sample aligned with STAR (SRR15513199), 0.7% of the alignments have one,
   but only 0.035% of the uniquely mapping alignments.
+- The help of `prepare_annotation_files()` now says which annotations give
+  wrong ORF categories in ORFquant. Since ORFquant 1.3.1, only an annotation
+  with `stop_in_gtf` `NA` does (the codon after each CDS is its stop codon,
+  also for a CDS that includes it). Before, the help said that a GTF file
+  with both kinds of CDS gives wrong categories.
 
 # RiboseQC 1.4.0
 
