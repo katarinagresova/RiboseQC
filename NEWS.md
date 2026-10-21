@@ -294,6 +294,8 @@
     `?choose_readlengths`: `summary_data` is `results_cutoffs` (before: the
     output of `calc_cutoffs_from_profiles()`), and `max_coverage` uses only
     the windows of the CDS.
+- The new help page `?RiboseQC` gives the steps of an analysis and the
+  functions for them (before, `?RiboseQC` found no page).
 
 # RiboseQC 1.4.0
 

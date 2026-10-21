@@ -1,3 +1,16 @@
+#' RiboseQC: quality control of Ribo-seq data
+#'
+#' RiboseQC does the quality control of Ribo-seq data and calculates the P-site offsets, for cytoplasmic
+#' and organellar ribosomes (Calviello et al., bioRxiv 2019, \doi{10.1101/601468}). It works in two steps:
+#' \enumerate{
+#' \item \code{\link{prepare_annotation_files}} makes the annotation from a GTF file and a FASTA file of the genome.
+#' \item \code{\link{RiboseQC_analysis}} analyzes the BAM files with this annotation, writes the results and makes
+#' the html report (\code{\link{create_html_report}}).
+#' }
+#' \code{\link{prepare_for_ORFquant}} calculates the P-sites for ORFquant from a BAM file and a table of offsets.
+#' The vignette runs the two steps on the example data of the package: \code{vignette("RiboseQC", package = "RiboseQC")}.
+"_PACKAGE"
+
 # Package imports. NAMESPACE is generated from these tags by roxygen2.
 #' @import BSgenome
 #' @rawNamespace import(BiocGenerics, except = c(combine, Position))
