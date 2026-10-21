@@ -2490,6 +2490,9 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
 #' @param circ_chroms Chromosomes to make circular in the genome sequence - defaults to DEFAULT_CIRC_SEQS
 #' @param create_TxDb Create a \code{TxDb} object and a *Rannot object? It defaults to \code{TRUE}
 #' @param annot_file specify an exact file name for the rds file created by this function, defaults to annotation_directory/basename(gtf)_Rannot
+#' @param genetic_codes The genetic codes of some chromosomes, which replace the codes that their names give (see Details): a named
+#' vector, with the chromosome names as names and ids of \code{\link[Biostrings]{GENETIC_CODE_TABLE}} as values, e.g.
+#' \code{c(chrM = "3")} for the mitochondrion of yeast with UCSC names. It defaults to \code{NULL}: the names give all codes
 #' @details This function uses the \code{makeTxDbFromGFF} function to  create a TxDb object and extract
 #' genomic regions and other info to a *Rannot R file; the \code{mapToTranscripts} and \code{mapFromTranscripts} functions are used to
 #' map features to genomic or transcript-level coordinates. GTF file must contain "exon" and "CDS" lines,
@@ -2510,6 +2513,11 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
 #' order chooses the value: a transcript gets the value of its first line with one, and the read counts of the genes and the top 50
 #' positions of \code{RiboseQC_analysis} get the gene name and biotype of the first transcript of the gene in the file. Then this
 #' function gives a warning, with some of these transcripts and genes.
+#' The genetic code of a chromosome comes from its name: "chrM", "MT", "MtDNA", "mit" and "mitochondrion" get code 2 (vertebrate
+#' mitochondria), "Mito" gets code 3 (yeast mitochondria), "dmel_mitochondrion_genome" gets code 5 (invertebrate mitochondria), and all
+#' other chromosomes get code 1 (standard). So the mitochondrion of e.g. yeast or Drosophila with UCSC names ("chrM") gets code 2: give
+#' its code with \code{genetic_codes}. \code{RiboseQC_analysis} uses the code of each circular chromosome for the codons of its CDS,
+#' and code 1 for the codons of the other chromosomes. ORFquant uses the code of each chromosome to find and translate its ORFs.
 #' The genome sequence is read from the FASTA file \code{genome_seq}.\cr\cr
 #' The resulting GTF_annotation object (obtained after runnning \code{load_annotation}) contains:\cr\cr
 #' \code{txs}: annotated transcript boundaries.\cr
@@ -2550,7 +2558,7 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
 
 
 prepare_annotation_files<-function(annotation_directory,twobit_file=NULL,gtf_file,scientific_name="Homo.sapiens",
-                                   annotation_name="genc25",export_bed_tables_TxDb=TRUE,forge_BSgenome=FALSE,genome_seq=NULL,circ_chroms=DEFAULT_CIRC_SEQS,create_TxDb=TRUE,annot_file=NULL){
+                                   annotation_name="genc25",export_bed_tables_TxDb=TRUE,forge_BSgenome=FALSE,genome_seq=NULL,circ_chroms=DEFAULT_CIRC_SEQS,create_TxDb=TRUE,annot_file=NULL,genetic_codes=NULL){
     #forging a BSgenome package from twobit_file is removed: it fails with current BSgenomeForge (ohlerlab/RiboseQC#21, #23)
     if(is.null(genome_seq)){
         stop("Please give the genome sequence as a FASTA file (genome_seq). prepare_annotation_files() no longer forges a BSgenome package ",
@@ -2585,6 +2593,7 @@ prepare_annotation_files<-function(annotation_directory,twobit_file=NULL,gtf_fil
     }
     seqinfo_genome<-seqinfo(genome_seq)
     seqinfo_genome@is_circular[which(seqnames(seqinfo_genome)%in%circ_chroms)]<-TRUE
+    check_genetic_codes(genetic_codes,seqnames(seqinfo_genome))
     genome <- genome_seq
     pkgnm<-NULL
     #Create the TxDb from GTF and BSGenome info
@@ -2767,6 +2776,9 @@ prepare_annotation_files<-function(annotation_directory,twobit_file=NULL,gtf_fil
 
         #Drosophila mito
         translations$genetic_code[rownames(translations)%in%c("dmel_mitochondrion_genome")]<-"5"
+
+        #the codes given by the user replace those of the names
+        if(!is.null(genetic_codes)){translations[names(genetic_codes),"genetic_code"]<-as.character(genetic_codes)}
 
         circs<-ifs@seqnames[which(ifs@is_circular)]
 

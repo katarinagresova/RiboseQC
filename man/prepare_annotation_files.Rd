@@ -15,7 +15,8 @@ prepare_annotation_files(
   genome_seq = NULL,
   circ_chroms = DEFAULT_CIRC_SEQS,
   create_TxDb = TRUE,
-  annot_file = NULL
+  annot_file = NULL,
+  genetic_codes = NULL
 )
 }
 \arguments{
@@ -43,6 +44,10 @@ a relative path is stored as an absolute path, the path of an \code{FaFile} as i
 \item{create_TxDb}{Create a \code{TxDb} object and a *Rannot object? It defaults to \code{TRUE}}
 
 \item{annot_file}{specify an exact file name for the rds file created by this function, defaults to annotation_directory/basename(gtf)_Rannot}
+
+\item{genetic_codes}{The genetic codes of some chromosomes, which replace the codes that their names give (see Details): a named
+vector, with the chromosome names as names and ids of \code{\link[Biostrings]{GENETIC_CODE_TABLE}} as values, e.g.
+\code{c(chrM = "3")} for the mitochondrion of yeast with UCSC names. It defaults to \code{NULL}: the names give all codes}
 }
 \value{
 a TxDb file and a *Rannot files are created in the specified \code{annotation_directory}.
@@ -72,6 +77,11 @@ values, and all transcripts of a gene the same gene name and biotype (as in GENC
 order chooses the value: a transcript gets the value of its first line with one, and the read counts of the genes and the top 50
 positions of \code{RiboseQC_analysis} get the gene name and biotype of the first transcript of the gene in the file. Then this
 function gives a warning, with some of these transcripts and genes.
+The genetic code of a chromosome comes from its name: "chrM", "MT", "MtDNA", "mit" and "mitochondrion" get code 2 (vertebrate
+mitochondria), "Mito" gets code 3 (yeast mitochondria), "dmel_mitochondrion_genome" gets code 5 (invertebrate mitochondria), and all
+other chromosomes get code 1 (standard). So the mitochondrion of e.g. yeast or Drosophila with UCSC names ("chrM") gets code 2: give
+its code with \code{genetic_codes}. \code{RiboseQC_analysis} uses the code of each circular chromosome for the codons of its CDS,
+and code 1 for the codons of the other chromosomes. ORFquant uses the code of each chromosome to find and translate its ORFs.
 The genome sequence is read from the FASTA file \code{genome_seq}.\cr\cr
 The resulting GTF_annotation object (obtained after runnning \code{load_annotation}) contains:\cr\cr
 \code{txs}: annotated transcript boundaries.\cr

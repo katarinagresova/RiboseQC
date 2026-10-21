@@ -140,3 +140,23 @@ check_gtf_values<-function(gtf_ids,trann){
             " (see ?prepare_annotation_files)",call. = FALSE)
   }
 }
+
+#genetic_codes of prepare_annotation_files(): NULL, or ids of GENETIC_CODE_TABLE named by chromosomes of the genome;
+#a name that is not a chromosome would add a row to the genetic codes of the annotation
+check_genetic_codes<-function(genetic_codes,chromosomes){
+  if(is.null(genetic_codes)){return(invisible(NULL))}
+  chrom_names<-names(genetic_codes)
+  if(!(is.character(genetic_codes) || is.numeric(genetic_codes)) || length(genetic_codes)==0 || is.null(chrom_names) ||
+     any(is.na(chrom_names) | chrom_names=="") || anyDuplicated(chrom_names)>0){
+    stop("genetic_codes must be a vector with one genetic code for each chromosome, named by the chromosomes, e.g. c(chrM = \"3\")",call. = FALSE)
+  }
+  wrong_codes<-unique(as.character(genetic_codes)[!as.character(genetic_codes)%in%GENETIC_CODE_TABLE$id])
+  if(length(wrong_codes)>0){
+    stop("genetic_codes has codes that are not ids of Biostrings::GENETIC_CODE_TABLE: ",paste(wrong_codes,collapse=", "),call. = FALSE)
+  }
+  wrong_chroms<-chrom_names[!chrom_names%in%chromosomes]
+  if(length(wrong_chroms)>0){
+    stop("genetic_codes has chromosomes that are not in the genome sequence: ",paste(head(wrong_chroms,3),collapse=", "),
+         " (the genome has e.g. ",paste(head(chromosomes,3),collapse=", "),")",call. = FALSE)
+  }
+}
