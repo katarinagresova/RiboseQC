@@ -267,6 +267,26 @@
     environment, and which column names the cutoff file needs.
     `?forked_processes`, `?input_checks`: `RiboseQC_analysis()` uses these
     functions too (before: only `prepare_for_ORFquant()`).
+  - The help pages of the report functions. The plot functions print their
+    plot and return `NULL` (before: "returns a plot"); the codon usage plots
+    return the plot. The help gives the name of the RDS file that each one
+    saves, and `output_rds_path` must end with `/`. The `_rmd` functions save
+    RDS files only with `output_rds_path`. `create_html_report()` also writes
+    `<output_file>_report_text_output.txt`; `create_pdfs_from_rds_objects()`
+    writes the PDF files in the folder `pdf/` next to the RDS folder.
+    `generate_rdata_list()` needs a named vector of paths (before: a list).
+    The values of `get_metagene_data()` and `get_codon_usage_data()` are as
+    the functions return them (before: other element names), and
+    `get_metagene_data()` needs the `res_all` of a `_results_RiboseQC` file.
+    `plot_frame_dist_boxplot()` plots the mean and its standard error (before:
+    boxplots). `get_rl_and_cutoffs()` gives all read lengths with a cutoff
+    (before: the selected ones), and `get_default_rl_selection()` the read
+    lengths of `max_coverage`, which are not those of the P-sites with
+    another method. `get_top50_all_genes()` gives 100 genes (before: 50). The
+    codon usage is per codon position (before: per nucleotide position), and
+    the genetic code comes from `RiboseQC_analysis()` (before: "a
+    user-defined genetic code"). The links to `plot_codon_usage()`, which
+    does not exist, now go to `plot_codon_usage_positional()`.
 
 # RiboseQC 1.4.0
 

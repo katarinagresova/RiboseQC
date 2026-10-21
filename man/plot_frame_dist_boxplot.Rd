@@ -18,23 +18,23 @@ Example: \cr
 \code{res_all$selection_cutoffs$analysis_frame_cutoff}}
 
 \item{comp}{String for originating compartment \cr \cr
-Check for available originating compartments in the data set using:
-\code{names(res_all$profiles_fivepr$five_prime_subcodon)}}
+Check for available originating compartments (with data) in the data set using:
+\code{names(Filter(length, res_all$selection_cutoffs$analysis_frame_cutoff))}}
 
 \item{sample}{String; sample name (selected from the input names
 given in the \code{input_sample_names} parameter of \code{create_html_report}).}
 
 \item{output_rds_path}{String; full path to output folder for RDS object files created by this function.
-Defaults to NOT save RDS; to save RDS, provide path to destination folder.}
+Defaults to NOT save RDS; to save RDS, provide path to destination folder, ending with "/" (the file name is appended to it).}
 }
 \value{
-This function returns a plot that can be integrated in the html report and
-that can be saved as RDS object file.
+This function prints the plot for the html report and returns \code{NULL}, invisibly.
+With \code{output_rds_path}, it also saves the plot as the RDS object file \code{<output_rds_path><sample>_<comp>_4_selection5toP}.
 }
 \description{
 This function plots the frame coverage of 5'-site profiles,
 i.e. the fraction of reads (their 5' end) in frame 0, 1, and 2 (defined by start codon),
-as boxplots (per-frame distributions over all transcripts)
+as the mean over all transcripts with its standard error
 for individual read lengths as well as for all read lengths summarized.
 }
 \details{

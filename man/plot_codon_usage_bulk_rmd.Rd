@@ -13,15 +13,15 @@ plot_codon_usage_bulk_rmd(data, sample = "", output_rds_path = "")
 given in the \code{input_sample_names} parameter of \code{create_html_report}).}
 
 \item{output_rds_path}{String; full path to output folder for RDS object files created by this function.
-Defaults to NOT save RDS; to save RDS, provide path to destination folder.}
+Defaults to NOT save RDS; to save RDS, provide path to destination folder, ending with "/" (the file name is appended to it).}
 }
 \value{
-This function returns iteratively all bulk codon usage plots
-for the html report and saves the same plots as RDS object file.
+This function prints iteratively all bulk codon usage plots
+for the html report and returns \code{NULL}. With \code{output_rds_path}, it also saves the same plots as RDS object files.
 }
 \description{
 This function generates iteratively all bulk codon usage bar plots;
-iteration over originating compartments, read length, and data type (codon count, read count, codon-read count ratio). \cr \cr
+iteration over originating compartments, read length, and data type (codon count, and A-, P- and E-site counts and their ratios to the codon counts). \cr \cr
 These plots are displayed in the RiboseQC report in section 8.
 }
 \examples{
@@ -30,7 +30,7 @@ load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
 plot_codon_usage_bulk_rmd(res_all, "root")
 }
 \seealso{
-\code{\link{create_html_report}}, \code{\link{get_metagene_data}}, \code{\link{plot_metagene_hm}}
+\code{\link{create_html_report}}, \code{\link{get_codon_usage_data}}, \code{\link{plot_codon_usage_bulk}}
 }
 \author{
 Dominique Sydow, \email{dominique.sydow@posteo.de}

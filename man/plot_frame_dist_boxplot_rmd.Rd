@@ -20,10 +20,11 @@ Example: \cr
 given in the \code{input_sample_names} parameter of \code{create_html_report}).}
 
 \item{output_rds_path}{String; full path to output folder for RDS object files created by this function.
-Defaults to NOT save RDS; to save RDS, provide path to destination folder.}
+Defaults to NOT save RDS; to save RDS, provide path to destination folder, ending with "/" (the file name is appended to it).}
 }
 \value{
-This function integrates plots in the html report.
+This function integrates plots in the html report, for each compartment with data, and returns \code{NULL}.
+With \code{output_rds_path}, it also saves the plots as RDS object files (see \code{plot_frame_dist_boxplot}).
 }
 \description{
 This function generates iteratively all frame coverage boxplots
