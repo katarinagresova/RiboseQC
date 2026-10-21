@@ -96,7 +96,8 @@ the most upstream/downstream start/stop codons and the start/stop codons residin
 \code{genetic_codes}: an object containing the list of genetic code ids used for each chromosome/organelle. see GENETIC_CODE_TABLE for more info.\cr
 \code{genome_package}: \code{NULL}. In annotations made by ORFquant with \code{forge_BSgenome=TRUE}, the name of the forged
 BSgenome package, which \code{load_annotation} loads.\cr
-\code{stop_in_gtf}: \code{"*"} if most CDS end with a stop codon, \code{NA} if most end before it.\cr
+\code{stop_in_gtf}: \code{"*"} if most CDS end with a stop codon (of the genetic code of their chromosome), \code{NA} if most end
+before it. The CDS on circular chromosomes count only if all CDS are on them.\cr
 \code{genome}: the genome sequence, an FaFile_Circ object. Loaded with \code{load_annotation} function.\cr
 }
 \examples{

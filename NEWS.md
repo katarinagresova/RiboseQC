@@ -77,6 +77,16 @@
   stop on an annotation without splice junctions, such as the annotation of
   such a GTF file. The error was `1 elements in value to replace 0 elements`.
   The results of the other annotations do not change.
+- `prepare_annotation_files()` no longer stops with `'id_or_name2' must be a
+  single string` or `argument is of length zero` when the chromosomes that
+  are not circular have no genetic code or more than one: for example, a GTF
+  file of chrM only with chrM circular, or a genome with chrM and
+  `circ_chroms` without chrM. To find out if the CDS include their stop
+  codons (`stop_in_gtf`), it now translates each CDS with the genetic code of
+  its chromosome, and it uses the CDS on circular chromosomes if all CDS are
+  on them. Before, it used one genetic code for all chromosomes that are not
+  circular, also for those without CDS. The annotations that were made
+  before do not change.
 
 ## Documentation
 

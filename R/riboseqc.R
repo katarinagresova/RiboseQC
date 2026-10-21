@@ -2534,7 +2534,8 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
 #' \code{genetic_codes}: an object containing the list of genetic code ids used for each chromosome/organelle. see GENETIC_CODE_TABLE for more info.\cr
 #' \code{genome_package}: \code{NULL}. In annotations made by ORFquant with \code{forge_BSgenome=TRUE}, the name of the forged
 #' BSgenome package, which \code{load_annotation} loads.\cr
-#' \code{stop_in_gtf}: \code{"*"} if most CDS end with a stop codon, \code{NA} if most end before it.\cr
+#' \code{stop_in_gtf}: \code{"*"} if most CDS end with a stop codon (of the genetic code of their chromosome), \code{NA} if most end
+#' before it. The CDS on circular chromosomes count only if all CDS are on them.\cr
 #' \code{genome}: the genome sequence, an FaFile_Circ object. Loaded with \code{load_annotation} function.\cr
 #' @return a TxDb file and a *Rannot files are created in the specified \code{annotation_directory}.
 #' @seealso \code{\link{load_annotation}}, \code{\link[txdbmaker]{makeTxDbFromGFF}}.
@@ -2770,12 +2771,19 @@ prepare_annotation_files<-function(annotation_directory,twobit_file=NULL,gtf_fil
 
         #define start and stop codons (genome space)
 
+        #the CDS of the chromosomes that are not circular (of the circular ones if all CDS are on them), each
+        #translated with the genetic code of its chromosome
         tocheck<-as.character(runValue(seqnames(cds_tx)))
-        tocheck<-cds_tx[!tocheck%in%circs]
+        lin<-!tocheck%in%circs
+        if(!any(lin)){lin<-!lin}
+        cd<-translations[tocheck[lin],"genetic_code"]
+        tocheck<-cds_tx[lin]
         seqcds<-extractTranscriptSeqs(genome,transcripts = tocheck)
-        cd<-unique(translations$genetic_code[!rownames(translations)%in%circs])
-        trsl<-suppressWarnings(translate(seqcds,genetic.code = getGeneticCode(cd),if.fuzzy.codon = "solve"))
-        trslend<-as.character(narrow(trsl,end = width(trsl),width = 1))
+        trslend<-character(length(seqcds))
+        for(code in unique(cd)){
+            trsl<-suppressWarnings(translate(seqcds[cd==code],genetic.code = getGeneticCode(code),if.fuzzy.codon = "solve"))
+            trslend[cd==code]<-as.character(narrow(trsl,end = width(trsl),width = 1))
+        }
         stop_inannot<-NA
         if(names(sort(table(trslend),decreasing = TRUE)[1])=="*"){stop_inannot<-"*"}
 
