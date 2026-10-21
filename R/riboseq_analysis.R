@@ -393,7 +393,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             seql <- seqlevels(GTF_annotation$seqinfo)
             seqle <- seqlengths(GTF_annotation$seqinfo)
             # and the chromosomes with reads that the annotation does not have, with their lengths in the
-            # BAM file: one chunk keeps these reads, so more chunks must keep them too (B6)
+            # BAM file: one chunk keeps these reads, so more chunks must keep them too
             seq_extra <- c(seqlevelsInUse(x[["reads_pos1"]]), seqlevelsInUse(y[["reads_pos1"]]))
             seq_extra <- seqlevels(seqs)[seqlevels(seqs) %in% setdiff(seq_extra, seql)]
             seql <- c(seql, seq_extra)
@@ -448,7 +448,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 strand(covv_pl) <- "+"
                 strand(covv_min) <- "-"
                 
-                all_ps[[rl]] <- sort(c(covv_pl, covv_min))
+                all_ps[[rl]] <- single_positions(sort(c(covv_pl, covv_min)))
             }
             
             
@@ -1233,7 +1233,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 strand(covv_pl) <- "+"
                 strand(covv_min) <- "-"
                 
-                all_ps[[rl]] <- sort(c(covv_pl, covv_min))
+                all_ps[[rl]] <- single_positions(sort(c(covv_pl, covv_min)))
                 rm(covv_min, covv_pl, plx, mnx, ply, mny, reads_y, reads_x, rl)
                 
             }
@@ -1288,7 +1288,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 strand(covv_pl) <- "+"
                 strand(covv_min) <- "-"
                 
-                uniq_ps[[rl]] <- sort(c(covv_pl, covv_min))
+                uniq_ps[[rl]] <- single_positions(sort(c(covv_pl, covv_min)))
                 rm(covv_min, covv_pl, plx, mnx, ply, mny, reads_y, reads_x, rl)
                 
                 
@@ -1344,7 +1344,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 strand(covv_pl) <- "+"
                 strand(covv_min) <- "-"
                 
-                uniq_mm_ps[[rl]] <- sort(c(covv_pl, covv_min))
+                uniq_mm_ps[[rl]] <- single_positions(sort(c(covv_pl, covv_min)))
                 rm(covv_min, covv_pl, plx, mnx, ply, mny, reads_y, reads_x, rl)
                 
             }
@@ -2184,6 +2184,18 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
 
 
 
+
+# One range for each position of the ranges gr, with the score of its range. One chunk of a BAM file
+# gives the 5' ends and the P-sites with one range for each position. The merge of two chunks adds
+# their counts as coverage, so adjacent positions with the same count become one range, and the
+# profiles lose its reads when it crosses the end of an exon or of the CDS (mapToTranscripts()
+# gives no hit). With this, the merges give what one chunk gives.
+single_positions <- function(gr) {
+    wid <- width(gr)
+    gr <- rep(gr, wid)
+    ranges(gr) <- IRanges(start = start(gr) + sequence(wid) - 1L, width = 1L)
+    gr
+}
 
 # Read the BamFile X in chunks with YIELD, run MAP on each chunk and combine the results with
 # REDUCE, in the order of the chunks. This is the loop of GenomicFiles::reduceByYield(), which
