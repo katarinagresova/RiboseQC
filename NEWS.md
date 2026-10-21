@@ -247,6 +247,20 @@
     (before: after it), and the last one ends at the end of the CDS (before:
     before the stop codon). The help now names the `_unq` statistics, the A-site
     and E-site tables and the smaller `_results_RiboseQC` file.
+  - `?prepare_annotation_files`: the value of the function is the path of
+    the `_Rannot` file (before: the help said only that it makes files), and
+    the help lists the files that it makes. `annot_file` is made with
+    `save()` (before: an "rds file"). The help lists the 20 default names of
+    `circ_chroms` (before: `DEFAULT_CIRC_SEQS`, which is not exported). The
+    CDS of transcripts with a CDS shorter than 3 nt are not used, but the
+    transcripts stay in the annotation (before: "are removed"). The columns
+    of `cds_txs_coords` and `trann` are as in the annotation.
+  - `?load_annotation`: only the annotations of ORFquant with
+    `forge_BSgenome = TRUE` have a BSgenome package in `genome_package`
+    (before: also those of RiboseQC 1.2.0 and later, which never have one).
+  - `?get_ps_fromspliceplus`, `?get_ps_fromsplicemin`: the P-sites are sorted
+    by position, not in the order of the reads. `?getSeq` of `FaFile_Circ`: a
+    range must start on the circular chromosome to run past its end.
 
 # RiboseQC 1.4.0
 

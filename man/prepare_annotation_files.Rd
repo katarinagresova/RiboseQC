@@ -37,20 +37,27 @@ this failed with current BSgenomeForge versions (ohlerlab/RiboseQC#21, #23). It 
 
 \item{genome_seq}{FASTA file of the genome sequence, uncompressed or compressed with \code{bgzip} (a path or an \code{FaFile}). Required; \code{twoBitToFa} of the UCSC tools
 (http://hgdownload.soe.ucsc.edu/admin/exe/) makes one from a twobit file. The annotation refers to the FASTA file by its path:
-a relative path is stored as an absolute path, the path of an \code{FaFile} as it is}
+a relative path is stored as an absolute path, the path of an \code{FaFile} as it is. If the FASTA file has no index (.fai, and .gzi
+with \code{bgzip}), it is made next to the file}
 
-\item{circ_chroms}{Chromosomes to make circular in the genome sequence - defaults to DEFAULT_CIRC_SEQS}
+\item{circ_chroms}{Chromosomes to make circular in the genome sequence - defaults to "chrM", "MT", "MtDNA", "mit", "Mito",
+"mitochondrion", "dmel_mitochondrion_genome", "Pltd", "ChrC", "Pt", "chloroplast", "Chloro", "2micron", "2-micron", "2uM", "Mt",
+"NC_001879.2", "NC_006581.1", "ChrM" and "mitochondrion_genome". \code{RiboseQC_analysis} analyzes each circular chromosome
+as its own compartment}
 
 \item{create_TxDb}{Create a \code{TxDb} object and a *Rannot object? It defaults to \code{TRUE}}
 
-\item{annot_file}{specify an exact file name for the rds file created by this function, defaults to annotation_directory/basename(gtf)_Rannot}
+\item{annot_file}{specify an exact file name for the *Rannot R file (made with \code{save}) created by this function, defaults to annotation_directory/basename(gtf)_Rannot}
 
 \item{genetic_codes}{The genetic codes of some chromosomes, which replace the codes that their names give (see Details): a named
 vector, with the chromosome names as names and ids of \code{\link[Biostrings]{GENETIC_CODE_TABLE}} as values, e.g.
 \code{c(chrM = "3")} for the mitochondrion of yeast with UCSC names. It defaults to \code{NULL}: the names give all codes}
 }
 \value{
-a TxDb file and a *Rannot files are created in the specified \code{annotation_directory}.
+The path of the *Rannot file (\code{annot_file}). The function creates this file and a TxDb file,
+\code{<annotation_directory>/<basename(gtf_file)>_TxDb}. With \code{export_bed_tables_TxDb = TRUE}, it also creates these tab-separated files
+in \code{annotation_directory}: fiveutrs_similbed.bed, threeutrs_similbed.bed, ncIsof_similbed.bed, ncRNAs_similbed.bed, introns_similbed.bed,
+cds_txs_coords_similbed.bed, table_gene_tx_IDs, seqinfo and genetic_codes. With \code{create_TxDb = FALSE}, it creates no file.
 }
 \description{
 This function processes a gtf file and a FASTA file of the genome to create a comprehensive set of genomic regions of interest in genomic and transcriptomic space (e.g. introns, UTRs, start/stop codons).
@@ -58,7 +65,7 @@ This function processes a gtf file and a FASTA file of the genome to create a co
 }
 \details{
 This function uses the \code{makeTxDbFromGFF} function to  create a TxDb object and extract
-genomic regions and other info to a *Rannot R file; the \code{mapToTranscripts} and \code{mapFromTranscripts} functions are used to
+genomic regions and other info to a *Rannot R file; the \code{pmapToTranscripts} and \code{pmapFromTranscripts} functions are used to
 map features to genomic or transcript-level coordinates. GTF file must contain "exon" and "CDS" lines,
 where each line contains "transcript_id" and "gene_id" values. The CDS should include the stop codon, or the file should have
 "stop_codon" lines, which are added to the CDS (as in GENCODE, Ensembl and RefSeq files). If most CDS end before their stop codon
@@ -71,7 +78,8 @@ from "gene_biotype" or "gene_type", "transcript_biotype" or "transcript_type", a
 "ref_gene_name" (StringTie) values, on any line of the transcript or (for genes) of the gene. Missing biotypes are "no_type", apart
 from those of transcripts with CDS lines and of their genes, which are "protein_coding" (without biotypes, e.g. in UCSC's GTFs,
 transcripts with a CDS that GENCODE calls "nonsense_mediated_decay" are "protein_coding" too). The transcript biotype "mRNA" (NCBI)
-is read as "protein_coding"; if no gene has a name, all are "no_name". Transcripts with a CDS shorter than 3 nt are removed.
+is read as "protein_coding"; if no gene has a name, all are "no_name". The CDS of transcripts with a CDS shorter than 3 nt are not used:
+these transcripts are not in \code{cds_txs}, \code{cds_txs_coords} and \code{start_stop_codons}.
 The order of the lines in the GTF file does not change the results if the lines agree: all lines of a transcript give the same
 values, and all transcripts of a gene the same gene name and biotype (as in GENCODE and Ensembl files). If they do not agree, the
 order chooses the value: a transcript gets the value of its first line with one, and the read counts of the genes and the top 50
@@ -102,9 +110,12 @@ the most upstream/downstream start/stop codons and the start/stop codons residin
 \code{ncIsof}: collapsed set of exonic regions of protein_coding genes, with correspinding gene_ids. This set does not overlap CDS region.\cr
 \code{ncRNAs}: collapsed set of exonic regions of non_coding genes, with correspinding gene_ids. This set does not overlap CDS region.\cr
 \code{introns}: collapsed set of intronic regions, with correspinding gene_ids. This set does not overlap exonic region.\cr
-\code{intergenicRegions}: set of intergenic regions, defined as regions with no annotated genes on either strand.\cr
-\code{trann}: DataFrame object including (when available) the mapping between gene_id, gene_name, gene_biotypes, transcript_id and transcript_biotypes.\cr
-\code{cds_txs_coords}: transcript-level coordinates of ORF boundaries, for each annotated coding transcript. Additional columns are the same as as for the \code{start_stop_codons} object.\cr
+\code{intergenicRegions}: set of intergenic regions, defined as regions with no gene of \code{genes} on either strand.\cr
+\code{trann}: DataFrame object including the mapping between gene_id, gene_biotype, gene_name, transcript_id and transcript_biotype, for each transcript.\cr
+\code{cds_txs_coords}: transcript-level coordinates of ORF boundaries, for each annotated coding transcript (the seqnames are the transcript ids).
+Additional columns are gene_id, upstr_stasto and mostfreq_stasto (how many of the start and stop codons of the transcript are the most
+upstream/downstream ones or the most common ones of the gene), lentx (the length of the transcript), and the reprentative_mostcommon,
+reprentative_boundaries and reprentative_5len of the \code{start_stop_codons} object, for the transcript.\cr
 \code{genetic_codes}: an object containing the list of genetic code ids used for each chromosome/organelle. see GENETIC_CODE_TABLE for more info.\cr
 \code{genome_package}: \code{NULL}. In annotations made by ORFquant with \code{forge_BSgenome=TRUE}, the name of the forged
 BSgenome package, which \code{load_annotation} loads.\cr

@@ -57,7 +57,7 @@ setMethod(seqinfo,'FaFile_Circ',function (x){
 
 #' Yields the sequence for a particular range on a circular Fasta File
 #'
-#' GRanges on a circular chromosome may run past its end by up to the
+#' GRanges that start on a circular chromosome may run past its end by up to the
 #' chromosome's length; the rest of the sequence is then taken from its start.
 #'
 #' @param x FaFile_Circ; the object to get the sequences from
