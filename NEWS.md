@@ -36,6 +36,12 @@
   duplicates, which are not used) stops the run at the start of its
   analysis, with an error that says so. Before, the error was `subscript out
   of bounds`.
+- `prepare_annotation_files()` warns when the lines of the GTF file do not
+  agree: when the lines of a transcript give different values of an
+  attribute (for example two biotypes), or the transcripts of a gene give
+  different gene names or biotypes. Then the order of the lines chooses the
+  value (see the help), and the warning names some of these transcripts and
+  genes. The annotation does not change.
 
 ## Bug fixes
 
@@ -59,6 +65,15 @@
   with it the P-site files and `for_ORFquant`) depended on `chunk_size`. The
   results of BAM files with more than `chunk_size` alignments can change. The
   results of the other BAM files do not change.
+
+## Documentation
+
+- The help of `prepare_annotation_files()` now says that the order of the
+  lines in the GTF file does not change the results if the lines agree, as in
+  GENCODE and Ensembl files (lcalviell/ORFquant#10). If the lines of a
+  transcript, or the transcripts of a gene, give different values (for
+  example two gene names), the order chooses the value: the first line in
+  the file gives it.
 
 # RiboseQC 1.4.0
 

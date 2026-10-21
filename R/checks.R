@@ -99,3 +99,35 @@ check_gtf<-function(gtf_file){
   }
   stop("The GTF file ",gtf_file," is empty or has no exon lines: the annotation needs the exons and the coding sequences (CDS) of the transcripts",call. = FALSE)
 }
+
+#a transcript gets the value of an attribute from its first line with one, and RiboseQC_analysis() gives a gene the
+#name and biotype of its first transcript in trann: when the lines do not agree, their order in the GTF file chooses
+#the value. gtf_ids: the attributes of the lines; trann: one row for each transcript
+check_gtf_values<-function(gtf_ids,trann){
+  #the ids (column by) with more than one value in a column of cols, and the column
+  disagree<-function(x,by,cols,with_na){
+    res<-lapply(cols,function(cl){
+      v<-unique(x[!is.na(x[,by]) & (with_na | !is.na(x[,cl])),c(by,cl)])
+      sort(unique(v[duplicated(v[,by]),by]))
+    })
+    data.frame(id=unlist(res),attribute=rep(cols,lengths(res)),stringsAsFactors=FALSE)
+  }
+  examples<-function(d){paste(head(paste0(d$id," (",d$attribute,")"),3),collapse=", ")}
+  txs<-disagree(gtf_ids,"transcript_id",setdiff(names(gtf_ids),"transcript_id"),with_na=FALSE)
+  genes<-disagree(trann,"gene_id",c("gene_name","gene_biotype"),with_na=TRUE)
+  msg<-NULL
+  if(nrow(txs)>0){
+    n<-length(unique(txs$id))
+    msg<-c(msg,paste0("the lines of ",n," ",ngettext(n,"transcript","transcripts")," give different values (e.g. ",examples(txs),
+                      "), and a transcript gets the value of its first line with one"))
+  }
+  if(nrow(genes)>0){
+    n<-length(unique(genes$id))
+    msg<-c(msg,paste0("the transcripts of ",n," ",ngettext(n,"gene","genes")," give different gene names or biotypes (e.g. ",examples(genes),
+                      "), and RiboseQC_analysis() gives a gene the values of its first transcript in the file"))
+  }
+  if(length(msg)>0){
+    warning("The lines of the GTF file do not agree, so their order chooses some values: ",paste(msg,collapse="; "),
+            " (see ?prepare_annotation_files)",call. = FALSE)
+  }
+}
