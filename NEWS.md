@@ -96,6 +96,25 @@
   transcript, or the transcripts of a gene, give different values (for
   example two gene names), the order chooses the value: the first line in
   the file gives it.
+- `?RiboseQC_analysis` now says that soft-clipped bases (`S` in the CIGAR)
+  are not counted (#12): the read length is the aligned length, and the
+  offset counts from the first aligned base at the 5' end. So a 31-nt read
+  with 2 soft-clipped bases counts as a 29-nt read. Alignments with soft
+  clipping (for example STAR's default, `--alignEndsType Local`) can give
+  other read lengths, offsets and P-sites than end-to-end alignments.
+  RiboseQC has always worked this way. `?prepare_for_ORFquant` and the
+  README already said it.
+- `?RiboseQC_analysis` now says which alignments are not used: alignments
+  flagged as duplicates, secondary alignments and alignments with an
+  insertion or a deletion (`I` or `D` in the CIGAR). These alignments are in
+  no output: not in the read counts, the read length distributions, the
+  offsets, the P-sites, the coverage or the junction reads, and the report
+  does not count them. RiboseQC has always worked this way.
+  `?prepare_for_ORFquant` and the README already said it. In the example
+  data, 24 of the 26,702 alignments of the root sample and 26 of the 53,142
+  alignments of the shoot sample have an insertion or a deletion. In a human
+  sample aligned with STAR (SRR15513199), 0.7% of the alignments have one,
+  but only 0.035% of the uniquely mapping alignments.
 - The help of `prepare_annotation_files()` now says which annotations give
   wrong ORF categories in ORFquant. Since ORFquant 1.3.1, only an annotation
   with `stop_in_gtf` `NA` does (the codon after each CDS is its stop codon,
