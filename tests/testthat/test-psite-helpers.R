@@ -61,3 +61,20 @@ test_that("psites_of_chunk() finds the reads with mismatches by the MD tag, also
   expect_identical(p_sites("P_sites_uniq"), c(107L, 209L, 307L, 407L, 507L))
   expect_identical(p_sites("P_sites_uniq_mm"), c(107L, 209L, 307L))
 })
+
+test_that("single_positions() gives the merge of chunks one range for each position, as one chunk gives", {
+  # The merge of two chunks adds their counts as coverage: positions 100 to 102 have 2 reads, 103 has 1
+  merged <- GenomicRanges::GRanges("chr1", IRanges::IRanges(c(100L, 103L), width = c(3L, 1L)), strand = "+",
+                                   score = c(2, 1), seqlengths = c(chr1 = 1000L, chr2 = 500L))
+  ps <- single_positions(merged)
+  expect_identical(start(ps), 100:103)
+  expect_true(all(width(ps) == 1L))
+  expect_identical(ps$score, c(2, 2, 2, 1))
+  expect_identical(as.character(strand(ps)), rep("+", 4))
+  expect_identical(seqlengths(ps), c(chr1 = 1000L, chr2 = 500L))
+  expect_length(single_positions(merged[0]), 0)
+  # An exon that ends at 101: the range 100-102 gives no hit, its positions 100 and 101 do
+  exon <- GenomicRanges::GRangesList(tx = GenomicRanges::GRanges("chr1", IRanges::IRanges(90L, 101L), strand = "+"))
+  expect_length(GenomicFeatures::mapToTranscripts(merged, exon), 0)
+  expect_identical(start(GenomicFeatures::mapToTranscripts(ps, exon)), c(11L, 12L))
+})

@@ -48,6 +48,17 @@
   P-sites and coverage on these chromosomes, and they count in the
   percentages of `P_sites_calcs`. The runs that worked before give the same
   results.
+- `RiboseQC_analysis()` gives the same results for a BAM file with more than
+  `chunk_size` alignments (5,000,000 by default), which it reads in more than
+  one chunk, as for the same BAM file in one chunk. Before, the merge of the
+  chunks joined adjacent positions with the same number of 5' ends or P-sites
+  into one range, and the 5' and P-site profiles lost the reads of a range
+  that crossed the end of an exon, or the start or the end of a CDS. So the
+  profiles, the percentages of the "Top 50 mapping positions" (too high) and,
+  when two offsets were near in the choice, the offset of a read length (and
+  with it the P-site files and `for_ORFquant`) depended on `chunk_size`. The
+  results of BAM files with more than `chunk_size` alignments can change. The
+  results of the other BAM files do not change.
 
 # RiboseQC 1.4.0
 
