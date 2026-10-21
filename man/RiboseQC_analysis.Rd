@@ -107,6 +107,12 @@ coverage for entire reads (no 5'ends or P_sites-transformed) on different strand
 \code{sequence_analysis}: contains a DataFrame object with the 50top mapping location in the genome, with the corresponding DNA sequence,
 number of reads mapping (also in percentage of total n of reads), and genomic feature annotation.\cr\cr
 \code{summary_P_sites}: contains a DataFrame object summarizing the P_sites calculation and read length selection, including statistics on percentage of total reads used.
+
+Soft-clipped bases (\code{S} in the CIGAR string) are not counted: the read length is the length of the aligned part of the read,
+and the offset (cutoff) counts from its first aligned base at the 5' end. So a 31-nt read with 2 soft-clipped bases counts as a 29-nt read.
+Aligners that soft-clip reads, for example STAR with its default \code{--alignEndsType Local}, can give other read lengths, offsets and P_sites
+than an end-to-end alignment of the same reads (STAR: \code{--alignEndsType EndToEnd}). Remove adapters and UMIs before the alignment.
+An \code{offsets_df} must come from the same alignments.
 }
 \seealso{
 \code{\link{prepare_annotation_files}}, \code{\link{calc_cutoffs_from_profiles}}, \code{\link{choose_readlengths}}, \code{\link{create_html_report}}.
