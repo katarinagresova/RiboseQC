@@ -1,5 +1,19 @@
 # RiboseQC (development version)
 
+## New features
+
+- The script `run_riboseqc.R`, installed with the package
+  (`system.file("scripts", "run_riboseqc.R", package = "RiboseQC")`), runs
+  `prepare_annotation_files()` and `RiboseQC_analysis()` from the command
+  line, each in a new R process, for example `Rscript run_riboseqc.R --gtf
+  genes.gtf --fasta genome.fa --bam root.bam,shoots.bam --outdir results`,
+  and lists the files it writes. `--annotation` reuses the annotation of an
+  earlier run; `--sample-names`, `--stranded`, `--readlength-method` and
+  `--cores` are passed to `RiboseQC_analysis()`; `--no-report` and
+  `--extended-report` choose the report; the other parameters have their
+  default values. It checks its options before the first step. `--help`
+  lists all options.
+
 ## New arguments
 
 - `prepare_annotation_files()` has the new argument `genetic_codes`: the

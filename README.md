@@ -70,6 +70,18 @@ The [vignette](vignettes/RiboseQC.Rmd) runs the same analysis without the report
 
 For your own data, give your GTF, FASTA and BAM files, and a `dest_names` prefix for each BAM file. Without `dest_names`, the output files go next to the BAM files. `?RiboseQC_analysis` describes all parameters, for example `stranded`, `readlength_choice_method` and `n_cores`.
 
+The script `run_riboseqc.R`, installed with the package, runs the two steps from the command line, each in a new R process. This runs the example above, with the report:
+
+```sh
+script=$(Rscript -e 'cat(system.file("scripts", "run_riboseqc.R", package = "RiboseQC"))')
+ext_data=$(Rscript -e 'cat(system.file("ext_data", package = "RiboseQC"))')
+Rscript $script --gtf $ext_data/simp_arab.gtf.gz --fasta $ext_data/simp_arab.fa.gz \
+  --bam $ext_data/simp_arab_root.bam,$ext_data/simp_arab_shoots.bam --sample-names root,shoots \
+  --outdir example_cli
+```
+
+It writes the annotation to `example_cli/annotation`, the files of each sample to `example_cli/<sample name>_*` (without `--sample-names`, the names of the BAM files without `.bam`) and the report to `example_cli/root_RiboseQC_report.html`, the first sample name followed by `_RiboseQC_report.html`. At the end, it lists the files. For other samples, `--annotation example_cli/annotation/simp_arab.gtf.gz_Rannot` instead of `--gtf` and `--fasta` reuses the annotation. `--stranded`, `--readlength-method` and `--cores` set these parameters of `RiboseQC_analysis()`, and `--no-report` and `--extended-report` the report; the other parameters have their default values. `--help` lists all options.
+
 
 ### Input files
 
