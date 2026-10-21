@@ -22,6 +22,6 @@ check_output_dir(prefix)
 \code{check_n_cores()} stops if \code{n_cores} is not one number, 1 or more.
 \code{check_output_dir()} stops if the directory of \code{prefix} does not exist or cannot be
 written to: the output files are written at the end of a run.
-\code{\link{prepare_for_ORFquant}} uses them. RiboseQC exports them for ORFquant.
+\code{\link{prepare_for_ORFquant}} and \code{\link{RiboseQC_analysis}} use them. RiboseQC exports them for ORFquant.
 }
 \keyword{internal}

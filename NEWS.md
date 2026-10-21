@@ -261,6 +261,12 @@
   - `?get_ps_fromspliceplus`, `?get_ps_fromsplicemin`: the P-sites are sorted
     by position, not in the order of the reads. `?getSeq` of `FaFile_Circ`: a
     range must start on the circular chromosome to run past its end.
+  - `?prepare_for_ORFquant`: the value of the function is now in the help:
+    invisibly, the path of the `_for_ORFquant` file. The help says that the
+    function assigns `GTF_annotation` and `genome_seq` in the global
+    environment, and which column names the cutoff file needs.
+    `?forked_processes`, `?input_checks`: `RiboseQC_analysis()` uses these
+    functions too (before: only `prepare_for_ORFquant()`).
 
 # RiboseQC 1.4.0
 

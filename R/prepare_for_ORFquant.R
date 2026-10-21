@@ -55,7 +55,9 @@
 #' @param annotation_file Full path to the annotation file (*Rannot)
 #' @param bam_file Full path to the bam file
 #' @param chunk_size the number of alignments to read at each iteration, defaults to 5000000, increase when more RAM is available
-#' @param path_to_rl_cutoff_file path to the rl_cutoff_file file specifying in 3 columns the read lengths, cutoffs and compartments ("nucl" for standard chromosomes)
+#' @param path_to_rl_cutoff_file path to the rl_cutoff_file file specifying in 3 columns the read lengths, cutoffs and compartments ("nucl" for standard chromosomes):
+#' a tab-separated file with the column names 'read_length', 'cutoff' and 'compartment', for example the file \code{<dest_name>_P_sites_offsets.tsv}
+#' of \code{\link{RiboseQC_analysis}}. Give this file or the two P_sites bigwig files, not both
 #' @param path_to_P_sites_plus_bw path to a bigwig file containing P_sites positions on the plus strand
 #' @param path_to_P_sites_minus_bw path to a bigwig file containing P_sites positions on the minus strand
 #' @param path_to_P_sites_uniq_plus_bw (Optional) path to a bigwig file containing uniquely mapping P_sites positions on the plus strand
@@ -68,6 +70,10 @@
 #' Use \code{'inverse'} for libraries with the reads on the strand opposite to the RNA: the strand of each read is inverted
 #' before its P-site and its junction are calculated, as \code{\link{RiboseQC_analysis}} does. \code{TRUE} and \code{FALSE}
 #' use the strands of the BAM file, so they give the same results. With P-site bigWig files, it applies only to the junction reads
+#' @return invisibly, the path of the file \code{<dest_name>_for_ORFquant}, which the function saves: an R file with the list
+#' \code{for_ORFquant}, with the P_sites (P_sites_all, P_sites_uniq and P_sites_uniq_mm, with the number of reads in \code{score})
+#' and the \code{junctions} of the annotation with their reads. The function stops if there are no P_sites.
+#' It also assigns \code{GTF_annotation} and \code{genome_seq} in the global environment (see \code{\link{load_annotation}}).
 #' @seealso \code{run_ORFquant()} of ORFquant, which uses the "for_ORFquant" file, and
 #' \code{\link{RiboseQC_analysis}}, which also writes one
 #' @export

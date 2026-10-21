@@ -25,7 +25,9 @@ prepare_for_ORFquant(
 
 \item{bam_file}{Full path to the bam file}
 
-\item{path_to_rl_cutoff_file}{path to the rl_cutoff_file file specifying in 3 columns the read lengths, cutoffs and compartments ("nucl" for standard chromosomes)}
+\item{path_to_rl_cutoff_file}{path to the rl_cutoff_file file specifying in 3 columns the read lengths, cutoffs and compartments ("nucl" for standard chromosomes):
+a tab-separated file with the column names 'read_length', 'cutoff' and 'compartment', for example the file \code{<dest_name>_P_sites_offsets.tsv}
+of \code{\link{RiboseQC_analysis}}. Give this file or the two P_sites bigwig files, not both}
 
 \item{chunk_size}{the number of alignments to read at each iteration, defaults to 5000000, increase when more RAM is available}
 
@@ -49,6 +51,12 @@ prepare_for_ORFquant(
 Use \code{'inverse'} for libraries with the reads on the strand opposite to the RNA: the strand of each read is inverted
 before its P-site and its junction are calculated, as \code{\link{RiboseQC_analysis}} does. \code{TRUE} and \code{FALSE}
 use the strands of the BAM file, so they give the same results. With P-site bigWig files, it applies only to the junction reads}
+}
+\value{
+invisibly, the path of the file \code{<dest_name>_for_ORFquant}, which the function saves: an R file with the list
+\code{for_ORFquant}, with the P_sites (P_sites_all, P_sites_uniq and P_sites_uniq_mm, with the number of reads in \code{score})
+and the \code{junctions} of the annotation with their reads. The function stops if there are no P_sites.
+It also assigns \code{GTF_annotation} and \code{genome_seq} in the global environment (see \code{\link{load_annotation}}).
 }
 \description{
 Prepare the "for_ORFquant" file
