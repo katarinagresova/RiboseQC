@@ -2496,8 +2496,10 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
 #' where each line contains "transcript_id" and "gene_id" values. The CDS should include the stop codon, or the file should have
 #' "stop_codon" lines, which are added to the CDS (as in GENCODE, Ensembl and RefSeq files). If most CDS end before their stop codon
 #' (e.g. CDS lines made by factR, or a GENCODE file without its "stop_codon" lines), \code{stop_in_gtf} is \code{NA}, and
-#' ORFquant's \code{annotate_ORFs} uses the codon after each CDS as its stop codon. In ORFquant, a file with both kinds of CDS gives
-#' wrong categories to ORFs at the stop codons of the smaller part, e.g. "C_extension" instead of "ORF_annotated". Biotypes and gene names are read
+#' ORFquant's \code{annotate_ORFs} uses the codon after each CDS as its stop codon. It does so for all CDS of the file, so an ORF at the
+#' stop codon of a CDS that includes it gets a wrong category, e.g. "C_truncation" instead of "ORF_annotated". If \code{stop_in_gtf} is
+#' \code{"*"}, ORFquant 1.3.1 and later keep the last codon of a CDS that ends without a stop codon (e.g. with the GENCODE tag
+#' "cds_end_NF"); earlier versions remove it, so an ORF at its end gets a wrong category too. Biotypes and gene names are read
 #' from "gene_biotype" or "gene_type", "transcript_biotype" or "transcript_type", and "gene_name", "gene_symbol", "gene" (NCBI) or
 #' "ref_gene_name" (StringTie) values, on any line of the transcript or (for genes) of the gene. Missing biotypes are "no_type", apart
 #' from those of transcripts with CDS lines and of their genes, which are "protein_coding" (without biotypes, e.g. in UCSC's GTFs,

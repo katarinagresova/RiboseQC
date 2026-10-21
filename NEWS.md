@@ -96,6 +96,11 @@
   transcript, or the transcripts of a gene, give different values (for
   example two gene names), the order chooses the value: the first line in
   the file gives it.
+- The help of `prepare_annotation_files()` now says which annotations give
+  wrong ORF categories in ORFquant. Since ORFquant 1.3.1, only an annotation
+  with `stop_in_gtf` `NA` does (the codon after each CDS is its stop codon,
+  also for a CDS that includes it). Before, the help said that a GTF file
+  with both kinds of CDS gives wrong categories.
 
 # RiboseQC 1.4.0
 
