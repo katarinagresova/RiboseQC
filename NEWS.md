@@ -61,6 +61,16 @@
   `29`, and their scores and percentages had names too. The positions, their
   widths and sequences, and all other values don't change. The report does
   not show `len_adj`.
+- `RiboseQC_analysis()` on an annotation with fewer than 250 transcripts:
+  the P-sites profiles and the codon counts (`profiles_P_sites`) now use the
+  transcripts that the 5' profiles use (one representative transcript of
+  each gene, with a CDS of more than 100 nt). Before, when 5 or more of
+  these transcripts had P-sites, they used all transcripts of the
+  annotation, so a transcript without a CDS stopped the run with `subscript
+  contains invalid names`, and a transcript with a short UTR or CDS with
+  `only 0's may be mixed with negative subscripts`: for example the
+  annotation of a GTF file of chrM. The results of larger annotations do
+  not change.
 
 ## Bug fixes
 

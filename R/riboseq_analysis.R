@@ -1470,7 +1470,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 # keep all txs if small n of txs
                 
                 if (length(ok_txs) >= 5 & length(covtx) < 250) {
-                  ok_txs <- names(covtx)
+                  # covtx has all transcripts: keep the selected ones, as the 5' profiles do
+                  ok_txs <- names(covtx)[names(covtx) %in% as.vector(seqnames(tile_cds))]
                 }
                 
                 if (length(ok_txs) > 5000) {
