@@ -35,7 +35,9 @@ RiboseQC_analysis(
 
 \item{readlength_choice_method}{Method used to subset relevant read lengths (see \code{choose_readlengths} function); defaults to 'max_coverage'. Must be of length 1 or same length as bam_files.}
 
-\item{genome_seq}{An FaFile object, to be used instead of a BSgenome package}
+\item{genome_seq}{Not used: the genome sequence is the FASTA file of the annotation, the \code{genome_seq} of
+\code{\link{prepare_annotation_files}}. A path or an \code{FaFile} of another file gives a warning. To use another FASTA
+file, make the annotation with it}
 
 \item{stranded}{are the analyzed libraries strand-specific? TRUE, FALSE or 'inverse'. Defaults to \code{TRUE}}
 
