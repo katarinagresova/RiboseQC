@@ -37,7 +37,9 @@ RiboseQC_analysis(
 
 \item{genome_seq}{An FaFile object, to be used instead of a BSgenome package}
 
-\item{stranded}{are the analyzed libraries strand-specific? TRUE, FALSE or 'inverse'. Defaults to \code{TRUE}}
+\item{stranded}{are the analyzed libraries strand-specific? TRUE, FALSE or 'inverse'. Defaults to \code{TRUE}.
+Use \code{'inverse'} for libraries with the reads on the strand opposite to the RNA: RiboseQC inverts the strand of each read,
+then does the analysis of \code{TRUE}. So the P-sites and the coverage tracks are on the strand of the RNA}
 
 \item{normalize_cov}{export normalized (sum to 1 million) bedgraph files for coverage tracks? Defaults to \code{TRUE}}
 
