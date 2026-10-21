@@ -82,6 +82,17 @@
   other read lengths, offsets and P-sites than end-to-end alignments.
   RiboseQC has always worked this way. `?prepare_for_ORFquant` and the
   README already said it.
+- `?RiboseQC_analysis` now says which alignments are not used: alignments
+  flagged as duplicates, secondary alignments and alignments with an
+  insertion or a deletion (`I` or `D` in the CIGAR). These alignments are in
+  no output: not in the read counts, the read length distributions, the
+  offsets, the P-sites, the coverage or the junction reads, and the report
+  does not count them. RiboseQC has always worked this way.
+  `?prepare_for_ORFquant` and the README already said it. In the example
+  data, 24 of the 26,702 alignments of the root sample and 26 of the 53,142
+  alignments of the shoot sample have an insertion or a deletion. In a human
+  sample aligned with STAR (SRR15513199), 0.7% of the alignments have one,
+  but only 0.035% of the uniquely mapping alignments.
 
 # RiboseQC 1.4.0
 
