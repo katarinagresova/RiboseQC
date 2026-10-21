@@ -42,6 +42,12 @@
   different gene names or biotypes. Then the order of the lines chooses the
   value (see the help), and the warning names some of these transcripts and
   genes. The annotation does not change.
+- `prepare_annotation_files()` stops at once for a GTF file without CDS
+  lines also when the file has `start_codon` or `stop_codon` lines: `The GTF
+  file ... has no CDS lines`. Before, txdbmaker made a CDS of 3 nt from each
+  stop codon, so the annotation was made, and ORFquant stopped later with
+  `subscript contains out-of-bounds indices`. The check reads the GTF file
+  until it finds an exon line and a CDS line, before the TxDb is made.
 
 ## Bug fixes
 
@@ -65,6 +71,22 @@
   with it the P-site files and `for_ORFquant`) depended on `chunk_size`. The
   results of BAM files with more than `chunk_size` alignments can change. The
   results of the other BAM files do not change.
+- `prepare_annotation_files()` no longer stops on a GTF file without
+  introns, for example a GTF file of chrM only, or of transcripts with one
+  exon each. `RiboseQC_analysis()` and `prepare_for_ORFquant()` no longer
+  stop on an annotation without splice junctions, such as the annotation of
+  such a GTF file. The error was `1 elements in value to replace 0 elements`.
+  The results of the other annotations do not change.
+- `prepare_annotation_files()` no longer stops with `'id_or_name2' must be a
+  single string` or `argument is of length zero` when the chromosomes that
+  are not circular have no genetic code or more than one: for example, a GTF
+  file of chrM only with chrM circular, or a genome with chrM and
+  `circ_chroms` without chrM. To find out if the CDS include their stop
+  codons (`stop_in_gtf`), it now translates each CDS with the genetic code of
+  its chromosome, and it uses the CDS on circular chromosomes if all CDS are
+  on them. Before, it used one genetic code for all chromosomes that are not
+  circular, also for those without CDS. The annotations that were made
+  before do not change.
 
 ## Documentation
 
@@ -93,6 +115,11 @@
   alignments of the shoot sample have an insertion or a deletion. In a human
   sample aligned with STAR (SRR15513199), 0.7% of the alignments have one,
   but only 0.035% of the uniquely mapping alignments.
+- The help of `prepare_annotation_files()` now says which annotations give
+  wrong ORF categories in ORFquant. Since ORFquant 1.3.1, only an annotation
+  with `stop_in_gtf` `NA` does (the codon after each CDS is its stop codon,
+  also for a CDS that includes it). Before, the help said that a GTF file
+  with both kinds of CDS gives wrong categories.
 
 # RiboseQC 1.4.0
 

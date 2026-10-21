@@ -381,8 +381,8 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
     juns$unique_reads[mat]<-uniq_juns$reads
   }
   rang_jun<-junctions
-  rang_jun$reads<-0
-  rang_jun$unique_reads<-0
+  rang_jun$reads<-rep(0,length(rang_jun))
+  rang_jun$unique_reads<-rep(0,length(rang_jun))
   if(length(juns)>0){
     mat<-match(juns,rang_jun)
     juns<-juns[!is.na(mat)]

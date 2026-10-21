@@ -22,19 +22,20 @@ drop_attr <- function(lines, key, where = rep(TRUE, length(lines))) {
   lines
 }
 
-# Writes `lines` as a GTF file, prepares its annotation, and gives the path of the
-# annotation file; `annotate()` gives the annotation
-annotation_of <- function(lines, name) {
+# Writes `lines` as a GTF file, prepares its annotation (with the other arguments of
+# prepare_annotation_files() in `...`), and gives the path of the annotation file;
+# `annotate()` gives the annotation
+annotation_of <- function(lines, name, genome_seq = fasta, ...) {
   dir <- file.path(work, name)
   dir.create(dir)
   gtf <- file.path(dir, "genes.gtf")
   writeLines(lines, gtf)
   suppressMessages(suppressWarnings(
     prepare_annotation_files(annotation_directory = dir, gtf_file = gtf,
-                             genome_seq = fasta, forge_BSgenome = FALSE)))
+                             genome_seq = genome_seq, forge_BSgenome = FALSE, ...)))
   file.path(dir, "genes.gtf_Rannot")
 }
-annotate <- function(lines, name) get(load(annotation_of(lines, name)))
+annotate <- function(lines, name, ...) get(load(annotation_of(lines, name, ...)))
 
 ann_genc <- annotate(gtf_example, "genc")
 tx_ids <- unique(stats::na.omit(line_attr(gtf_example, "transcript_id")))
@@ -77,6 +78,25 @@ test_that("a GTF without CDS lines is refused", {
   msg <- tryCatch(annotation_of(gtf_example[!line_type(gtf_example) %in% coding_types], "no_cds"),
                   error = function(e) conditionMessage(e))
   expect_match(msg, "no CDS lines")
+})
+
+test_that("a GTF without introns gives an annotation without junctions", {
+  # as a GTF of chrM, or of single-exon transcripts: each transcript gets one exon, from its transcript
+  # line, and each coding transcript one CDS line, from the start of its CDS to the end of its stop codon
+  type <- line_type(gtf_example)
+  tx <- line_attr(gtf_example, "transcript_id")
+  exons <- sub("^([^\t]*\t[^\t]*\t)transcript\t", "\\1exon\t", gtf_example[type == "transcript"])
+  coding <- which(type %in% c("CDS", "stop_codon"))
+  cds <- vapply(split(coding, tx[coding]), function(i) {
+    x <- strsplit(gtf_example[i[type[i] == "CDS"][1]], "\t")[[1]]
+    x[4:5] <- range(as.integer(unlist(lapply(strsplit(gtf_example[i], "\t"), `[`, 4:5))))
+    x[8] <- "0"
+    paste(x, collapse = "\t")
+  }, "")
+  ann <- annotate(c(gtf_example[type %in% c("gene", "transcript")], exons, cds), "no_introns")
+  expect_length(ann$junctions, 0)
+  expect_length(ann$introns, 0)
+  expect_setequal(names(ann$cds_txs), names(cds))
 })
 
 test_that("a transcript with a CDS shorter than 3 nt is not a coding transcript", {
@@ -151,6 +171,36 @@ test_that("a gene on both strands is kept in the annotation, and is not in $gene
 test_that("without stop_codon lines, stop_in_gtf is NA", {
   expect_identical(ann_genc$stop_in_gtf, "*")
   expect_true(is.na(annotate(gtf_example[line_type(gtf_example) != "stop_codon"], "no_stop_codons")$stop_in_gtf))
+})
+
+# The genetic code of a chromosome comes from its name: 2 for chrM, 1 for chr1 and chr22
+test_that("stop_in_gtf uses the CDS on circular chromosomes if all CDS are on them", {
+  expect_identical(annotate(gtf_example, "circular", circ_chroms = "chr22")$stop_in_gtf, "*")
+})
+
+test_that("stop_in_gtf uses the genetic code of the chromosome of each CDS", {
+  # a genome of two copies of the region of DDT, chr1 and chrM, both not circular, and the lines of
+  # DDT on each, with other ids
+  lines <- gtf_example[line_attr(gtf_example, "gene_id") %in% ddt]
+  fields <- strsplit(lines, "\t")
+  ends <- range(as.integer(unlist(lapply(fields, `[`, 4:5))))
+  ddt_on <- function(chrom) vapply(fields, function(x) {
+    x[1] <- chrom
+    x[4:5] <- as.integer(x[4:5]) - ends[1] + 1L
+    x[9] <- gsub('(_id "[^"]*)"', paste0("\\1_", chrom, '"'), x[9])
+    paste(x, collapse = "\t")
+  }, "")
+  region <- Rsamtools::getSeq(Rsamtools::FaFile(fasta), GenomicRanges::GRanges("chr22", IRanges::IRanges(ends[1], ends[2])))
+  genome <- file.path(work, "two_codes.fa")
+  Biostrings::writeXStringSet(c(stats::setNames(region, "chr1"), stats::setNames(region, "chrM")), genome)
+  Rsamtools::indexFa(genome)
+  ann <- annotate(c(ddt_on("chr1"), ddt_on("chrM")), "two_codes", genome_seq = genome, circ_chroms = character(0))
+  expect_identical(ann$genetic_codes[c("chr1", "chrM"), "genetic_code"], c("1", "2"))
+  expect_identical(ann$stop_in_gtf, "*")
+  # the code of a chromosome without CDS is not used
+  expect_identical(annotate(ddt_on("chr1"), "code_1", genome_seq = genome, circ_chroms = character(0))$stop_in_gtf, "*")
+  # TGA, the stop codon of 5 of the 6 CDS of DDT, is W in the code of chrM
+  expect_true(is.na(annotate(ddt_on("chrM"), "code_2", genome_seq = genome, circ_chroms = character(0))$stop_in_gtf))
 })
 
 test_that("load_annotation() returns the annotation invisibly, and assigns it in envir", {
