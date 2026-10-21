@@ -214,6 +214,17 @@ test_that("load_annotation() returns the annotation invisibly, and assigns it in
   expect_identical(env$genome_seq, res$value$genome_seq)
 })
 
+test_that("load_annotation() refuses a file that prepare_annotation_files() did not make", {
+  # Before, the error was "bad restore file magic number"
+  expect_error(load_annotation(example_file("chr22_example.gtf.gz"), envir = new.env()),
+               "chr22_example\\.gtf\\.gz is not a file of prepare_annotation_files\\(\\): give the \\*_Rannot file")
+  gtf <- file.path(work, "genc", "genes.gtf")
+  expect_error(load_annotation(gtf, envir = new.env()), "genes\\.gtf is not a file of prepare_annotation_files")
+  empty <- file.path(work, "empty_Rannot")
+  file.create(empty)
+  expect_error(load_annotation(empty, envir = new.env()), "empty_Rannot is not a file of prepare_annotation_files")
+})
+
 test_that("lines that do not agree give a warning, and the first line gives the value", {
   # a gene with two transcripts: the lines of the second get another gene name, and the last line of the
   # first another biotype

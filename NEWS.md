@@ -1,5 +1,22 @@
 # RiboseQC (development version)
 
+## New arguments
+
+- `prepare_annotation_files()` has the new argument `genetic_codes`: the
+  genetic codes of some chromosomes, e.g. `genetic_codes = c(chrM = "3")`,
+  with the ids of `Biostrings::GENETIC_CODE_TABLE`. They replace the codes
+  that the chromosome names give: `chrM`, `MT`, `MtDNA`, `mit` and
+  `mitochondrion` get code 2 (vertebrate mitochondria), `Mito` gets code 3
+  (yeast mitochondria), `dmel_mitochondrion_genome` gets code 5 (invertebrate
+  mitochondria), and all other chromosomes get code 1. So the mitochondrion
+  of a yeast or Drosophila genome with UCSC names (`chrM`) gets code 2. Then
+  the codon tables of `RiboseQC_analysis()` give the amino acids of code 2
+  for its codons, and ORFquant finds and translates its ORFs with code 2.
+  The default, `NULL`, gives the same codes as before. A code that is not an
+  id, or a chromosome that is not in the genome, stops the function before
+  it makes the TxDb. The help of `prepare_annotation_files()` now gives these
+  rules.
+
 ## Input checks
 
 - `RiboseQC_analysis()` now checks its input before it reads the first BAM
@@ -48,9 +65,48 @@
   stop codon, so the annotation was made, and ORFquant stopped later with
   `subscript contains out-of-bounds indices`. The check reads the GTF file
   until it finds an exon line and a CDS line, before the TxDb is made.
+- `RiboseQC_analysis()` warns, before the first BAM file, when a BAM file has
+  reads on chromosomes that its annotation does not have. The warning gives
+  the number of alignments on them, from the index of the BAM file. For a
+  BAM file without an index, it names the chromosomes of the BAM header that
+  the annotation does not have. These reads are used (for example in the
+  P-site and coverage tracks), but they are in no region of the annotation.
+  The results do not change.
+- `prepare_annotation_files()` stops with an error that says what is wrong
+  when a CDS of the GTF file ends after the end of its chromosome (one that
+  is not circular) in the genome sequence, for example when the GTF file and
+  the FASTA file are of different genome assemblies. The error names a
+  transcript, its chromosome and the length of the chromosome. Before, the
+  error was `Out of bounds ranges detected which are not on circular
+  chromosomes`.
+- `load_annotation()`, and so `RiboseQC_analysis()` and
+  `prepare_for_ORFquant()`, stop with an error that says what is wrong when
+  the annotation file is not a file of `prepare_annotation_files()`, for
+  example the GTF file. Before, the error was `bad restore file magic
+  number`.
+
+## Changes in results
+
+- `RiboseQC_analysis()` on a BAM file that it reads in one chunk (with at
+  most `chunk_size` alignments) gives the 5' ends of the reads
+  (`read_stats$reads_pos1` in `<dest_name>_results_RiboseQC_all`) without
+  names, as with more chunks. Before, each range and its score had its read
+  length as its name, so the read lengths of the top 50 positions (`len_adj`
+  of `sequence_analysis`, in `<dest_name>_results_RiboseQC` and
+  `<dest_name>_results_RiboseQC_all`) were, for example, `29.29` instead of
+  `29`, and their scores and percentages had names too. The positions, their
+  widths and sequences, and all other values don't change. The report does
+  not show `len_adj`.
 
 ## Bug fixes
 
+- `RiboseQC_analysis()` no longer stops with `invalid 'file' argument` when
+  `genome_seq` is an `FaFile`. The argument has no effect, as before: the
+  genome sequence is the FASTA file of the annotation. A path was ignored
+  without a message. Now a warning says so when `genome_seq` is another file
+  than the FASTA file of the annotation. To use another FASTA file, make the
+  annotation with it. The help of `genome_seq` said that it is used instead
+  of a BSgenome package; it now says that it is not used.
 - `RiboseQC_analysis()` no longer stops when the BAM file has reads on
   chromosomes that the annotation does not have (for example scaffolds), and
   the BAM file has more than `chunk_size` alignments, so that it is read in

@@ -81,6 +81,29 @@ check_bam_chromosomes<-function(bam_seqinfo,annotation_seqinfo,bam_file,annotati
   }
 }
 
+#RiboseQC_analysis() uses the reads on chromosomes that the annotation does not have, but they are in no region of
+#the annotation. The index of the BAM file gives the alignments on each chromosome; without an index, the warning
+#names the chromosomes of the BAM header
+warn_bam_chromosomes<-function(bam_file,annotation_seqinfo,annotation_file){
+  bam<-BamFile(bam_file)
+  extra<-setdiff(seqlevels(seqinfo(bam)),seqlevels(annotation_seqinfo))
+  if(length(extra)==0){return(invisible(NULL))}
+  effect<-paste0("RiboseQC_analysis() uses these reads (e.g. in the P-site and coverage tracks), but they are in no region of the annotation. ",
+                 "Check that the reads are aligned to the genome of the annotation")
+  #idxstatsBam() crashes R for a BAM file without an index
+  if(is.na(index(bam))){
+    warning("The BAM file ",bam_file," has ",length(extra)," ",ngettext(length(extra),"chromosome","chromosomes")," that the annotation ",annotation_file," does not have, e.g. ",
+            paste(head(extra,3),collapse=", "),". The BAM file has no index, so its reads on them are not counted here. ",effect,call. = FALSE)
+    return(invisible(NULL))
+  }
+  stats<-idxstatsBam(bam)
+  stats<-stats[as.character(stats$seqnames)%in%extra & stats$mapped>0,]
+  if(nrow(stats)>0){
+    warning("The BAM file ",bam_file," has ",sum(stats$mapped)," alignments on ",nrow(stats)," ",ngettext(nrow(stats),"chromosome","chromosomes")," that the annotation ",annotation_file,
+            " does not have, e.g. ",paste(head(paste0(stats$seqnames," (",stats$mapped,")"),3),collapse=", "),". ",effect,call. = FALSE)
+  }
+}
+
 #the first exon line of the GTF file, which must have transcript_id and gene_id, tells the file apart from an empty
 #one, or one without exon lines, and the first CDS line from one without CDS lines (txdbmaker makes a CDS of each
 #stop_codon line, so such a file with stop_codon lines gives CDS of 3 nt); this stops reading when it has found both
@@ -138,5 +161,25 @@ check_gtf_values<-function(gtf_ids,trann){
   if(length(msg)>0){
     warning("The lines of the GTF file do not agree, so their order chooses some values: ",paste(msg,collapse="; "),
             " (see ?prepare_annotation_files)",call. = FALSE)
+  }
+}
+
+#genetic_codes of prepare_annotation_files(): NULL, or ids of GENETIC_CODE_TABLE named by chromosomes of the genome;
+#a name that is not a chromosome would add a row to the genetic codes of the annotation
+check_genetic_codes<-function(genetic_codes,chromosomes){
+  if(is.null(genetic_codes)){return(invisible(NULL))}
+  chrom_names<-names(genetic_codes)
+  if(!(is.character(genetic_codes) || is.numeric(genetic_codes)) || length(genetic_codes)==0 || is.null(chrom_names) ||
+     any(is.na(chrom_names) | chrom_names=="") || anyDuplicated(chrom_names)>0){
+    stop("genetic_codes must be a vector with one genetic code for each chromosome, named by the chromosomes, e.g. c(chrM = \"3\")",call. = FALSE)
+  }
+  wrong_codes<-unique(as.character(genetic_codes)[!as.character(genetic_codes)%in%GENETIC_CODE_TABLE$id])
+  if(length(wrong_codes)>0){
+    stop("genetic_codes has codes that are not ids of Biostrings::GENETIC_CODE_TABLE: ",paste(wrong_codes,collapse=", "),call. = FALSE)
+  }
+  wrong_chroms<-chrom_names[!chrom_names%in%chromosomes]
+  if(length(wrong_chroms)>0){
+    stop("genetic_codes has chromosomes that are not in the genome sequence: ",paste(head(wrong_chroms,3),collapse=", "),
+         " (the genome has e.g. ",paste(head(chromosomes,3),collapse=", "),")",call. = FALSE)
   }
 }
