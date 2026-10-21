@@ -2322,6 +2322,14 @@ get_ps_fromsplicemin<-function(x,cutoff){
 
 load_annotation<-function(path,envir=parent.frame()){
 
+    #a file that save() did not make, e.g. the GTF file, stops load() with "bad restore file magic number". The files
+    #of save() start with RDA, RDB or RDX, the version and a newline
+    con<-gzfile(path,"rb")
+    magic<-readBin(con,"raw",5)
+    close(con)
+    if(!identical(magic[c(1,2,5)],charToRaw("RD\n"))){
+        stop("The annotation file ",path," is not a file of prepare_annotation_files(): give the *_Rannot file that it makes, not the GTF file",call. = FALSE)
+    }
     GTF_annotation<-get(load(path))
 	  genome_package <- if(is.character(GTF_annotation$genome)) GTF_annotation$genome else GTF_annotation$genome_package
 	  haspackage <- isTRUE(is.character(genome_package))

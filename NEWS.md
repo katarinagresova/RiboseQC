@@ -62,6 +62,11 @@
   transcript, its chromosome and the length of the chromosome. Before, the
   error was `Out of bounds ranges detected which are not on circular
   chromosomes`.
+- `load_annotation()`, and so `RiboseQC_analysis()` and
+  `prepare_for_ORFquant()`, stop with an error that says what is wrong when
+  the annotation file is not a file of `prepare_annotation_files()`, for
+  example the GTF file. Before, the error was `bad restore file magic
+  number`.
 
 ## Changes in results
 
