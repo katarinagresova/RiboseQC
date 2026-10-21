@@ -63,6 +63,10 @@ NULL
 #' number of reads mapping (also in percentage of total n of reads), and genomic feature annotation.\cr\cr
 #' \code{summary_P_sites}: contains a DataFrame object summarizing the P_sites calculation and read length selection, including statistics on percentage of total reads used.
 #'
+#' Alignments flagged as duplicates, secondary alignments and alignments with an insertion or a deletion (\code{I} or \code{D} in the CIGAR string)
+#' are not used: the read counts, the read length distributions, the offsets, the P_sites, the coverage and the junction reads do not include them,
+#' and the report does not count them.
+#'
 #' Soft-clipped bases (\code{S} in the CIGAR string) are not counted: the read length is the length of the aligned part of the read,
 #' and the offset (cutoff) counts from its first aligned base at the 5' end. So a 31-nt read with 2 soft-clipped bases counts as a 29-nt read.
 #' Aligners that soft-clip reads, for example STAR with its default \code{--alignEndsType Local}, can give other read lengths, offsets and P_sites
