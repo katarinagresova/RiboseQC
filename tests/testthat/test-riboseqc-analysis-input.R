@@ -7,6 +7,21 @@ test_that("RiboseQC_analysis() refuses wrong n_cores", {
   }
 })
 
+test_that("RiboseQC_analysis() refuses values of stranded other than TRUE, FALSE and 'inverse', before it reads a file", {
+  # Before, "reverse" and "yes" stopped the run in the counting pass of the first BAM file with "'ignore.strand'
+  # must be TRUE or FALSE", and NA with "missing value where TRUE/FALSE needed"
+  for (s in list("reverse", "yes", NA, "Inverse")) {
+    expect_error(RiboseQC_analysis(annotation_file = "a", bam_files = "b", stranded = s),
+                 paste0("'stranded' must be TRUE, FALSE or 'inverse', not ", s), fixed = TRUE)
+  }
+  expect_error(RiboseQC_analysis(annotation_file = "a", bam_files = c("b1", "b2"), stranded = c(TRUE, "reverse")),
+               "not reverse", fixed = TRUE)
+  # the values that work go on to the next check: the files do not exist
+  for (s in list(TRUE, FALSE, "inverse", "TRUE", "T", 1)) {
+    expect_error(RiboseQC_analysis(annotation_file = "a", bam_files = "b", stranded = s), "don't exist")
+  }
+})
+
 test_that("RiboseQC_analysis() refuses fewer annotation files than BAM files, but more than 1", {
   expect_error(RiboseQC_analysis(annotation_file = c("a1", "a2"), bam_files = c("b1", "b2", "b3")),
                "length of 'annotation_file' must be 1 or same as 'bam_files'")
