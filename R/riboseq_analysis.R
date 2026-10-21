@@ -1608,6 +1608,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 as_cod_rat <- DataFrameList()
                 es_cod <- DataFrameList()
                 es_cod_rat <- DataFrameList()
+                txs_seqq <- NULL
                 
                 for (len in c("all", names(ps_comp))) {
                   
@@ -1702,8 +1703,11 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                       32):length(x))]
                   })))
                   
-                  # select txs, output codon usage
-                  txs_seqq <- extractTranscriptSeqs(x = genome_seq, transcripts = GTF_annotation$cds_txs[names(cov_cds)])
+                  # select txs, output codon usage (each read length has the same transcripts: extract
+                  # their sequences once)
+                  if (is.null(txs_seqq) || !identical(names(txs_seqq), names(cov_cds))) {
+                    txs_seqq <- extractTranscriptSeqs(x = genome_seq, transcripts = GTF_annotation$cds_txs[names(cov_cds)])
+                  }
                   
                   gco <- as.character(names(getGeneticCode("1")))
                   names(gco) <- as.character(getGeneticCode("1"))

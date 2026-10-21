@@ -171,6 +171,17 @@
   `stranded = TRUE` and `FALSE` do not change. `prepare_for_ORFquant()` has
   no `stranded` argument: it uses the strands of the BAM file.
 
+## Performance
+
+- `RiboseQC_analysis()` is faster when it makes the P-site profiles for many
+  read lengths, for example with `rescue_all_rls = TRUE` or
+  `readlength_choice_method = "all"`. For the codon tables, it extracted the
+  sequences of the same transcripts from the FASTA file once for each read
+  length. It now extracts them once for each compartment. On a human sample
+  (a 69 MB BAM, GENCODE 47, `rescue_all_rls = TRUE`, 32 read lengths), a run
+  with the report on one core takes 392 s instead of 444 s (12% less). The
+  results don't change.
+
 ## Documentation
 
 - The help of `prepare_annotation_files()` now says that the order of the
