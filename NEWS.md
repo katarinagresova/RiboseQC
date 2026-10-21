@@ -13,6 +13,11 @@
   `--extended-report` choose the report; the other parameters have their
   default values. It checks its options before the first step. `--help`
   lists all options.
+- The script `run_riboseqc.sbatch`, installed next to `run_riboseqc.R`, runs
+  it as a SLURM job: `sbatch run_riboseqc.sbatch` followed by
+  `run_riboseqc.R`'s options, with `--cores` set to the job's CPUs. It asks
+  for 1 CPU, 32 GB of memory and 12 hours, and its comments give the time
+  and memory measured on human samples.
 
 ## New arguments
 

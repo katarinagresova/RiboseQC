@@ -82,6 +82,15 @@ Rscript $script --gtf $ext_data/simp_arab.gtf.gz --fasta $ext_data/simp_arab.fa.
 
 It writes the annotation to `example_cli/annotation`, the files of each sample to `example_cli/<sample name>_*` (without `--sample-names`, the names of the BAM files without `.bam`) and the report to `example_cli/root_RiboseQC_report.html`, the first sample name followed by `_RiboseQC_report.html`. At the end, it lists the files. For other samples, `--annotation example_cli/annotation/simp_arab.gtf.gz_Rannot` instead of `--gtf` and `--fasta` reuses the annotation. `--stranded`, `--readlength-method` and `--cores` set these parameters of `RiboseQC_analysis()`, and `--no-report` and `--extended-report` the report; the other parameters have their default values. `--help` lists all options.
 
+On a SLURM cluster, `run_riboseqc.sbatch`, installed next to it, runs it as a job, with `--cores` set to the job's CPUs:
+
+```sh
+sbatch $(Rscript -e 'cat(system.file("scripts", "run_riboseqc.sbatch", package = "RiboseQC"))') \
+  --gtf genes.gtf --fasta genome.fa --bam sample.bam --outdir results
+```
+
+It asks for 1 CPU, 32 GB of memory and 12 hours. Its comments give the time and memory measured on human samples, and say how to change these resources.
+
 
 ### Input files
 
