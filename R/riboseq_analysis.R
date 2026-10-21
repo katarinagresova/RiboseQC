@@ -260,6 +260,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         annots <- if (length(annotation_file) > 1) bammo else 1
         check_bam_chromosomes(seqinfo(BamFile(bam_files[bammo])), list_annotations[[annots]]$GTF_annotation$seqinfo, 
             bam_files[bammo], annotation_file[annots])
+        warn_bam_chromosomes(bam_files[bammo], list_annotations[[annots]]$GTF_annotation$seqinfo, annotation_file[annots])
     }
     
     # the output directories, which are made if they don't exist, as before, must be writable: else

@@ -2322,6 +2322,14 @@ get_ps_fromsplicemin<-function(x,cutoff){
 
 load_annotation<-function(path,envir=parent.frame()){
 
+    #a file that save() did not make, e.g. the GTF file, stops load() with "bad restore file magic number". The files
+    #of save() start with RDA, RDB or RDX, the version and a newline
+    con<-gzfile(path,"rb")
+    magic<-readBin(con,"raw",5)
+    close(con)
+    if(!identical(magic[c(1,2,5)],charToRaw("RD\n"))){
+        stop("The annotation file ",path," is not a file of prepare_annotation_files(): give the *_Rannot file that it makes, not the GTF file",call. = FALSE)
+    }
     GTF_annotation<-get(load(path))
 	  genome_package <- if(is.character(GTF_annotation$genome)) GTF_annotation$genome else GTF_annotation$genome_package
 	  haspackage <- isTRUE(is.character(genome_package))
@@ -2792,6 +2800,18 @@ prepare_annotation_files<-function(annotation_directory,twobit_file=NULL,gtf_fil
         if(!any(lin)){lin<-!lin}
         cd<-translations[tocheck[lin],"genetic_code"]
         tocheck<-cds_tx[lin]
+        #a CDS past the end of a chromosome that is not circular stops extractTranscriptSeqs() with "Out of bounds
+        #ranges detected": the GTF file is not of the genome sequence
+        cds_ranges<-unlist(tocheck)
+        cds_chrs<-as.character(seqnames(cds_ranges))
+        past_end<-which(end(cds_ranges)>seqlengths(ifs)[cds_chrs] & !cds_chrs%in%circs)
+        if(length(past_end)>0){
+            chr<-cds_chrs[past_end[1]]
+            stop("The GTF file ",gtf_file," is not of the genome sequence ",genome$path,": the CDS of ",length(unique(names(cds_ranges)[past_end])),
+                 " transcripts end after the end of their chromosome, e.g. ",names(cds_ranges)[past_end[1]]," at ",end(cds_ranges)[past_end[1]],
+                 " on ",chr,", which has ",seqlengths(ifs)[[chr]]," nt in the genome sequence. The GTF file and the FASTA file must be of the same genome assembly",
+                 call. = FALSE)
+        }
         seqcds<-extractTranscriptSeqs(genome,transcripts = tocheck)
         trslend<-character(length(seqcds))
         for(code in unique(cd)){

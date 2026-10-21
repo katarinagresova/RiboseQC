@@ -69,6 +69,20 @@ test_that("prepare_annotation_files() says when the chromosomes of the GTF are n
   expect_match(msg, "chromosome names must be those of the genome sequence \\(e\\.g\\. chr22\\)")
 })
 
+test_that("prepare_annotation_files() says when a CDS of the GTF ends after the end of its chromosome", {
+  # PISD (at 31.6 Mb) moved by 20 Mb, after the end of chr22 (50818468 nt), as with the FASTA file of another
+  # assembly. Before, the error was "Out of bounds ranges detected which are not on circular chromosomes"
+  moved <- gtf_example
+  pisd <- grepl('gene_name "PISD"', moved)
+  cols <- do.call(rbind, strsplit(moved[pisd], "\t"))
+  cols[, 4:5] <- as.integer(cols[, 4:5]) + 20000000L
+  moved[pisd] <- apply(cols, 1, paste, collapse = "\t")
+  msg <- suppressWarnings(annotation_error(write_gtf(moved, "past_end.gtf"), out = file.path(work, "annotation_past_end")))
+  expect_match(msg, "past_end\\.gtf is not of the genome sequence .*chr22_example\\.fa\\.gz: the CDS of 10 transcripts end after the end")
+  expect_match(msg, "on chr22, which has 50818468 nt in the genome sequence. The GTF file and the FASTA file must be of the same genome assembly",
+               fixed = TRUE)
+})
+
 test_that("check_gtf_values() warns when the lines of a transcript, or the transcripts of a gene, do not agree", {
   # a value on some lines only (as gffread writes them) agrees, and two transcripts can have two biotypes
   gtf_ids <- data.frame(gene_id = "g1", transcript_id = c(NA, "t1", "t1", "t2"),

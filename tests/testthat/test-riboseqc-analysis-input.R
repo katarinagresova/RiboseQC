@@ -178,3 +178,29 @@ test_that("RiboseQC_analysis() says when a BAM file has no mapped reads", {
                         dest_names = file.path(work, "out_empty", "empty"))
   expect_match(msg, "The BAM file .*empty\\.bam has no mapped reads")
 })
+
+test_that("RiboseQC_analysis() warns for the reads on chromosomes that the annotation does not have", {
+  si <- Seqinfo::seqinfo(Rsamtools::BamFile(bams[1]))
+  expect_silent(warn_bam_chromosomes(bams[1], si, "annot"))
+  # The root BAM file has 1895 alignments on ChrC and 6787 on ChrM
+  expect_warning(warn_bam_chromosomes(bams[1], si[setdiff(Seqinfo::seqlevels(si), c("ChrC", "ChrM"))], "annot"),
+                 paste("simp_arab_root.bam has 8682 alignments on 2 chromosomes that the annotation annot does not have,",
+                       "e.g. ChrC (1895), ChrM (6787). RiboseQC_analysis() uses these reads"), fixed = TRUE)
+  # The other chromosomes of this BAM file have no reads
+  chr1 <- file.path(work, "chr1.bam")
+  Rsamtools::filterBam(bams[1], chr1, param = Rsamtools::ScanBamParam(which = GenomicRanges::GRanges("Chr1", IRanges::IRanges(1, 30427671))))
+  expect_silent(warn_bam_chromosomes(chr1, si["Chr1"], "annot"))
+  # A BAM file without an index: the chromosomes of its header. RiboseQC_analysis() warns before the first BAM
+  # file; this one has no reads, so the run stops at the start of its analysis
+  empty <- file.path(work, "empty_noindex.bam")
+  Rsamtools::filterBam(bams[1], empty, indexDestination = FALSE,
+                       filter = S4Vectors::FilterRules(list(none = function(x) rep(FALSE, nrow(x)))))
+  no_chrc <- changed_annotation(function(si) si[setdiff(Seqinfo::seqlevels(si), "ChrC")])
+  warns <- character()
+  msg <- withCallingHandlers(
+    analysis_error(annotation_file = no_chrc, bam_files = empty, dest_names = file.path(work, "out_chrc", "empty")),
+    warning = function(w) { warns <<- c(warns, conditionMessage(w)); invokeRestart("muffleWarning") })
+  expect_match(msg, "empty_noindex\\.bam has no mapped reads")
+  expect_length(warns, 1)
+  expect_match(warns, "empty_noindex\\.bam has 1 chromosome that the annotation .*changed_Rannot_.* does not have, e\\.g\\. ChrC\\. The BAM file has no index")
+})

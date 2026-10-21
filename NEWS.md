@@ -65,6 +65,25 @@
   stop codon, so the annotation was made, and ORFquant stopped later with
   `subscript contains out-of-bounds indices`. The check reads the GTF file
   until it finds an exon line and a CDS line, before the TxDb is made.
+- `RiboseQC_analysis()` warns, before the first BAM file, when a BAM file has
+  reads on chromosomes that its annotation does not have. The warning gives
+  the number of alignments on them, from the index of the BAM file. For a
+  BAM file without an index, it names the chromosomes of the BAM header that
+  the annotation does not have. These reads are used (for example in the
+  P-site and coverage tracks), but they are in no region of the annotation.
+  The results do not change.
+- `prepare_annotation_files()` stops with an error that says what is wrong
+  when a CDS of the GTF file ends after the end of its chromosome (one that
+  is not circular) in the genome sequence, for example when the GTF file and
+  the FASTA file are of different genome assemblies. The error names a
+  transcript, its chromosome and the length of the chromosome. Before, the
+  error was `Out of bounds ranges detected which are not on circular
+  chromosomes`.
+- `load_annotation()`, and so `RiboseQC_analysis()` and
+  `prepare_for_ORFquant()`, stop with an error that says what is wrong when
+  the annotation file is not a file of `prepare_annotation_files()`, for
+  example the GTF file. Before, the error was `bad restore file magic
+  number`.
 
 ## Changes in results
 
