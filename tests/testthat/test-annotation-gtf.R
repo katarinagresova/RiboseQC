@@ -79,6 +79,25 @@ test_that("a GTF without CDS lines is refused", {
   expect_match(msg, "no CDS lines")
 })
 
+test_that("a GTF without introns gives an annotation without junctions", {
+  # as a GTF of chrM, or of single-exon transcripts: each transcript gets one exon, from its transcript
+  # line, and each coding transcript one CDS line, from the start of its CDS to the end of its stop codon
+  type <- line_type(gtf_example)
+  tx <- line_attr(gtf_example, "transcript_id")
+  exons <- sub("^([^\t]*\t[^\t]*\t)transcript\t", "\\1exon\t", gtf_example[type == "transcript"])
+  coding <- which(type %in% c("CDS", "stop_codon"))
+  cds <- vapply(split(coding, tx[coding]), function(i) {
+    x <- strsplit(gtf_example[i[type[i] == "CDS"][1]], "\t")[[1]]
+    x[4:5] <- range(as.integer(unlist(lapply(strsplit(gtf_example[i], "\t"), `[`, 4:5))))
+    x[8] <- "0"
+    paste(x, collapse = "\t")
+  }, "")
+  ann <- annotate(c(gtf_example[type %in% c("gene", "transcript")], exons, cds), "no_introns")
+  expect_length(ann$junctions, 0)
+  expect_length(ann$introns, 0)
+  expect_setequal(names(ann$cds_txs), names(cds))
+})
+
 test_that("a transcript with a CDS shorter than 3 nt is not a coding transcript", {
   # a copy of a coding transcript, with one CDS line of 2 nt instead of its CDS
   cds_lines <- gtf_example[line_type(gtf_example) == "CDS"]

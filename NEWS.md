@@ -65,6 +65,12 @@
   with it the P-site files and `for_ORFquant`) depended on `chunk_size`. The
   results of BAM files with more than `chunk_size` alignments can change. The
   results of the other BAM files do not change.
+- `prepare_annotation_files()` no longer stops on a GTF file without
+  introns, for example a GTF file of chrM only, or of transcripts with one
+  exon each. `RiboseQC_analysis()` and `prepare_for_ORFquant()` no longer
+  stop on an annotation without splice junctions, such as the annotation of
+  such a GTF file. The error was `1 elements in value to replace 0 elements`.
+  The results of the other annotations do not change.
 
 ## Documentation
 

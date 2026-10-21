@@ -2730,7 +2730,7 @@ prepare_annotation_files<-function(annotation_directory,twobit_file=NULL,gtf_fil
         ov<-split(subjectHits(ov),queryHits(ov))
         a_nam<-CharacterList(lapply(ov,FUN = function(x){unique(names(all_intr)[x])}))
 
-        unq_intr$type="J"
+        unq_intr$type=rep("J",length(unq_intr))
         unq_intr$tx_name<-a_nam
 
 
