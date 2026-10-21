@@ -224,6 +224,29 @@
   with `stop_in_gtf` `NA` does (the codon after each CDS is its stop codon,
   also for a CDS that includes it). Before, the help said that a GTF file
   with both kinds of CDS gives wrong categories.
+- Corrections to the help pages. The code does not change.
+  - `?RiboseQC_analysis`: the value of the function is now in the help: the
+    paths of the `_results_RiboseQC` files, one for each BAM file. The help
+    lists the output files and when the function writes them:
+    `_results_RiboseQC_all` only with `write_tmp_files = TRUE`,
+    `_for_ORFquant` and the P-site bedgraph files only if there are P-sites,
+    the PDF files of `pdf_plots` only with the report. `write_tmp_files` is
+    one value for all BAM files (before: also one for each BAM file, which
+    stops the run). `read_subset` selects the read lengths by their reads on
+    the CDS and the UTRs. `rescue_all_rls` gives the offset 12 to all read
+    lengths without an offset (before: those without enough reads).
+    `fast_mode` uses 500 transcripts (before: genes). `offsets_df` changes
+    the P-sites and what the function makes from them, not the offsets in
+    `selection_cutoffs`, `summary_P_sites`, `_P_sites_calcs` and the report.
+    In the description of the results: `counts_cds_genes`,
+    `counts_all_genes` and `reads_summary` are in `read_stats`; the P-sites
+    of the uniquely mapping reads are `P_sites_uniq` (before:
+    `P_sites_all_uniq`), and these reads have a mapping quality of more than
+    50; `sequence_analysis` is a GRanges; `Codon_counts` is summed over the
+    transcripts; the first window of 33 nt starts with the start codon
+    (before: after it), and the last one ends at the end of the CDS (before:
+    before the stop codon). The help now names the `_unq` statistics, the A-site
+    and E-site tables and the smaller `_results_RiboseQC` file.
 
 # RiboseQC 1.4.0
 
