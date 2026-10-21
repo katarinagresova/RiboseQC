@@ -17,6 +17,13 @@ test_that("prepare_for_ORFquant() refuses wrong n_cores", {
                                     n_cores = 0), "n_cores must be a number")
 })
 
+test_that("prepare_for_ORFquant() refuses a wrong value of stranded", {
+  for (s in list("reverse", NA, c(TRUE, FALSE))) {
+    expect_error(prepare_for_ORFquant(annotation_file = "a", bam_file = "b", path_to_rl_cutoff_file = "c",
+                                      stranded = s), "'stranded' must be TRUE, FALSE or 'inverse'", fixed = TRUE)
+  }
+})
+
 test_that("prepare_for_ORFquant() names the files that do not exist", {
   msg <- tryCatch(prepare_for_ORFquant(annotation_file = file.path(work, "no_Rannot"),
                                        bam_file = file.path(work, "no.bam"),
@@ -27,12 +34,13 @@ test_that("prepare_for_ORFquant() names the files that do not exist", {
 })
 
 # Calculates the P-sites of the example; the prefix
-prepare_example <- function(name, n_cores, chunk_size, annotation = runs$annotation) {
+prepare_example <- function(name, n_cores, chunk_size, annotation = runs$annotation,
+                            bam_file = example_file("chr22_example.bam"), stranded = TRUE) {
   prefix <- file.path(work, name)
   quiet(prepare_for_ORFquant(annotation_file = annotation,
-                             bam_file = example_file("chr22_example.bam"),
+                             bam_file = bam_file,
                              path_to_rl_cutoff_file = example_file("chr22_example_cutoffs.tsv"),
-                             dest_name = prefix, n_cores = n_cores, chunk_size = chunk_size))
+                             dest_name = prefix, n_cores = n_cores, chunk_size = chunk_size, stranded = stranded))
   prefix
 }
 
@@ -81,6 +89,19 @@ test_that("prepare_for_ORFquant() runs on an annotation without junctions", {
   res <- get(load(paste0(prepare_example("no_junctions", n_cores = 1, chunk_size = 5e6, annotation), "_for_ORFquant")))
   expect_length(res$junctions, 0)
   expect_identical(res[1:3], get(load(paste0(runs$one_core, "_for_ORFquant")))[1:3])
+})
+
+test_that("prepare_for_ORFquant(stranded = \"inverse\") gives the results of stranded = TRUE on the reads with inverted strands", {
+  skip_if(is.null(runs$one_core))
+  one_core <- get(load(paste0(runs$one_core, "_for_ORFquant")))
+  inverted <- invert_bam(example_file("chr22_example.bam"), file.path(work, "chr22_inverted.bam"))
+  # Before, the P-sites and the junction reads came from the strands of the BAM file: no P-site had
+  # the position and the strand of the original reads, and no read was on a junction
+  res <- prepare_example("inverted", n_cores = 1, chunk_size = 5e6, bam_file = inverted, stranded = "inverse")
+  expect_identical(get(load(paste0(res, "_for_ORFquant"))), one_core)
+  # FALSE also uses the strands of the BAM file
+  res <- prepare_example("unstranded", n_cores = 1, chunk_size = 5e6, stranded = FALSE)
+  expect_identical(get(load(paste0(res, "_for_ORFquant"))), one_core)
 })
 
 # Input that cannot work stops the run before the BAM file is read

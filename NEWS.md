@@ -1,5 +1,16 @@
 # RiboseQC (development version)
 
+## Installation and dependencies
+
+- RiboseQC no longer has methods of `unlist()` for `GRanges` and
+  `GAlignments`. These methods made `unlist(x)` give `x` back, in the whole R
+  session, when RiboseQC or ORFquant was loaded. So they also changed
+  `unlist()` in other packages and in scripts: without them, `unlist()` of a
+  `GRanges` stops with an error, and `unlist()` of an empty `GRanges` gives
+  `NULL`. The results of RiboseQC do not change. `run_ORFquant()` of ORFquant
+  1.3.1 and older needs the method for `GRanges`, so it stops with an error
+  with this version of RiboseQC. Use ORFquant 1.3.2 or newer.
+
 ## New features
 
 - The script `run_riboseqc.R`, installed with the package
@@ -35,6 +46,16 @@
   id, or a chromosome that is not in the genome, stops the function before
   it makes the TxDb. The help of `prepare_annotation_files()` now gives these
   rules.
+- `prepare_for_ORFquant()` has the new argument `stranded`, with the values
+  of `RiboseQC_analysis()`: `TRUE` (the default), `FALSE` or `"inverse"`. Use
+  `"inverse"` for libraries with the reads on the strand opposite to the RNA:
+  the function then inverts the strand of each read before it calculates the
+  P-sites and the junction reads, as `RiboseQC_analysis(stranded =
+  "inverse")` does. Before, it used the strands of the BAM file, so for these
+  libraries each P-site was on the other strand, with its offset counted from
+  the 3' end of the read, and the reads on the junctions were not counted.
+  `TRUE` and `FALSE` give the same results as before. Another value stops the
+  function before it reads a file.
 
 ## Input checks
 
@@ -187,8 +208,8 @@
   changed the P-site files, `for_ORFquant` and the P-site profiles and codon
   statistics of the report. The reads of each region and gene were counted
   on both strands, as with `stranded = FALSE`. The results of
-  `stranded = TRUE` and `FALSE` do not change. `prepare_for_ORFquant()` has
-  no `stranded` argument: it uses the strands of the BAM file.
+  `stranded = TRUE` and `FALSE` do not change. For `prepare_for_ORFquant()`,
+  see its new argument `stranded`.
 
 ## Documentation
 

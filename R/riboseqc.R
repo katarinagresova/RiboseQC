@@ -2034,13 +2034,6 @@ plot_codon_usage_bulk <- function(codon_usage_data, sample="", output_rds_path="
 ######################################################################################################
 
 
-# unlist(x) gives x back when x is a GRanges or a GAlignments. ORFquant has no copy of
-# these methods: run_ORFquant() uses the method for GRanges.
-setMethods(f = "unlist","GRanges",function(x){return(x)})
-
-setMethods(f = "unlist","GAlignments",function(x){return(x)})
-
-
 # kmeans() picks random start centres. With a fixed seed and fixed kinds of
 # random numbers, the same data give the same clusters, and so the same offsets,
 # in each run. with_seed() restores the random numbers of the session after the call.
