@@ -99,6 +99,23 @@ test_that("a GTF without introns gives an annotation without junctions", {
   expect_setequal(names(ann$cds_txs), names(cds))
 })
 
+test_that("RiboseQC_analysis() runs on a small annotation, and its P-sites profiles use the transcripts of the 5' profiles", {
+  # the annotation of the GTF without introns has 140 transcripts, 49 without a CDS, and 5 selected transcripts
+  # have P-sites in their CDS. Before, with fewer than 250 transcripts, the P-sites profiles used all transcripts:
+  # those without a CDS, or with a short UTR, stopped the run
+  annotation <- file.path(work, "no_introns", "genes.gtf_Rannot")
+  skip_if_not(file.exists(annotation))
+  prefix <- file.path(work, "no_introns_analysis", "chr22")
+  suppressWarnings(utils::capture.output(suppressMessages(
+    RiboseQC_analysis(annotation_file = annotation, bam_files = example_file("chr22_example.bam"),
+                      dest_names = prefix, create_report = FALSE, rescue_all_rls = TRUE))))
+  res_all <- get(load(paste0(prefix, "_results_RiboseQC_all")))
+  # the profiles of the nuclear compartment exist: the run used this case
+  expect_gt(length(res_all$profiles_P_sites$P_sites_bins$nucl), 0)
+  expect_identical(rownames(res_all$profiles_P_sites$P_sites_bins$nucl[["all"]]),
+                   rownames(res_all$profiles_fivepr$five_prime_bins$nucl[["all"]]))
+})
+
 test_that("a transcript with a CDS shorter than 3 nt is not a coding transcript", {
   # a copy of a coding transcript, with one CDS line of 2 nt instead of its CDS
   cds_lines <- gtf_example[line_type(gtf_example) == "CDS"]
