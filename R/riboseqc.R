@@ -2070,15 +2070,18 @@ kmeans_seeded<-function(...){
 #' This function selects a subset of readlenghts to be used in the P-sites calculation step
 #' @keywords RiboseQC
 #' @author Lorenzo Calviello, \email{calviello.l.bio@@gmail.com}
-#' @param summary_data output data from the \code{calc_cutoffs_from_profiles} function
+#' @param summary_data for each compartment, a matrix with the \code{cutoff} and the \code{frame_preference} of each read length (rows),
+#' from the output of the \code{calc_cutoffs_from_profiles} function: \code{res_all$selection_cutoffs$results_cutoffs}
 #' @param choice Method used to select readlengths, defaults to "max_coverage"
-#' @param nt_signals Profiles of 5'ends around start codons
+#' @param nt_signals Profiles of 5'ends of each transcript, for the compartments of \code{summary_data}, in the same order:
+#' \code{res_all$profiles_fivepr$five_prime_subcodon}. Only the windows of the CDS are used
 #' @details Three different methods are available to choose readlengths: the "max_coverage" method
-#' selects all read lenghts with more in-frame signal compared to out-of-frame signal, on all codons;
+#' selects all read lenghts with more in-frame signal compared to out-of-frame signal, on the codons of the windows of the CDS
+#' (the positions with signal after the cutoff, on average over the transcripts);
 #' the "max_inframe" method starts with the most accurate read length and
 #' progressively selects read lengths which add in-frame signals in codons not covered by previous read lengths;
 #' the "all" method selects all available read lengths
-#' @return a list object containing different compartments. Each sub-list contains \code{final_choice},
+#' @return a list object containing different compartments (those with read lengths with a cutoff). Each sub-list contains \code{final_choice},
 #' the set of chosen read lengths with cutoffs, and \code{data}, the complete stats for each selection method
 #' @seealso \code{\link{calc_cutoffs_from_profiles}}
 #' @examples
@@ -2369,24 +2372,26 @@ load_annotation<-function(path,envir=parent.frame()){
 #'
 #' This function calculates cutoffs and frame resolution for Ribo-seq reads,
 #'  for each read length and compartment.
-#' @details Three methods are used and combined in the final choice:
-#'  the position of maximum coverage around start codon is calculated for each transcript, and
+#' @details Four methods are used and combined in the final choice:
+#'  the position of maximum coverage from 24 nt before the start codon to its first nt (so the cutoff is at most 24) is calculated for each transcript, and
 #'  the most frequent one is stored in the "*_tab" objects. Such frequency values are also
 #'  subjected to k-means clustering (centers=3) and the first value belonging to the highest cluster
 #'  is selected, output as "*km_tab" objects. Analysis of aggregate plots, instead of frequencies, is performed
 #'  again using kmeans (centers=3) using the same analysis above and stored in the "*km_meta" objects,
 #'  and by simply calculating the maximum value in the profile, stored in the "*meta" objects.
-#'  for each method, all reads ("absolute_") or only in-frame positions ("in_frame_") are considered. The final choice takes the most
+#'  for each method, all positions ("absolute_") or only in-frame positions ("in_frame_") are considered. The final choice takes the most
 #'  frequent cutoff chosen in all methods applied to in-frame positions.
 #' @param reads_profile Profile of 5'ends around start and stop codon, as a DataFrame object with
-#'   tx_ids as rows and positions as columns
-#' @param length_max Maximum cutoff to use
+#'   tx_ids as rows and positions as columns: the columns of \code{five_prime_subcodon} in \code{\link{RiboseQC_analysis}}
+#'   (\code{CDS_1} is the first nt of the start codon)
+#' @param length_max Maximum cutoff to use (the cutoff is at most 24 in any case)
 #' @keywords RiboseQC
 #' @author Lorenzo Calviello, \email{calviello.l.bio@@gmail.com}
-#' @return a list with a \code{final_cutoff} object, the frame analysis containing the % of transcripts
-#' displaying the max frame and the average % of frame precision per transcript in \code{frames_res},
+#' @return a list with a \code{final_cutoff} object, the frame analysis containing the \% of transcripts
+#' displaying the max frame and the average \% of frame precision per transcript in \code{frames_res},
 #' all the calculated cutoffs in \code{cutoffs}, data used for the frame analysis in \code{frames},
-#' and profiles around start codons in  \code{profiles_start}.
+#' and profiles around start codons in  \code{profiles_start}. \code{NULL} if fewer than 5 transcripts have 5'ends
+#' in the CDS, or from 24 nt before the start codon to its first nt.
 #' @seealso \code{\link{RiboseQC_analysis}}
 #' @examples
 #' \dontrun{

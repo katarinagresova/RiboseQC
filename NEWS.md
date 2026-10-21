@@ -287,6 +287,13 @@
     the genetic code comes from `RiboseQC_analysis()` (before: "a
     user-defined genetic code"). The links to `plot_codon_usage()`, which
     does not exist, now go to `plot_codon_usage_positional()`.
+  - `?calc_cutoffs_from_profiles`: the value of the function is complete
+    (before: an unescaped `%` cut the text), and it is `NULL` with fewer than
+    5 transcripts. Four methods give the cutoffs (before: three), from 24 nt
+    before the start codon to its first nt, so the cutoff is at most 24.
+    `?choose_readlengths`: `summary_data` is `results_cutoffs` (before: the
+    output of `calc_cutoffs_from_profiles()`), and `max_coverage` uses only
+    the windows of the CDS.
 
 # RiboseQC 1.4.0
 
