@@ -64,6 +64,10 @@
 #' @param path_to_P_sites_uniq_mm_minus_bw (Optional) path to a bigwig file containing uniquely mapping (with mismatches) P_sites positions on the minus strand
 #' @param dest_name prefix to use for the output files. Defaults to same as \code{bam_file} (appends "for_ORFquant" to its filename)
 #' @param n_cores number of cores to use, each for one chunk of \code{chunk_size} alignments at a time. Defaults to 1
+#' @param stranded \code{TRUE}, \code{FALSE} or \code{'inverse'}, as in \code{\link{RiboseQC_analysis}}. Defaults to \code{TRUE}.
+#' Use \code{'inverse'} for libraries with the reads on the strand opposite to the RNA: the strand of each read is inverted
+#' before its P-site and its junction are calculated, as \code{\link{RiboseQC_analysis}} does. \code{TRUE} and \code{FALSE}
+#' use the strands of the BAM file, so they give the same results. With P-site bigWig files, it applies only to the junction reads
 #' @seealso \code{run_ORFquant()} of ORFquant, which uses the "for_ORFquant" file, and
 #' \code{\link{RiboseQC_analysis}}, which also writes one
 #' @export
@@ -71,11 +75,14 @@
 prepare_for_ORFquant<-function(annotation_file,bam_file,path_to_rl_cutoff_file=NA,chunk_size=5000000,path_to_P_sites_plus_bw=NA,
                                path_to_P_sites_minus_bw=NA,path_to_P_sites_uniq_plus_bw=NA,path_to_P_sites_uniq_minus_bw=NA,
                                path_to_P_sites_uniq_mm_plus_bw=NA,path_to_P_sites_uniq_mm_minus_bw=NA,
-                               dest_name=NA,n_cores=1){
+                               dest_name=NA,n_cores=1,stranded=TRUE){
   
   if(is.na(dest_name)){dest_name=bam_file}
   
   check_n_cores(n_cores)
+  if(length(stranded)!=1 || (!stranded%in%"inverse" && is.na(as.logical(stranded)))){
+    stop("'stranded' must be TRUE, FALSE or 'inverse', not ",paste(deparse(stranded),collapse=""))
+  }
   
   if(is.na(path_to_rl_cutoff_file) & is.na(path_to_P_sites_plus_bw) & is.na(path_to_P_sites_minus_bw)){
     stop(paste("Please input either the paths to the P_sites bw files, or the path a suitable rl_cutoff table! ", date(),sep=""))
@@ -207,6 +214,8 @@ prepare_for_ORFquant<-function(annotation_file,bam_file,path_to_rl_cutoff_file=N
   mapp<-function(x){
     x<-x[seqnames(x)%in%seqnames(GTF_annotation$seqinfo)]
     seqlevels(x)<-seqlevels(GTF_annotation$seqinfo)
+    #reads on the strand opposite to the RNA: invert them, as RiboseQC_analysis() does
+    if(stranded%in%"inverse"){x<-invertStrand(x)}
     psites_of_chunk(x,rl_cutoffs_comp,circs,seqllll,seqleee,GTF_annotation$junctions)
   }
   

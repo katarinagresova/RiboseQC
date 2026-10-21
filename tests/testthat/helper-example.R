@@ -45,3 +45,22 @@ example_analysis <- local({
 example_results <- function(sample) {
   get(load(paste0(example_analysis()$prefix[[sample]], "_results_RiboseQC_all")))
 }
+
+# Writes the alignments of `bam` with the strand of each read inverted to the BAM
+# file `dest`, and gives its path. All reads of the example data and of the test data
+# (data/chr22_example.bam) are mapped.
+# RiboseQC reads the flag, the position, the CIGAR, MAPQ and the MD tag; the copy
+# has no read names, sequences or qualities.
+invert_bam <- function(bam, dest) {
+  aln <- Rsamtools::scanBam(bam, param = Rsamtools::ScanBamParam(what = c("flag", "rname", "pos", "mapq", "cigar"),
+                                                                 tag = "MD"))[[1]]
+  chroms <- Rsamtools::scanBamHeader(bam)[[1]]$targets
+  # scanBam() gives NA for MAPQ 255 (not available)
+  mapq <- ifelse(is.na(aln$mapq), 255L, aln$mapq)
+  md <- ifelse(is.na(aln$tag$MD), "", paste0("\tMD:Z:", aln$tag$MD))
+  sam <- tempfile(fileext = ".sam")
+  writeLines(c(paste0("@SQ\tSN:", names(chroms), "\tLN:", chroms),
+               paste0("*\t", bitwXor(aln$flag, 16L), "\t", aln$rname, "\t", aln$pos, "\t", mapq, "\t", aln$cigar,
+                      "\t*\t0\t0\t*\t*", md)), sam)
+  Rsamtools::asBam(sam, sub("\\.bam$", "", dest))
+}
