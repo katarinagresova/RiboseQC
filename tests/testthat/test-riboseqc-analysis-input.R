@@ -117,6 +117,38 @@ test_that("RiboseQC_analysis() refuses a BAM file with other chromosome lengths 
   expect_false(dir.exists(out))
 })
 
+test_that("RiboseQC_analysis() does not use genome_seq, and warns when it is not the FASTA file of the annotation", {
+  # with other chromosomes in the annotation, the run stops after the annotation is loaded
+  other <- changed_annotation(function(si) {
+    Seqinfo::seqlevels(si) <- paste0("other", seq_along(Seqinfo::seqlevels(si)))
+    si
+  })
+  run <- function(genome_seq) {
+    warns <- character()
+    msg <- withCallingHandlers(
+      analysis_error(annotation_file = other, bam_files = bams[1], dest_names = file.path(work, "out_genome", "root"),
+                     genome_seq = genome_seq),
+      warning = function(w) { warns <<- c(warns, conditionMessage(w)); invokeRestart("muffleWarning") })
+    list(msg = msg, warns = grep("genome_seq", warns, value = TRUE))
+  }
+  fasta <- file.path(ext, "simp_arab.fa.gz")
+  # Before, an FaFile stopped the run with "invalid 'file' argument"
+  for (genome_seq in list(NULL, fasta, Rsamtools::FaFile(fasta))) {
+    res <- run(genome_seq)
+    expect_match(res$msg, "No chromosome of the BAM file is in the annotation")
+    expect_length(res$warns, 0)
+  }
+  other_fasta <- file.path(work, "other.fa")
+  for (genome_seq in list(other_fasta, Rsamtools::FaFile(other_fasta))) {
+    res <- run(genome_seq)
+    expect_match(res$msg, "No chromosome of the BAM file is in the annotation")
+    expect_length(res$warns, 1)
+    expect_match(res$warns, "genome_seq \\(.*other\\.fa\\) is not used: .*the FASTA file .*simp_arab\\.fa\\.gz")
+  }
+  # a relative path to the FASTA file of the annotation
+  withr::with_dir(ext, expect_silent(check_genome_seq("simp_arab.fa.gz", Rsamtools::FaFile(fasta), "annotation")))
+})
+
 test_that("RiboseQC_analysis() refuses output directories that cannot be written to, and makes those that do not exist", {
   skip_on_os("windows")
   read_only <- file.path(work, "read_only")

@@ -45,6 +45,13 @@
 
 ## Bug fixes
 
+- `RiboseQC_analysis()` no longer stops with `invalid 'file' argument` when
+  `genome_seq` is an `FaFile`. The argument has no effect, as before: the
+  genome sequence is the FASTA file of the annotation. A path was ignored
+  without a message. Now a warning says so when `genome_seq` is another file
+  than the FASTA file of the annotation. To use another FASTA file, make the
+  annotation with it. The help of `genome_seq` said that it is used instead
+  of a BSgenome package; it now says that it is not used.
 - `RiboseQC_analysis()` no longer stops when the BAM file has reads on
   chromosomes that the annotation does not have (for example scaffolds), and
   the BAM file has more than `chunk_size` alignments, so that it is read in
