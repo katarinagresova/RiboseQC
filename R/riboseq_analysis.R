@@ -223,6 +223,13 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         stop(paste("'readlength_choice_method' must be one of 'max_coverage','max_inframe','all'.", 
             date(), "\n"))
     }
+    # stranded is "inverse", or a value that as.logical() reads (TRUE, FALSE, "TRUE", ...): else the run stopped
+    # in the counting pass of the first BAM file, after the pass of the read lengths over all its reads
+    bad_stranded <- !stranded %in% "inverse" & is.na(as.logical(stranded))
+    if (any(bad_stranded)) {
+        stop(paste("'stranded' must be TRUE, FALSE or 'inverse', not ", paste(unique(stranded[bad_stranded]),
+            collapse = ", "), ". ", date(), "\n", sep = ""))
+    }
     
     # all input files, before the first BAM file: else a missing file stops the run after the
     # analysis of the BAM files before it

@@ -84,6 +84,13 @@
   the annotation file is not a file of `prepare_annotation_files()`, for
   example the GTF file. Before, the error was `bad restore file magic
   number`.
+- `RiboseQC_analysis()` stops at once when a value of `stranded` is not
+  `TRUE`, `FALSE` or `"inverse"`: `'stranded' must be TRUE, FALSE or
+  'inverse', not reverse`. Before, a value such as `"reverse"` or `"yes"`
+  stopped the run in the analysis of the first BAM file, with `'ignore.strand'
+  must be TRUE or FALSE`, and `NA` with `missing value where TRUE/FALSE
+  needed`; a large BAM file was read once before. The values that worked,
+  also `"TRUE"` or `1`, still work.
 
 ## Changes in results
 
