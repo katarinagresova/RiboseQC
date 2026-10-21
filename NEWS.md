@@ -55,6 +55,13 @@
   the annotation does not have. These reads are used (for example in the
   P-site and coverage tracks), but they are in no region of the annotation.
   The results do not change.
+- `prepare_annotation_files()` stops with an error that says what is wrong
+  when a CDS of the GTF file ends after the end of its chromosome (one that
+  is not circular) in the genome sequence, for example when the GTF file and
+  the FASTA file are of different genome assemblies. The error names a
+  transcript, its chromosome and the length of the chromosome. Before, the
+  error was `Out of bounds ranges detected which are not on circular
+  chromosomes`.
 
 ## Changes in results
 

@@ -2780,6 +2780,18 @@ prepare_annotation_files<-function(annotation_directory,twobit_file=NULL,gtf_fil
         if(!any(lin)){lin<-!lin}
         cd<-translations[tocheck[lin],"genetic_code"]
         tocheck<-cds_tx[lin]
+        #a CDS past the end of a chromosome that is not circular stops extractTranscriptSeqs() with "Out of bounds
+        #ranges detected": the GTF file is not of the genome sequence
+        cds_ranges<-unlist(tocheck)
+        cds_chrs<-as.character(seqnames(cds_ranges))
+        past_end<-which(end(cds_ranges)>seqlengths(ifs)[cds_chrs] & !cds_chrs%in%circs)
+        if(length(past_end)>0){
+            chr<-cds_chrs[past_end[1]]
+            stop("The GTF file ",gtf_file," is not of the genome sequence ",genome$path,": the CDS of ",length(unique(names(cds_ranges)[past_end])),
+                 " transcripts end after the end of their chromosome, e.g. ",names(cds_ranges)[past_end[1]]," at ",end(cds_ranges)[past_end[1]],
+                 " on ",chr,", which has ",seqlengths(ifs)[[chr]]," nt in the genome sequence. The GTF file and the FASTA file must be of the same genome assembly",
+                 call. = FALSE)
+        }
         seqcds<-extractTranscriptSeqs(genome,transcripts = tocheck)
         trslend<-character(length(seqcds))
         for(code in unique(cd)){
