@@ -2503,6 +2503,10 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
 #' from those of transcripts with CDS lines and of their genes, which are "protein_coding" (without biotypes, e.g. in UCSC's GTFs,
 #' transcripts with a CDS that GENCODE calls "nonsense_mediated_decay" are "protein_coding" too). The transcript biotype "mRNA" (NCBI)
 #' is read as "protein_coding"; if no gene has a name, all are "no_name". Transcripts with a CDS shorter than 3 nt are removed.
+#' The order of the lines in the GTF file does not change the results if the lines agree: all lines of a transcript give the same
+#' values, and all transcripts of a gene the same gene name and biotype (as in GENCODE and Ensembl files). If they do not agree, the
+#' order chooses the value: a transcript gets the value of its first line with one, and the read counts of the genes and the top 50
+#' positions of \code{RiboseQC_analysis} get the gene name and biotype of the first transcript of the gene in the file.
 #' The genome sequence is read from the FASTA file \code{genome_seq}.\cr\cr
 #' The resulting GTF_annotation object (obtained after runnning \code{load_annotation}) contains:\cr\cr
 #' \code{txs}: annotated transcript boundaries.\cr
