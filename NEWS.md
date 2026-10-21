@@ -1,5 +1,22 @@
 # RiboseQC (development version)
 
+## New arguments
+
+- `prepare_annotation_files()` has the new argument `genetic_codes`: the
+  genetic codes of some chromosomes, e.g. `genetic_codes = c(chrM = "3")`,
+  with the ids of `Biostrings::GENETIC_CODE_TABLE`. They replace the codes
+  that the chromosome names give: `chrM`, `MT`, `MtDNA`, `mit` and
+  `mitochondrion` get code 2 (vertebrate mitochondria), `Mito` gets code 3
+  (yeast mitochondria), `dmel_mitochondrion_genome` gets code 5 (invertebrate
+  mitochondria), and all other chromosomes get code 1. So the mitochondrion
+  of a yeast or Drosophila genome with UCSC names (`chrM`) gets code 2. Then
+  the codon tables of `RiboseQC_analysis()` give the amino acids of code 2
+  for its codons, and ORFquant finds and translates its ORFs with code 2.
+  The default, `NULL`, gives the same codes as before. A code that is not an
+  id, or a chromosome that is not in the genome, stops the function before
+  it makes the TxDb. The help of `prepare_annotation_files()` now gives these
+  rules.
+
 ## Input checks
 
 - `RiboseQC_analysis()` now checks its input before it reads the first BAM
