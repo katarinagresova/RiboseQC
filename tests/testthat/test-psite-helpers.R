@@ -78,3 +78,13 @@ test_that("single_positions() gives the merge of chunks one range for each posit
   expect_length(GenomicFeatures::mapToTranscripts(merged, exon), 0)
   expect_identical(start(GenomicFeatures::mapToTranscripts(ps, exon)), c(11L, 12L))
 })
+
+test_that("one chunk gives the 5' ends without names, as the merge of chunks: the top 50 positions get the read length", {
+  # the example runs in one chunk. Before, each 5' end had the read length as its name, so len_adj of the top 50
+  # positions was, for example, 29.29
+  res <- example_results("root")
+  expect_null(names(res$read_stats$reads_pos1[[1]]))
+  top50 <- res$sequence_analysis
+  expect_identical(top50$len_adj, as.numeric(width(top50)))
+  expect_true(all(top50$len_adj %in% as.numeric(names(res$read_stats$reads_pos1))))
+})

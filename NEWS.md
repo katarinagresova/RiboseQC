@@ -43,6 +43,19 @@
   value (see the help), and the warning names some of these transcripts and
   genes. The annotation does not change.
 
+## Changes in results
+
+- `RiboseQC_analysis()` on a BAM file that it reads in one chunk (with at
+  most `chunk_size` alignments) gives the 5' ends of the reads
+  (`read_stats$reads_pos1` in `<dest_name>_results_RiboseQC_all`) without
+  names, as with more chunks. Before, each range and its score had its read
+  length as its name, so the read lengths of the top 50 positions (`len_adj`
+  of `sequence_analysis`, in `<dest_name>_results_RiboseQC` and
+  `<dest_name>_results_RiboseQC_all`) were, for example, `29.29` instead of
+  `29`, and their scores and percentages had names too. The positions, their
+  widths and sequences, and all other values don't change. The report does
+  not show `len_adj`.
+
 ## Bug fixes
 
 - `RiboseQC_analysis()` no longer stops when the BAM file has reads on

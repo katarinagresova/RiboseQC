@@ -688,9 +688,10 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             # reads_pos1_stst
             
             
-            # take first position of each read
+            # take first position of each read (without the read length as the name of each range, as after the
+            # merge of 2 or more chunks)
             reads_pos1 <- unlist(resize(split(GRanges(x), f = mcols(x)$len_adj), 
-                1))
+                1), use.names = FALSE)
             
             reads_pos1 <- split(reads_pos1, reads_pos1$len_adj)
             
