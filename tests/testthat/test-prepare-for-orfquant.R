@@ -27,9 +27,9 @@ test_that("prepare_for_ORFquant() names the files that do not exist", {
 })
 
 # Calculates the P-sites of the example; the prefix
-prepare_example <- function(name, n_cores, chunk_size) {
+prepare_example <- function(name, n_cores, chunk_size, annotation = runs$annotation) {
   prefix <- file.path(work, name)
-  quiet(prepare_for_ORFquant(annotation_file = runs$annotation,
+  quiet(prepare_for_ORFquant(annotation_file = annotation,
                              bam_file = example_file("chr22_example.bam"),
                              path_to_rl_cutoff_file = example_file("chr22_example_cutoffs.tsv"),
                              dest_name = prefix, n_cores = n_cores, chunk_size = chunk_size))
@@ -69,6 +69,18 @@ test_that("the P-sites do not depend on the number of cores or of chunks", {
   runs$two_cores <- prepare_example("two_cores", n_cores = 2, chunk_size = 100)
   expect_identical(get(load(paste0(runs$one_core, "_for_ORFquant"))),
                    get(load(paste0(runs$two_cores, "_for_ORFquant"))))
+})
+
+test_that("prepare_for_ORFquant() runs on an annotation without junctions", {
+  skip_if(is.null(runs$one_core))
+  # as the annotation of a GTF without introns: the annotation of the example without its junctions
+  GTF_annotation <- get(load(runs$annotation))
+  GTF_annotation$junctions <- GTF_annotation$junctions[0]
+  annotation <- file.path(work, "no_junctions_Rannot")
+  save(GTF_annotation, file = annotation)
+  res <- get(load(paste0(prepare_example("no_junctions", n_cores = 1, chunk_size = 5e6, annotation), "_for_ORFquant")))
+  expect_length(res$junctions, 0)
+  expect_identical(res[1:3], get(load(paste0(runs$one_core, "_for_ORFquant")))[1:3])
 })
 
 # Input that cannot work stops the run before the BAM file is read

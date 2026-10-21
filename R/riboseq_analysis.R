@@ -26,7 +26,9 @@ NULL
 #' @param normalize_cov export normalized (sum to 1 million) bedgraph files for coverage tracks? Defaults to \code{TRUE}
 #' @param offsets_df optionally input an offsets_df created externally, note that this does not yet fully integrate with stats such as 'proportion in phase' it will however alter the psites which are outputted. Must have cols 'read_length','cutoff'.
 #' A data.frame gives the offsets of the nuclear compartment (\code{"nucl"}); a list with one such table for each compartment, named as the compartments, gives the offsets of all compartments
-#' @param genome_seq An FaFile object, to be used instead of a BSgenome package
+#' @param genome_seq Not used: the genome sequence is the FASTA file of the annotation, the \code{genome_seq} of
+#' \code{\link{prepare_annotation_files}}. A path or an \code{FaFile} of another file gives a warning. To use another FASTA
+#' file, make the annotation with it
 #' @return the function saves a 'results_RiboseQC_all' R file appended to the prefix in \code{dest_names} (by default the bam_files path) including the complete list of outputs described here.
 #' In addition, bedgraph files for coverage value and P_sites position is appended to the same prefix, including also a summary of P_sites selection statistics,
 #' a smaller 'results_RiboseQC' R file used for creating a dynamic html report, and a 'for_ORFquant' R object that can be used in the ORFquant pipeline.
@@ -62,6 +64,16 @@ NULL
 #' \code{sequence_analysis}: contains a DataFrame object with the 50top mapping location in the genome, with the corresponding DNA sequence,
 #' number of reads mapping (also in percentage of total n of reads), and genomic feature annotation.\cr\cr
 #' \code{summary_P_sites}: contains a DataFrame object summarizing the P_sites calculation and read length selection, including statistics on percentage of total reads used.
+#'
+#' Alignments flagged as duplicates, secondary alignments and alignments with an insertion or a deletion (\code{I} or \code{D} in the CIGAR string)
+#' are not used: the read counts, the read length distributions, the offsets, the P_sites, the coverage and the junction reads do not include them,
+#' and the report does not count them.
+#'
+#' Soft-clipped bases (\code{S} in the CIGAR string) are not counted: the read length is the length of the aligned part of the read,
+#' and the offset (cutoff) counts from its first aligned base at the 5' end. So a 31-nt read with 2 soft-clipped bases counts as a 29-nt read.
+#' Aligners that soft-clip reads, for example STAR with its default \code{--alignEndsType Local}, can give other read lengths, offsets and P_sites
+#' than an end-to-end alignment of the same reads (STAR: \code{--alignEndsType EndToEnd}). Remove adapters and UMIs before the alignment.
+#' An \code{offsets_df} must come from the same alignments.
 #' @seealso \code{\link{prepare_annotation_files}}, \code{\link{calc_cutoffs_from_profiles}}, \code{\link{choose_readlengths}}, \code{\link{create_html_report}}.
 #' @export 
 
@@ -216,14 +228,9 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
     # analysis of the BAM files before it
     check_files_exist(c(annotation_file, bam_files))
     
-    fastainput <- is(genome_seq, "FaFile")
-    
-    if (fastainput) {
-        stopifnot(file.exists(genome_seq))
-        genome_seq <- Rsamtools::FaFile(genome_seq)
-        Rsamtools::indexFa(genome_seq)
-        genome_seq <- FaFile_Circ(genome_seq)
-    }
+    # genome_seq is not used: the genome sequence is the FASTA file of the annotation, which load_annotation()
+    # assigns to genome_seq. A warning says so when genome_seq is another file
+    given_genome_seq <- genome_seq
     
     list_annotations <- list()
     
@@ -232,6 +239,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             date(), "\n", sep = ""))
         
         load_annotation(annotation_file[annots])
+        check_genome_seq(given_genome_seq, genome_seq, annotation_file[annots])
         # the annotation refers to its FASTA file by its path, and the P-sites profiles, near the end of
         # the analysis of each BAM file, are the first step that reads it
         if (is(genome_seq, "FaFile") && !file.exists(genome_seq$path)) {
@@ -2235,4 +2243,20 @@ reduce_by_yield <- function(X, YIELD, MAP, REDUCE, n_cores = 1) {
         }
     }
     result
+}
+
+# RiboseQC_analysis() does not use its argument genome_seq (a path or an FaFile): the genome sequence is
+# annotation_genome, the FASTA file of the annotation. This warns when genome_seq is another file
+check_genome_seq <- function(genome_seq, annotation_genome, annotation_file) {
+    if (is.null(genome_seq))
+        return(invisible(NULL))
+    given <- if (is(genome_seq, "FaFile")) path(genome_seq) else genome_seq
+    annot <- if (is(annotation_genome, "FaFile")) path(annotation_genome) else NA_character_
+    if (!is.character(given) || length(given) != 1 || is.na(annot) ||
+        normalizePath(given, mustWork = FALSE) != normalizePath(annot, mustWork = FALSE)) {
+        warning("genome_seq (", if (is.character(given)) paste(given, collapse = ", ") else class(genome_seq)[1],
+            ") is not used: RiboseQC_analysis() uses the genome sequence of the annotation ", annotation_file,
+            if (!is.na(annot)) paste0(", the FASTA file ", annot), ". To use another FASTA file, make the annotation with it",
+            call. = FALSE)
+    }
 }

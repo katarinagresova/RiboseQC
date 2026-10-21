@@ -35,7 +35,9 @@ RiboseQC_analysis(
 
 \item{readlength_choice_method}{Method used to subset relevant read lengths (see \code{choose_readlengths} function); defaults to 'max_coverage'. Must be of length 1 or same length as bam_files.}
 
-\item{genome_seq}{An FaFile object, to be used instead of a BSgenome package}
+\item{genome_seq}{Not used: the genome sequence is the FASTA file of the annotation, the \code{genome_seq} of
+\code{\link{prepare_annotation_files}}. A path or an \code{FaFile} of another file gives a warning. To use another FASTA
+file, make the annotation with it}
 
 \item{stranded}{are the analyzed libraries strand-specific? TRUE, FALSE or 'inverse'. Defaults to \code{TRUE}}
 
@@ -107,6 +109,16 @@ coverage for entire reads (no 5'ends or P_sites-transformed) on different strand
 \code{sequence_analysis}: contains a DataFrame object with the 50top mapping location in the genome, with the corresponding DNA sequence,
 number of reads mapping (also in percentage of total n of reads), and genomic feature annotation.\cr\cr
 \code{summary_P_sites}: contains a DataFrame object summarizing the P_sites calculation and read length selection, including statistics on percentage of total reads used.
+
+Alignments flagged as duplicates, secondary alignments and alignments with an insertion or a deletion (\code{I} or \code{D} in the CIGAR string)
+are not used: the read counts, the read length distributions, the offsets, the P_sites, the coverage and the junction reads do not include them,
+and the report does not count them.
+
+Soft-clipped bases (\code{S} in the CIGAR string) are not counted: the read length is the length of the aligned part of the read,
+and the offset (cutoff) counts from its first aligned base at the 5' end. So a 31-nt read with 2 soft-clipped bases counts as a 29-nt read.
+Aligners that soft-clip reads, for example STAR with its default \code{--alignEndsType Local}, can give other read lengths, offsets and P_sites
+than an end-to-end alignment of the same reads (STAR: \code{--alignEndsType EndToEnd}). Remove adapters and UMIs before the alignment.
+An \code{offsets_df} must come from the same alignments.
 }
 \seealso{
 \code{\link{prepare_annotation_files}}, \code{\link{calc_cutoffs_from_profiles}}, \code{\link{choose_readlengths}}, \code{\link{create_html_report}}.

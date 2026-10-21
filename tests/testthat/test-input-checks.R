@@ -52,6 +52,17 @@ test_that("prepare_annotation_files() refuses a GTF file without exons, or witho
                "no transcript_id or gene_id")
 })
 
+test_that("prepare_annotation_files() refuses a GTF file without CDS lines, also with start and stop codons, and writes nothing", {
+  # txdbmaker makes a CDS of each stop_codon line
+  out <- file.path(work, "annotation_none")
+  expect_match(annotation_error(write_gtf(gtf_example[!grepl("\tCDS\t", gtf_example)], "nocds.gtf"), out = out),
+               "nocds\\.gtf has no CDS lines")
+  expect_false(dir.exists(out))
+  # the CDS lines can come before the exon lines
+  cds <- grepl("\tCDS\t", gtf_example)
+  expect_true(check_gtf(write_gtf(c(gtf_example[cds], gtf_example[!cds]), "cds_first.gtf")))
+})
+
 test_that("prepare_annotation_files() says when the chromosomes of the GTF are not in the genome", {
   msg <- annotation_error(write_gtf(sub("^chr22", "22", gtf_example), "nochr.gtf"))
   expect_match(msg, "Reading the GTF file .* failed")
