@@ -337,9 +337,8 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
   
   # softclipping
   
-  clipp <- width(cigarillo::cigars_as_ranges_along_query(x@cigar, ops="S"))
-  clipp[elementNROWS(clipp)==0] <- 0
-  len_adj <- qwidth(x)-sum(clipp)
+  # the read length without the soft clips
+  len_adj <- cigarillo::cigar_extent_along_query(x@cigar, after.soft.clipping=TRUE)
   mcols(x)$len_adj <- len_adj
   
   # Remove S from Cigar (read positions/length are already adjusted)

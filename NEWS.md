@@ -296,6 +296,18 @@
   ("all") two times for each compartment. It now makes them once. On the same
   sample (a 69 MB BAM), the P-site profiles take 90 s instead of 98 s. The
   results don't change.
+- `RiboseQC_analysis()` reads the BAM file and counts the reads faster. It
+  counted the reads of each read length in the regions (CDS, UTRs, introns,
+  ...) with one `summarizeOverlaps()` for each read length, and it found the
+  overlaps of the uniquely mapping reads a second time. It now finds the
+  overlaps of all reads once. It also reads only the fields of the BAM file
+  that each pass uses, and it finds the alignments with an insertion or a
+  deletion and the read length without the soft-clipped bases faster, also in
+  `prepare_for_ORFquant()`. On a human sample (a 2.3 GB BAM, 18 chunks,
+  GENCODE 47, `rescue_all_rls = TRUE`), the counts take 327 s instead of
+  506 s, the read lengths 95 s instead of 139 s, and a run with the report on
+  one core takes 1,750 s instead of 2,000 s (12% less), without more memory.
+  The results don't change.
 
 ## Documentation
 
