@@ -154,6 +154,16 @@
   `only 0's may be mixed with negative subscripts`: for example the
   annotation of a GTF file of chrM. The results of larger annotations do
   not change.
+- `RiboseQC_analysis()` with circular chromosomes: the `nucl` row of
+  `read_stats$rld_unq` (in `<dest_name>_results_RiboseQC` and
+  `<dest_name>_results_RiboseQC_all`) now counts only the uniquely mapping
+  reads of the other chromosomes, as the `nucl` row of `read_stats$rld` does
+  for all reads. Before, it also counted the uniquely mapping reads of the
+  circular chromosomes, which also have their own rows. For example, the
+  `nucl` row of the bundled root sample had 22,095 reads, and now has
+  17,154: without the 1,768 reads of ChrC and the 3,173 reads of ChrM. All
+  other values, and the results of annotations without circular
+  chromosomes, do not change. The report does not use `rld_unq`.
 
 ## Bug fixes
 
