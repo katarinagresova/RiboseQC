@@ -12,7 +12,7 @@ get_ps_fromsplicemin(x, cutoff)
 \item{cutoff}{number representing the offset value}
 }
 \value{
-a \code{GRanges} object with offset reads: the P-site (1 nt) of each read, sorted by position, not in the order of \code{x}
+a \code{GRanges} object with offset reads: the P-site (1 nt) of each read, in the order of \code{x}
 }
 \description{
 This function calculates P-sites positions for spliced reads on the minus strand
