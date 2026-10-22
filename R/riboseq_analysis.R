@@ -25,6 +25,7 @@ NULL
 #' @param report_file desired filename for the html report file. Defaults to the first entry of \code{bam_files} followed by '_RiboseQC_report.html'
 #' @param extended_report creates a large html report including codon occupancy for each read length. Defaults to \code{FALSE}
 #' @param pdf_plots creates a pdf file for each plot of the html report, in \code{<report_file>_plots/pdf/}; only with \code{create_report = TRUE}. Defaults to \code{TRUE}
+#' @param write_TSV_files write the main tables of the results as tab-separated files, for each BAM file (see Value). Defaults to \code{TRUE}
 #' @param stranded are the analyzed libraries strand-specific? TRUE, FALSE or 'inverse'. Defaults to \code{TRUE}.
 #' Use \code{'inverse'} for libraries with the reads on the strand opposite to the RNA: RiboseQC inverts the strand of each read,
 #' then does the analysis of \code{TRUE}. So the P-sites and the coverage tracks are on the strand of the RNA
@@ -53,6 +54,28 @@ NULL
 #' uniquely mapping reads, on each strand. Only if there are such P_sites.\cr
 #' 'coverage_plus.bedgraph', 'coverage_minus.bedgraph', 'coverage_uniq_plus.bedgraph' and 'coverage_uniq_minus.bedgraph': the coverage of the reads
 #' (see \code{normalize_cov}).\cr
+#' With \code{write_TSV_files = TRUE}, also these tab-separated files with a header line. They have tables of
+#' \code{res_all} (see Details), with the same names:
+#' \itemize{
+#' \item 'read_lengths.tsv' (\code{read_stats$rld}): one row for each compartment (\code{"nucl"} and each circular chromosome of the BAM file),
+#'   with the column 'compartment' and the number of reads of each read length ('reads_<read length>').
+#' \item 'regions.tsv' (\code{read_stats$positions}): one row for each region ('cds', 'fiveutrs', 'threeutrs', 'ncIsof', 'ncRNAs', 'introns' and
+#'   'intergenic', the "biotypes" of the report), with the column 'region' and the number of reads on it in each compartment ('reads_<compartment>').
+#'   A read on two regions counts for both.
+#' \item 'genes.tsv' (\code{read_stats$counts_all_genes}): one row for each gene, with the columns 'gene_id', 'reads', 'chromosome', 'gene_name',
+#'   'gene_biotype', 'RPKM' and 'TPM'.
+#' \item 'P_sites_calcs.tsv': the same table as 'P_sites_calcs' (\code{summary_P_sites}), the offset ('cutoff') and the 'frame_preference'
+#'   of each read length and compartment ('comp').
+#' \item 'top50_positions.tsv' (\code{sequence_analysis}): the 50 5' end positions and read lengths with the most reads, one row for each,
+#'   with the columns 'seqnames', 'start', 'end', 'width' and 'strand' of the reads, 'score' (their number), 'len_adj' (their read length),
+#'   'pct' (their percentage of all reads on the chromosomes of the annotation), 'seq' (their sequence), and the 'region', 'gene' and 'gene_biotype' that they overlap.
+#'   More values are separated by commas.
+#' \item 'summary.tsv': one row for each compartment, with the columns 'sample' (of \code{sample_names}), 'compartment', 'reads', 'pct_cds'
+#'   (the percentage of the reads of the compartment on its 'cds' region), 'pct_P_sites' (the percentage of the reads of the compartment
+#'   with a read length that has an offset in 'P_sites_offsets.tsv': these reads give the P_sites) and 'frame_preference' (the mean 'frame_preference' of these read lengths, weighted by their reads). Read lengths
+#'   without a 'frame_preference' in 'P_sites_calcs', from \code{offsets_df} or \code{rescue_all_rls}, are not in the mean; it is \code{NA} if
+#'   no read length has one. The percentages are \code{NA} for a compartment without reads.
+#' }
 #' With \code{create_report = TRUE}, it also saves the html report \code{report_file} and its plots (see \code{\link{create_html_report}}).
 #' @details This function loads different genomic regions created in the \code{prepare_annotation_files} step,
 #' separating features on different recognized organelles. The bam files is then analyzed in chunks to minimize RAM usage.\cr
@@ -110,7 +133,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
     genome_seq = NULL, stranded = TRUE, normalize_cov = TRUE, chunk_size = 5000000L, 
     write_tmp_files = TRUE, dest_names = NA, rescue_all_rls = FALSE, fast_mode = TRUE, 
     create_report = TRUE, sample_names = NA, report_file = NA, extended_report = FALSE, 
-    pdf_plots = TRUE, offsets_df = NULL, n_cores = 1) {
+    pdf_plots = TRUE, offsets_df = NULL, n_cores = 1, write_TSV_files = TRUE) {
 
     check_n_cores(n_cores)
 
@@ -153,6 +176,10 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
     if (!is.logical(create_report)) {
         stop(paste("'create_report' must be logical (TRUE or FALSE, no quotes).", 
             date(), "\n"))
+    }
+    # one value: else the run stops when it writes the files of the first BAM file
+    if (!isTRUE(write_TSV_files) && !isFALSE(write_TSV_files)) {
+        stop(paste("'write_TSV_files' must be TRUE or FALSE (no quotes).", date(), "\n"))
     }
     if (!is.integer(chunk_size) & !is.numeric(chunk_size)) {
         stop(paste("'chunk_size' must be an integer value (e.g. 5000000).", date(), 
@@ -1979,6 +2006,9 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         }
         write.table(offs, file = paste(dest_name, "_P_sites_offsets.tsv", sep = ""),
             sep = "\t", quote = FALSE, row.names = FALSE, col.names = TRUE)
+        if (write_TSV_files) {
+            write_tsv_files(res_all, finn, offs, dest_name, sample_names[bammo])
+        }
         unlink(dira, recursive = TRUE)
         res_all$read_stats$reads_pos1 <- ""
         res_all$P_sites_stats <- ""
@@ -2099,6 +2129,60 @@ sum_chunks <- function(chunks, seql, seqle) {
         all_ps[[rl]] <- single_positions(sort(c(covv_pl, covv_min)))
     }
     all_ps
+}
+
+# The tab-separated files of RiboseQC_analysis(write_TSV_files = TRUE) for one BAM file, with the prefix
+# dest_name: tables of res_all, and a summary with one row for each compartment. finn is the table of
+# P_sites_calcs (NULL when no read length has an offset), offs the table of P_sites_offsets.tsv
+write_tsv_files <- function(res_all, finn, offs, dest_name, sample_name) {
+    write_tsv <- function(x, suffix) {
+        write.table(x, file = paste(dest_name, suffix, sep = ""), sep = "\t", quote = FALSE,
+            row.names = FALSE, col.names = TRUE)
+    }
+    rs <- res_all$read_stats
+    write_tsv(data.frame(compartment = rownames(rs$rld), rs$rld, check.names = FALSE), "_read_lengths.tsv")
+    write_tsv(data.frame(region = rownames(rs$positions), rs$positions, check.names = FALSE), "_regions.tsv")
+    write_tsv(data.frame(gene_id = rownames(rs$counts_all_genes), as.data.frame(rs$counts_all_genes),
+        check.names = FALSE), "_genes.tsv")
+    write_tsv(finn, "_P_sites_calcs.tsv")
+
+    # the ranges, then their columns: sequences as text, lists with their values separated by commas
+    top50 <- res_all$sequence_analysis
+    top <- data.frame(seqnames = as.character(seqnames(top50)), start = start(top50), end = end(top50),
+        width = width(top50), strand = as.character(strand(top50)))
+    for (n in names(mcols(top50))) {
+        v <- mcols(top50)[[n]]
+        if (is(v, "XStringSet")) {
+            v <- as.character(v)
+        } else if (is(v, "List")) {
+            v <- vapply(as.list(v), paste, "", collapse = ",")
+        }
+        top[[n]] <- v
+    }
+    write_tsv(top, "_top50_positions.tsv")
+
+    # the reads of the read lengths with an offset give the P-sites; the frame preference is the mean of
+    # these read lengths, weighted by their reads, without those that have none in P_sites_calcs
+    fp_all <- numeric()
+    if (!is.null(finn)) {
+        fp_all <- finn$frame_preference
+        names(fp_all) <- paste(finn$comp, finn$read_length)
+    }
+    summ <- lapply(rownames(rs$rld), function(comp) {
+        rl_reads <- unlist(rs$rld[comp, ])
+        names(rl_reads) <- sub("^reads_", "", names(rl_reads))
+        reads <- sum(rl_reads)
+        rls <- as.character(offs$read_length[offs$compartment == comp])
+        ps_reads <- rl_reads[rls]
+        ps_reads[is.na(ps_reads)] <- 0
+        fp <- fp_all[paste(comp, rls)]
+        ok <- !is.na(fp) & ps_reads > 0
+        pct <- function(x) if (reads > 0) round(x/reads * 100, digits = 4) else NA
+        data.frame(sample = sample_name, compartment = comp, reads = reads,
+            pct_cds = pct(rs$positions["cds", paste("reads", comp, sep = "_")]), pct_P_sites = pct(sum(ps_reads)),
+            frame_preference = if (any(ok)) round(sum(fp[ok] * ps_reads[ok])/sum(ps_reads[ok]), digits = 4) else NA)
+    })
+    write_tsv(do.call(rbind, summ), "_summary.tsv")
 }
 
 # Read the BamFile X in chunks with YIELD, run MAP on each chunk and combine the results with

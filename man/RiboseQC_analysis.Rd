@@ -23,7 +23,8 @@ RiboseQC_analysis(
   extended_report = FALSE,
   pdf_plots = TRUE,
   offsets_df = NULL,
-  n_cores = 1
+  n_cores = 1,
+  write_TSV_files = TRUE
 )
 }
 \arguments{
@@ -75,6 +76,8 @@ A data.frame gives the offsets of the nuclear compartment (\code{"nucl"}); a lis
 gives the offsets of the compartments with selected read lengths: it must have all of them, and the other compartments of the list are not used}
 
 \item{n_cores}{number of cores to use, each for one chunk of \code{chunk_size} alignments at a time, in forked processes (not on Windows). Each core needs the memory for one chunk. The results do not depend on it. Defaults to 1}
+
+\item{write_TSV_files}{write the main tables of the results as tab-separated files, for each BAM file (see Value). Defaults to \code{TRUE}}
 }
 \value{
 The paths of the 'results_RiboseQC' files, one for each bam file, in the order of \code{bam_files} (the \code{input_files}
@@ -93,6 +96,28 @@ P_sites_uniq_mm) and the \code{junctions}. Only if there are P_sites.\cr
 uniquely mapping reads, on each strand. Only if there are such P_sites.\cr
 'coverage_plus.bedgraph', 'coverage_minus.bedgraph', 'coverage_uniq_plus.bedgraph' and 'coverage_uniq_minus.bedgraph': the coverage of the reads
 (see \code{normalize_cov}).\cr
+With \code{write_TSV_files = TRUE}, also these tab-separated files with a header line. They have tables of
+\code{res_all} (see Details), with the same names:
+\itemize{
+\item 'read_lengths.tsv' (\code{read_stats$rld}): one row for each compartment (\code{"nucl"} and each circular chromosome of the BAM file),
+  with the column 'compartment' and the number of reads of each read length ('reads_<read length>').
+\item 'regions.tsv' (\code{read_stats$positions}): one row for each region ('cds', 'fiveutrs', 'threeutrs', 'ncIsof', 'ncRNAs', 'introns' and
+  'intergenic', the "biotypes" of the report), with the column 'region' and the number of reads on it in each compartment ('reads_<compartment>').
+  A read on two regions counts for both.
+\item 'genes.tsv' (\code{read_stats$counts_all_genes}): one row for each gene, with the columns 'gene_id', 'reads', 'chromosome', 'gene_name',
+  'gene_biotype', 'RPKM' and 'TPM'.
+\item 'P_sites_calcs.tsv': the same table as 'P_sites_calcs' (\code{summary_P_sites}), the offset ('cutoff') and the 'frame_preference'
+  of each read length and compartment ('comp').
+\item 'top50_positions.tsv' (\code{sequence_analysis}): the 50 5' end positions and read lengths with the most reads, one row for each,
+  with the columns 'seqnames', 'start', 'end', 'width' and 'strand' of the reads, 'score' (their number), 'len_adj' (their read length),
+  'pct' (their percentage of all reads on the chromosomes of the annotation), 'seq' (their sequence), and the 'region', 'gene' and 'gene_biotype' that they overlap.
+  More values are separated by commas.
+\item 'summary.tsv': one row for each compartment, with the columns 'sample' (of \code{sample_names}), 'compartment', 'reads', 'pct_cds'
+  (the percentage of the reads of the compartment on its 'cds' region), 'pct_P_sites' (the percentage of the reads of the compartment
+  with a read length that has an offset in 'P_sites_offsets.tsv': these reads give the P_sites) and 'frame_preference' (the mean 'frame_preference' of these read lengths, weighted by their reads). Read lengths
+  without a 'frame_preference' in 'P_sites_calcs', from \code{offsets_df} or \code{rescue_all_rls}, are not in the mean; it is \code{NA} if
+  no read length has one. The percentages are \code{NA} for a compartment without reads.
+}
 With \code{create_report = TRUE}, it also saves the html report \code{report_file} and its plots (see \code{\link{create_html_report}}).
 }
 \description{

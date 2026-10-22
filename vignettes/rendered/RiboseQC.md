@@ -137,18 +137,39 @@ RiboseQC_analysis(annotation_file = annotation_file,
 list.files(out_dir, pattern = "^(root|shoots)_")
 #>  [1] "root_coverage_minus.bedgraph"        "root_coverage_plus.bedgraph"        
 #>  [3] "root_coverage_uniq_minus.bedgraph"   "root_coverage_uniq_plus.bedgraph"   
-#>  [5] "root_for_ORFquant"                   "root_junctions"                     
-#>  [7] "root_P_sites_calcs"                  "root_P_sites_minus.bedgraph"        
-#>  [9] "root_P_sites_offsets.tsv"            "root_P_sites_plus.bedgraph"         
-#> [11] "root_P_sites_uniq_minus.bedgraph"    "root_P_sites_uniq_plus.bedgraph"    
-#> [13] "root_results_RiboseQC"               "root_results_RiboseQC_all"          
-#> [15] "shoots_coverage_minus.bedgraph"      "shoots_coverage_plus.bedgraph"      
-#> [17] "shoots_coverage_uniq_minus.bedgraph" "shoots_coverage_uniq_plus.bedgraph" 
-#> [19] "shoots_for_ORFquant"                 "shoots_junctions"                   
-#> [21] "shoots_P_sites_calcs"                "shoots_P_sites_minus.bedgraph"      
-#> [23] "shoots_P_sites_offsets.tsv"          "shoots_P_sites_plus.bedgraph"       
-#> [25] "shoots_P_sites_uniq_minus.bedgraph"  "shoots_P_sites_uniq_plus.bedgraph"  
-#> [27] "shoots_results_RiboseQC"             "shoots_results_RiboseQC_all"
+#>  [5] "root_for_ORFquant"                   "root_genes.tsv"                     
+#>  [7] "root_junctions"                      "root_P_sites_calcs"                 
+#>  [9] "root_P_sites_calcs.tsv"              "root_P_sites_minus.bedgraph"        
+#> [11] "root_P_sites_offsets.tsv"            "root_P_sites_plus.bedgraph"         
+#> [13] "root_P_sites_uniq_minus.bedgraph"    "root_P_sites_uniq_plus.bedgraph"    
+#> [15] "root_read_lengths.tsv"               "root_regions.tsv"                   
+#> [17] "root_results_RiboseQC"               "root_results_RiboseQC_all"          
+#> [19] "root_summary.tsv"                    "root_top50_positions.tsv"           
+#> [21] "shoots_coverage_minus.bedgraph"      "shoots_coverage_plus.bedgraph"      
+#> [23] "shoots_coverage_uniq_minus.bedgraph" "shoots_coverage_uniq_plus.bedgraph" 
+#> [25] "shoots_for_ORFquant"                 "shoots_genes.tsv"                   
+#> [27] "shoots_junctions"                    "shoots_P_sites_calcs"               
+#> [29] "shoots_P_sites_calcs.tsv"            "shoots_P_sites_minus.bedgraph"      
+#> [31] "shoots_P_sites_offsets.tsv"          "shoots_P_sites_plus.bedgraph"       
+#> [33] "shoots_P_sites_uniq_minus.bedgraph"  "shoots_P_sites_uniq_plus.bedgraph"  
+#> [35] "shoots_read_lengths.tsv"             "shoots_regions.tsv"                 
+#> [37] "shoots_results_RiboseQC"             "shoots_results_RiboseQC_all"        
+#> [39] "shoots_summary.tsv"                  "shoots_top50_positions.tsv"
+```
+
+With `write_TSV_files = TRUE` (the default), the `.tsv` files have the
+main tables of the results; the *Value* section of `?RiboseQC_analysis`
+gives their columns. `<dest_name>_summary.tsv` has one row for each
+compartment: its reads, the percentage of them on the CDS, the
+percentage of them that give P-sites, and the frame preference of these
+reads:
+
+``` r
+read.delim(file.path(out_dir, "shoots_summary.tsv"))
+#>   sample compartment reads  pct_cds pct_P_sites frame_preference
+#> 1 shoots        nucl 29636  23.8089     54.1099          91.6663
+#> 2 shoots        ChrC 20705 100.0000     95.0398          75.7105
+#> 3 shoots        ChrM  2775  99.5315      0.0000               NA
 ```
 
 `<dest_name>_results_RiboseQC_all` holds all results, in the list

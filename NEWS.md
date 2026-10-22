@@ -32,6 +32,21 @@
 
 ## New arguments
 
+- `RiboseQC_analysis()` has the new argument `write_TSV_files`, as
+  `run_ORFquant(write_TSV_file = )` of ORFquant. With `TRUE`, the default,
+  it writes the main tables of the results of each BAM file as
+  tab-separated files with the prefix `<dest_name>`:
+  `_read_lengths.tsv` (the reads of each read length in each compartment),
+  `_regions.tsv` (the reads on each region, for example the CDS, in each
+  compartment), `_genes.tsv` (the reads, RPKM and TPM of each gene),
+  `_P_sites_calcs.tsv` (the same table as `_P_sites_calcs`),
+  `_top50_positions.tsv` (the 50 positions with the most reads, with their
+  sequences) and `_summary.tsv` (for each compartment: the reads, the
+  percentage of them on the CDS, the percentage of them that give P-sites,
+  and the frame preference of these reads). `?RiboseQC_analysis` gives
+  their columns. The other output files do not change. With `FALSE`, the
+  function writes none of these files, as before. A value other than `TRUE`
+  or `FALSE` stops the function before it reads a file.
 - `prepare_annotation_files()` has the new argument `genetic_codes`: the
   genetic codes of some chromosomes, e.g. `genetic_codes = c(chrM = "3")`,
   with the ids of `Biostrings::GENETIC_CODE_TABLE`. They replace the codes
