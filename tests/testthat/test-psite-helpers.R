@@ -62,6 +62,27 @@ test_that("psites_of_chunk() finds the reads with mismatches by the MD tag, also
   expect_identical(p_sites("P_sites_uniq_mm"), c(107L, 209L, 307L))
 })
 
+test_that("psites_of_chunk() finds the P-site of a spliced read in the first, a middle or the last block", {
+  # 30-nt reads at 101, the cutoff is 12, and a 31-nt read, that has no cutoff
+  cig <- c("20M50N10M", "5M50N25M", "5M10N5M10N20M", "5M10N10M10N15M",
+           "20M50N10M", "10M50N20M", "5M10N10M10N15M", "15M10N10M10N5M", "31M")
+  x <- GenomicAlignments::GAlignments(seqnames = S4Vectors::Rle("chr1", 9), pos = rep(101L, 9), cigar = cig,
+                                      strand = GenomicRanges::strand(rep(c("+", "-", "+"), c(4, 4, 1))),
+                                      seqlengths = c(chr1 = 1000L))
+  S4Vectors::mcols(x) <- S4Vectors::DataFrame(mapq = 255L, MD = c(rep("30", 8), "31"))
+  junctions <- GenomicRanges::GRanges("chr1", IRanges::IRanges(800, 900), "+", seqlengths = c(chr1 = 1000L))
+  res <- psites_of_chunk(x, list(nucl = S4Vectors::DataFrame(read_length = 30, cutoff = 12)), character(),
+                         "chr1", c(chr1 = 1000L), junctions)
+  ps <- res$P_sites_all
+  expect_identical(names(ps), "30")
+  # The P-site is the base 12 from the 5' end. Plus strand: in the first block (113), a middle block (123) or the
+  # last block (133, 163). Minus strand, from the end of the read: in the first block (118), a middle block (128)
+  # or the last block (138, 168)
+  expect_identical(start(ps[["30"]]), c(113L, 123L, 133L, 163L, 118L, 128L, 138L, 168L))
+  expect_identical(as.character(strand(ps[["30"]])), rep(c("+", "-"), each = 4))
+  expect_identical(ps[["30"]]$score, rep(1L, 8))
+})
+
 test_that("single_positions() gives the merge of chunks one range for each position, as one chunk gives", {
   # The merge of two chunks adds their counts as coverage: positions 100 to 102 have 2 reads, 103 has 1
   merged <- GenomicRanges::GRanges("chr1", IRanges::IRanges(c(100L, 103L), width = c(3L, 1L)), strand = "+",

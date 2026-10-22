@@ -462,8 +462,9 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
           ps_unspl<-shift(resize(GRanges(unspl),width=1,fix="start"),shift=ct)
           
           spl<-ok_reads[grep(pattern="N",x=cigar(ok_reads))]
-          firstb<-as.numeric(sapply(strsplit(cigar(spl),"M"),"[[",1))
-          lastb<-as.numeric(sapply(strsplit(cigar(spl),"M"),function(x){gsub(x[length(x)],pattern="^[^_]*N",replacement="")}))
+          # the lengths of the first and of the last block: the number before the first M, and after the last N
+          firstb<-as.numeric(sub("M.*$","",cigar(spl)))
+          lastb<-as.numeric(gsub(sub("^.*M","",sub("M$","",cigar(spl))),pattern="^[^_]*N",replacement=""))
           firstok<-spl[firstb>ct]
           firstok<-shift(resize(GRanges(firstok),width=1,fix="start"),shift=ct)
           
@@ -521,8 +522,9 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
           
           spl<-ok_reads[grep(pattern="N",x=cigar(ok_reads))]
           
-          firstb<-as.numeric(sapply(strsplit(cigar(spl),"M"),"[[",1))
-          lastb<-as.numeric(sapply(strsplit(cigar(spl),"M"),function(x){gsub(x[length(x)],pattern="^[^_]*N",replacement="")}))
+          # the lengths of the first and of the last block: the number before the first M, and after the last N
+          firstb<-as.numeric(sub("M.*$","",cigar(spl)))
+          lastb<-as.numeric(gsub(sub("^.*M","",sub("M$","",cigar(spl))),pattern="^[^_]*N",replacement=""))
           lastok<-spl[lastb>ct]
           lastok<-shift(resize(GRanges(lastok),width=1,fix="start"),shift=-ct)
           
