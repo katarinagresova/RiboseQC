@@ -166,6 +166,15 @@
   `29`, and their scores and percentages had names too. The positions, their
   widths and sequences, and all other values don't change. The report does
   not show `len_adj`.
+- `RiboseQC_analysis()` on a BAM file that it reads in more than one chunk
+  (with more than `chunk_size` alignments) gives the coverage of the reads
+  on the minus strand (`P_sites_stats` in
+  `<dest_name>_results_RiboseQC_all`) the names `coverage_all_minus` and
+  `coverage_uniq_minus`, as with one chunk and as `?RiboseQC_output` says.
+  Before, their names were `coverage_all_min` and `coverage_uniq_min`. Their
+  values, and all other output files, don't change. Code that reads them
+  with `$coverage_all_min` still gets them, because `$` also finds a name by
+  its start. Code that uses `[["coverage_all_min"]]` must use the new names.
 - `RiboseQC_analysis()` on an annotation with fewer than 250 transcripts:
   the P-sites profiles and the codon counts (`profiles_P_sites`) now use the
   transcripts that the 5' profiles use (one representative transcript of

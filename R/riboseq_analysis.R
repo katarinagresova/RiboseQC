@@ -1170,10 +1170,10 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             chunks_ps <- c(chunks_ps, list(y[c("P_sites_all", "P_sites_uniq", "P_sites_uniq_mm")]))
             
             covall_plus <- x$coverage_all_plus + y$coverage_all_plus
-            covall_min <- x$coverage_all_min + y$coverage_all_min
+            covall_min <- x$coverage_all_minus + y$coverage_all_minus
             
             covuni_plus <- x$coverage_uniq_plus + y$coverage_uniq_plus
-            covuni_min <- x$coverage_uniq_min + y$coverage_uniq_min
+            covuni_min <- x$coverage_uniq_minus + y$coverage_uniq_minus
             
             
             rang_jun <- x$junctions
@@ -1183,8 +1183,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             list_res <- list(x[["P_sites_all"]], x[["P_sites_uniq"]], x[["P_sites_uniq_mm"]], rang_jun, 
                 covall_plus, covall_min, covuni_plus, covuni_min, chunks_ps)
             names(list_res) <- c("P_sites_all", "P_sites_uniq", "P_sites_uniq_mm", 
-                "junctions", "coverage_all_plus", "coverage_all_min", "coverage_uniq_plus", 
-                "coverage_uniq_min", "chunks_ps")
+                "junctions", "coverage_all_plus", "coverage_all_minus", "coverage_uniq_plus", 
+                "coverage_uniq_minus", "chunks_ps")
             
             
             return(list_res)
@@ -1792,11 +1792,11 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         if (!normalize_cov[bammo]) {
             export(P_sites_stats$coverage_all_plus, con = paste(dest_name, "_coverage_plus.bedgraph", 
                 sep = ""))
-            export(P_sites_stats$coverage_all_min, con = paste(dest_name, "_coverage_minus.bedgraph", 
+            export(P_sites_stats$coverage_all_minus, con = paste(dest_name, "_coverage_minus.bedgraph", 
                 sep = ""))
             export(P_sites_stats$coverage_uniq_plus, con = paste(dest_name, "_coverage_uniq_plus.bedgraph", 
                 sep = ""))
-            export(P_sites_stats$coverage_uniq_min, con = paste(dest_name, "_coverage_uniq_minus.bedgraph", 
+            export(P_sites_stats$coverage_uniq_minus, con = paste(dest_name, "_coverage_uniq_minus.bedgraph", 
                 sep = ""))
         }
         
@@ -1804,7 +1804,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         if (normalize_cov[bammo]) {
             bwpl <- P_sites_stats$coverage_all_plus
-            bwmn <- P_sites_stats$coverage_all_min
+            bwmn <- P_sites_stats$coverage_all_minus
             
             correction <- (sum(as.numeric(unlist(runValue(bwpl)) * unlist(runLength(bwpl)))) + 
                 sum(as.numeric(unlist(runValue(bwmn)) * unlist(runLength(bwmn)))))/1e+06
@@ -1820,7 +1820,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             
             
             bwpl <- P_sites_stats$coverage_uniq_plus
-            bwmn <- P_sites_stats$coverage_uniq_min
+            bwmn <- P_sites_stats$coverage_uniq_minus
             
             correction <- (sum(as.numeric(unlist(runValue(bwpl)) * unlist(runLength(bwpl)))) + 
                 sum(as.numeric(unlist(runValue(bwmn)) * unlist(runLength(bwmn)))))/1e+06
