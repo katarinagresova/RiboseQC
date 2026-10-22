@@ -245,8 +245,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
     list_annotations <- list()
     
     for (annots in seq_along(annotation_file)) {
-        cat(paste("Loading annotation files in ", annotation_file[annots], " ... ", 
-            date(), "\n", sep = ""))
+        message(paste("Loading annotation files in ", annotation_file[annots], " ... ", 
+            date(), sep = ""))
         
         load_annotation(annotation_file[annots])
         check_genome_seq(given_genome_seq, genome_seq, annotation_file[annots])
@@ -263,7 +263,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
     }
     
-    cat(paste("Loading annotation files --- Done! ", date(), "\n", sep = ""))
+    message(paste("Loading annotation files --- Done! ", date(), sep = ""))
     
     # the chromosomes of each BAM file and of its annotation, before the first BAM file
     for (bammo in seq_along(bam_files)) {
@@ -305,8 +305,9 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         dest_name <- dest_names[bammo]
         
         opts <- BamFile(file = bam_file, yieldSize = chunk_size)  #read BAMfile in one chunk
+        # without the MD tag: only the P-sites use it, with their own param
         param <- ScanBamParam(flag = scanBamFlag(isDuplicate = FALSE, isSecondaryAlignment = FALSE), 
-            what = c("mapq"), tag = "MD")
+            what = c("mapq"))
         
         dira <- paste(dirname(dest_name), paste("tmp_RiboseQC", basename(dest_name), 
             sep = "_"), sep = "/")
@@ -360,27 +361,21 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         reduc <- function(x, y) {
             list(max(x[[1]], y[[1]]), min(x[[2]], y[[2]]))
         }
+        # the read lengths need only the cigars: the flags of param, without its other fields
         yiel <- function(x) {
-            readGAlignments(x, param = param)
+            readGAlignments(x, param = ScanBamParam(flag = bamFlag(param, asInteger = TRUE)))
         }
         
         mapp <- function(x) {
-            x_I <- x[grep("I", cigar(x))]
-            
-            if (length(x_I) > 0) {
-                x <- x[grep("I", cigar(x), invert = TRUE)]
-                
-            }
-            x_D <- x[grep("D", cigar(x))]
-            if (length(x_D) > 0) {
-                x <- x[grep("D", cigar(x), invert = TRUE)]
-                
+            # the reads with I or D go: one grepl(), not two grep() for each
+            indel <- grepl("[ID]", cigar(x))
+            if (any(indel)) {
+                x <- x[!indel]
             }
             
             
-            clipp <- width(cigarillo::cigars_as_ranges_along_query(x@cigar, ops = "S"))
-            clipp[elementNROWS(clipp) == 0] <- 0
-            len_adj <- qwidth(x) - sum(clipp)
+            # the read length without the soft clips
+            len_adj <- cigarillo::cigar_extent_along_query(x@cigar, after.soft.clipping = TRUE)
             mcols(x)$len_adj <- len_adj
             
             
@@ -389,10 +384,10 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             list(maxr, minr)
         }
         
-        cat(paste("Extracting read lengths from ", bam_file, " ... ", date(), "\n", 
+        message(paste("Extracting read lengths from ", bam_file, " ... ", date(), 
             sep = ""))
         maxmin <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc, n_cores = n_cores)
-        cat(paste("Extracting read lengths --- Done! ", date(), "\n", sep = ""))
+        message(paste("Extracting read lengths --- Done! ", date(), sep = ""))
         # no chunk: else the next line stops with "subscript out of bounds"
         if (length(maxmin) == 0) {
             stop(paste("The BAM file ", bam_file, " has no mapped reads (secondary alignments and duplicates are not used). ", 
@@ -460,20 +455,12 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 strandedness <- T
             }
             
-            mcols(x)$MD[which(is.na(mcols(x)$MD))] <- "NO"
-            
             # Remove Insertion and Deletion (TBA)
             
-            x_I <- x[grep("I", cigar(x))]
-            
-            if (length(x_I) > 0) {
-                x <- x[grep("I", cigar(x), invert = TRUE)]
-                
-            }
-            x_D <- x[grep("D", cigar(x))]
-            if (length(x_D) > 0) {
-                x <- x[grep("D", cigar(x), invert = TRUE)]
-                
+            # the reads with I or D go: one grepl(), not two grep() for each
+            indel <- grepl("[ID]", cigar(x))
+            if (any(indel)) {
+                x <- x[!indel]
             }
             
             emptyt <- rep(0, length(readlengths))
@@ -483,9 +470,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             # softclipping part
             
             
-            clipp <- width(cigarillo::cigars_as_ranges_along_query(x@cigar, ops = "S"))
-            clipp[elementNROWS(clipp) == 0] <- 0
-            len_adj <- qwidth(x) - sum(clipp)
+            # the read length without the soft clips
+            len_adj <- cigarillo::cigar_extent_along_query(x@cigar, after.soft.clipping = TRUE)
             mcols(x)$len_adj <- len_adj
             
             # Remove S from Cigar (read positions/length are already adjusted) it helps
@@ -564,22 +550,27 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             row.names(rld_len_unq) <- names(list_reads)
             
             
+            # the counts of summarizeOverlaps(mode = "Union", inter.feature = FALSE) for the reads x and for the
+            # unique reads x_uniq, from one findOverlaps() with x: x_uniq are the reads of x with mapq > 50
+            count_reads <- function(features) {
+                hits <- findOverlaps(features, x, ignore.strand = !as.logical(strandedness))
+                unq <- x@elementMetadata$mapq[subjectHits(hits)] > 50
+                list(all = matrix(tabulate(queryHits(hits), length(features)), dimnames = list(names(features), "reads")),
+                  unq = matrix(tabulate(queryHits(hits)[unq], length(features)), dimnames = list(names(features), "reads")))
+            }
+            
             # count reads per biotype location per compartment
             list_rld_loc <- list()
+            list_rld_loc_unq <- list()
             for (i in c("nucl", circs)) {
-                list_rld_loc[[i]] <- (assay(summarizeOverlaps(reads = x, features = GRangesList(list_locat[[i]]), 
-                  ignore.strand = !as.logical(strandedness), mode = "Union", inter.feature = FALSE)))
+                cnts <- count_reads(GRangesList(list_locat[[i]]))
+                list_rld_loc[[i]] <- cnts$all
+                list_rld_loc_unq[[i]] <- cnts$unq
             }
             rld_loc <- do.call(what = cbind.data.frame, list_rld_loc)
             names(rld_loc) <- paste("reads", names(list_rld_loc), sep = "_")
             
             
-            list_rld_loc_unq <- list()
-            for (i in c("nucl", circs)) {
-                list_rld_loc_unq[[i]] <- (assay(summarizeOverlaps(reads = x_uniq, 
-                  features = GRangesList(list_locat[[i]]), ignore.strand = !as.logical(strandedness), 
-                  mode = "Union", inter.feature = FALSE)))
-            }
             rld_loc_unq <- do.call(what = cbind.data.frame, list_rld_loc_unq)
             names(rld_loc_unq) <- paste("reads", names(list_rld_loc_unq), sep = "_")
             
@@ -592,12 +583,13 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             for (i in names(list_reads)) {
                 reads_by_length <- list()
                 rdss <- list_reads[[i]]
-                rdss <- split(rdss, mcols(rdss)$len_adj)
                 
                 rgs <- GRangesList(list_locat[[i]])
-                ovs <- lapply(rdss, FUN = function(x) {
-                  suppressWarnings(assay(summarizeOverlaps(reads = x, features = rgs, 
-                    ignore.strand = FALSE, mode = "Union", inter.feature = FALSE)))
+                # one findOverlaps() for the reads of all read lengths, then the counts of each read length: the
+                # counts of summarizeOverlaps(mode = "Union", inter.feature = FALSE) for each read length
+                ovs <- suppressWarnings(findOverlaps(rgs, rdss, ignore.strand = FALSE))
+                ovs <- lapply(split(queryHits(ovs), factor(mcols(rdss)$len_adj)[subjectHits(ovs)]), FUN = function(x) {
+                  matrix(tabulate(x, length(rgs)), dimnames = list(names(rgs), "reads"))
                 })
                 nope <- readlengths[which(!readlengths %in% names(ovs))]
                 if (length(nope) > 0) {
@@ -625,12 +617,13 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             for (i in names(list_reads_unq)) {
                 reads_by_length <- list()
                 rdss <- list_reads_unq[[i]]
-                rdss <- split(rdss, mcols(rdss)$len_adj)
                 
                 rgs <- GRangesList(list_locat[[i]])
-                ovs <- lapply(rdss, FUN = function(x) {
-                  suppressWarnings(assay(summarizeOverlaps(reads = x, features = rgs, 
-                    ignore.strand = FALSE, mode = "Union", inter.feature = FALSE)))
+                # one findOverlaps() for the reads of all read lengths, then the counts of each read length: the
+                # counts of summarizeOverlaps(mode = "Union", inter.feature = FALSE) for each read length
+                ovs <- suppressWarnings(findOverlaps(rgs, rdss, ignore.strand = FALSE))
+                ovs <- lapply(split(queryHits(ovs), factor(mcols(rdss)$len_adj)[subjectHits(ovs)]), FUN = function(x) {
+                  matrix(tabulate(x, length(rgs)), dimnames = list(names(rgs), "reads"))
                 })
                 nope <- readlengths[which(!readlengths %in% names(ovs))]
                 if (length(nope) > 0) {
@@ -674,17 +667,16 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             seqgene <- cbind(as.vector(seqnames(GTF_annotation$genes)), GTF_annotation$genes$gene_id)
             
             
-            cnts_cds_genes <- assay(summarizeOverlaps(reads = x, features = red_cdss, 
-                ignore.strand = !as.logical(strandedness), mode = "Union", inter.feature = FALSE))
+            cnts_cds <- count_reads(red_cdss)
+            cnts_all <- count_reads(red_ex)
             
-            cnts_all_genes <- assay(summarizeOverlaps(reads = x, features = red_ex, 
-                ignore.strand = !as.logical(strandedness), mode = "Union", inter.feature = FALSE))
+            cnts_cds_genes <- cnts_cds$all
             
-            cnts_cds_genes_unq <- assay(summarizeOverlaps(reads = x_uniq, features = red_cdss, 
-                ignore.strand = !as.logical(strandedness), mode = "Union", inter.feature = FALSE))
+            cnts_all_genes <- cnts_all$all
             
-            cnts_all_genes_unq <- assay(summarizeOverlaps(reads = x_uniq, features = red_ex, 
-                ignore.strand = !as.logical(strandedness), mode = "Union", inter.feature = FALSE))
+            cnts_cds_genes_unq <- cnts_cds$unq
+            
+            cnts_all_genes_unq <- cnts_all$unq
             
             
             chrsss <- seqgene[match(rownames(cnts_cds_genes), seqgene[, 2]), 1]
@@ -736,7 +728,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         # main for reducebyYield
         
-        cat(paste("Analyzing BAM file:", bam_file, "...", date(), "\n"))
+        message(paste("Analyzing BAM file:", bam_file, "...", date()))
         
         read_stats <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc,
             n_cores = n_cores)
@@ -788,7 +780,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         read_stats$counts_all_genes_unq <- ex_cnts_unq
         
         save(read_stats, file = paste(dira, "read_stats", sep = "/"))
-        cat(paste("Analyzing BAM file --- Done!", date(), "\n"))
+        message(paste("Analyzing BAM file --- Done!", date()))
         
         ps <- read_stats$reads_pos1
         
@@ -805,7 +797,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         }
         list_txs_ok[["nucl"]] <- tile_cds[!tile_cds %in% unlist(list_txs_ok)]
         
-        cat(paste("Building aggregate 5' profiles ...", date(), "\n"))
+        message(paste("Building aggregate 5' profiles ...", date()))
         ps_signals_win_all <- list()
         ps_signals_tiles_all <- list()
         
@@ -1081,9 +1073,9 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         names(profiles_fivepr) <- c("five_prime_bins", "five_prime_subcodon")
         save(profiles_fivepr, file = paste(dira, "profiles_fivepr", sep = "/"))
         
-        cat(paste("Building aggregate 5' profiles --- Done!", date(), "\n"))
+        message(paste("Building aggregate 5' profiles --- Done!", date()))
         
-        cat(paste("Calculating P-sites offsets ...", date(), "\n"))
+        message(paste("Calculating P-sites offsets ...", date()))
         
         
         # calculate cutoffs for each read length
@@ -1114,7 +1106,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         res_rls <- choose_readlengths(summary_res, choice = readlength_choice_method[bammo], 
             nt_signals = profiles_fivepr[["five_prime_subcodon"]])
         
-        cat(paste("Calculating P-sites offsets --- Done!", date(), "\n"))
+        message(paste("Calculating P-sites offsets --- Done!", date()))
         selection_cutoffs <- list(res_rls, summary_res, list_cutoff)
         names(selection_cutoffs) <- c("results_choice", "results_cutoffs", "analysis_frame_cutoff")
         save(selection_cutoffs, file = paste(dira, "selection_cutoffs", sep = "/"))
@@ -1170,10 +1162,10 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             chunks_ps <- c(chunks_ps, list(y[c("P_sites_all", "P_sites_uniq", "P_sites_uniq_mm")]))
             
             covall_plus <- x$coverage_all_plus + y$coverage_all_plus
-            covall_min <- x$coverage_all_min + y$coverage_all_min
+            covall_min <- x$coverage_all_minus + y$coverage_all_minus
             
             covuni_plus <- x$coverage_uniq_plus + y$coverage_uniq_plus
-            covuni_min <- x$coverage_uniq_min + y$coverage_uniq_min
+            covuni_min <- x$coverage_uniq_minus + y$coverage_uniq_minus
             
             
             rang_jun <- x$junctions
@@ -1183,8 +1175,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             list_res <- list(x[["P_sites_all"]], x[["P_sites_uniq"]], x[["P_sites_uniq_mm"]], rang_jun, 
                 covall_plus, covall_min, covuni_plus, covuni_min, chunks_ps)
             names(list_res) <- c("P_sites_all", "P_sites_uniq", "P_sites_uniq_mm", 
-                "junctions", "coverage_all_plus", "coverage_all_min", "coverage_uniq_plus", 
-                "coverage_uniq_min", "chunks_ps")
+                "junctions", "coverage_all_plus", "coverage_all_minus", "coverage_uniq_plus", 
+                "coverage_uniq_minus", "chunks_ps")
             
             
             return(list_res)
@@ -1206,7 +1198,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             psites_of_chunk(x, rl_cutoffs_comp, circs, seqllll, seqleee, GTF_annotation$junctions, 
                 with_coverage = TRUE)
         }
-        cat(paste("Calculating P-sites positions and junctions ...", date(), "\n"))
+        message(paste("Calculating P-sites positions and junctions ...", date()))
         
         P_sites_stats <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc,
             n_cores = n_cores)
@@ -1221,12 +1213,11 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         save(P_sites_stats, file = paste(dira, "P_sites_stats", sep = "/"))
         
-        cat(paste("Calculating P-sites positions and junctions --- Done!", date(), 
-            "\n"))
+        message(paste("Calculating P-sites positions and junctions --- Done!", date()))
         
         ps <- P_sites_stats$P_sites_all
         
-        cat(paste("Building aggregate P-sites profiles ...", date(), "\n"))
+        message(paste("Building aggregate P-sites profiles ...", date()))
         
         # here do meta and other plots on P-sites positions ()
         ps_signals_win_all <- list()
@@ -1754,9 +1745,9 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         # save(list =
         # c('ps_signals_tiles','ps_signals_tiles_all','ps_signals_win','ps_signals_win_all'),file
         # = 'ps_results_preprjan15')
-        cat(paste("Building aggregate P-sites profiles --- Done!", date(), "\n"))
+        message(paste("Building aggregate P-sites profiles --- Done!", date()))
         
-        cat(paste("Exporting files ...", date(), "\n"))
+        message(paste("Exporting files ...", date()))
         
         merged_all_ps <- unlist(P_sites_stats$P_sites_all)
         if (length(merged_all_ps) > 0) {
@@ -1792,11 +1783,11 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         if (!normalize_cov[bammo]) {
             export(P_sites_stats$coverage_all_plus, con = paste(dest_name, "_coverage_plus.bedgraph", 
                 sep = ""))
-            export(P_sites_stats$coverage_all_min, con = paste(dest_name, "_coverage_minus.bedgraph", 
+            export(P_sites_stats$coverage_all_minus, con = paste(dest_name, "_coverage_minus.bedgraph", 
                 sep = ""))
             export(P_sites_stats$coverage_uniq_plus, con = paste(dest_name, "_coverage_uniq_plus.bedgraph", 
                 sep = ""))
-            export(P_sites_stats$coverage_uniq_min, con = paste(dest_name, "_coverage_uniq_minus.bedgraph", 
+            export(P_sites_stats$coverage_uniq_minus, con = paste(dest_name, "_coverage_uniq_minus.bedgraph", 
                 sep = ""))
         }
         
@@ -1804,7 +1795,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         if (normalize_cov[bammo]) {
             bwpl <- P_sites_stats$coverage_all_plus
-            bwmn <- P_sites_stats$coverage_all_min
+            bwmn <- P_sites_stats$coverage_all_minus
             
             correction <- (sum(as.numeric(unlist(runValue(bwpl)) * unlist(runLength(bwpl)))) + 
                 sum(as.numeric(unlist(runValue(bwmn)) * unlist(runLength(bwmn)))))/1e+06
@@ -1820,7 +1811,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             
             
             bwpl <- P_sites_stats$coverage_uniq_plus
-            bwmn <- P_sites_stats$coverage_uniq_min
+            bwmn <- P_sites_stats$coverage_uniq_minus
             
             correction <- (sum(as.numeric(unlist(runValue(bwpl)) * unlist(runLength(bwpl)))) + 
                 sum(as.numeric(unlist(runValue(bwmn)) * unlist(runLength(bwmn)))))/1e+06
@@ -1997,18 +1988,18 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         rm(res_all, read_stats, profiles_fivepr, selection_cutoffs, P_sites_stats, 
             profiles_P_sites, sequence_analysis)
         gici <- gc()
-        cat(paste("Exporting files --- Done!", date(), "\n\n"))
+        message(paste("Exporting files --- Done!", date(), "\n"))
         
         resfilelist <- c(resfilelist,resfile)
     }
     
       if (create_report) {
-          cat(paste("Creating html report in ", report_file, " ... ", date(), "\n", 
+          message(paste("Creating html report in ", report_file, " ... ", date(), 
               sep = ""))
           
           create_html_report(input_files = resfilelist, 
               input_sample_names = sample_names, output_file = report_file, extended = extended_report)
-          cat(paste("Creating html report --- Done!", date(), "\n\n"))
+          message(paste("Creating html report --- Done!", date(), "\n"))
           
           if (pdf_plots) {
               create_pdfs_from_rds_objects(output_rds_path = paste(report_file, "_plots/rds/", 

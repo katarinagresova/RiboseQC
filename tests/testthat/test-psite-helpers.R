@@ -103,6 +103,26 @@ test_that("psites_of_chunk() gives the P-site of a read with 2 or more introns t
   expect_identical(p_sites("P_sites_uniq_mm"), c(615L, 1112L))
 })
 
+test_that("psites_of_chunk() counts the read length without the soft clips, and drops the reads with I or D", {
+  # 28 aligned bases at 101, with soft or hard clips: read length 28, the cutoff is 12. A 30-nt read has no cutoff. The
+  # reads with an insertion or a deletion (28 bases of the read) give no P-site
+  cig <- c("2S28M", "28M2S", "1S28M1S", "3H28M", "2S28M", "28M2S", "30M", "13M1I14M", "14M1D14M")
+  x <- GenomicAlignments::GAlignments(seqnames = S4Vectors::Rle("chr1", 9), pos = rep(101L, 9), cigar = cig,
+                                      strand = GenomicRanges::strand(rep(c("+", "-", "+"), c(4, 2, 3))),
+                                      seqlengths = c(chr1 = 1000L))
+  S4Vectors::mcols(x) <- S4Vectors::DataFrame(mapq = 255L, MD = c(rep("28", 6), "30", "28", "14^A14"))
+  junctions <- GenomicRanges::GRanges("chr1", IRanges::IRanges(800, 900), "+", seqlengths = c(chr1 = 1000L))
+  res <- psites_of_chunk(x, list(nucl = S4Vectors::DataFrame(read_length = 28, cutoff = 12)), character(),
+                         "chr1", c(chr1 = 1000L), junctions)
+  ps <- res$P_sites_all
+  expect_identical(names(ps), "28")
+  # the P-site is the base 12 from the first aligned base at the 5' end: 101 + 12 on the plus strand, 128 - 12 on the
+  # minus strand
+  expect_identical(start(ps[["28"]]), c(113L, 116L))
+  expect_identical(as.character(strand(ps[["28"]])), c("+", "-"))
+  expect_identical(ps[["28"]]$score, c(4L, 2L))
+})
+
 test_that("single_positions() gives the merge of chunks one range for each position, as one chunk gives", {
   # The merge of two chunks adds their counts as coverage: positions 100 to 102 have 2 reads, 103 has 1
   merged <- GenomicRanges::GRanges("chr1", IRanges::IRanges(c(100L, 103L), width = c(3L, 1L)), strand = "+",

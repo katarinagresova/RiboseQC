@@ -329,23 +329,16 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
   
   mcols(x)$MD[which(is.na(mcols(x)$MD))]<-"NO"
   
-  x_I<-x[grep("I",cigar(x))]
-  
-  if(length(x_I)>0){
-    x<-x[grep("I",cigar(x),invert=T)]
-    
-  }
-  x_D<-x[grep("D",cigar(x))]
-  if(length(x_D)>0){
-    x<-x[grep("D",cigar(x),invert=T)]
-    
+  # the reads with I or D go: one grepl(), not two grep() for each
+  indel<-grepl("[ID]",cigar(x))
+  if(any(indel)){
+    x<-x[!indel]
   }
   
   # softclipping
   
-  clipp <- width(cigarillo::cigars_as_ranges_along_query(x@cigar, ops="S"))
-  clipp[elementNROWS(clipp)==0] <- 0
-  len_adj <- qwidth(x)-sum(clipp)
+  # the read length without the soft clips
+  len_adj <- cigarillo::cigar_extent_along_query(x@cigar, after.soft.clipping=TRUE)
   mcols(x)$len_adj <- len_adj
   
   # Remove S from Cigar (read positions/length are already adjusted)
