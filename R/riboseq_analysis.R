@@ -597,7 +597,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 rgs <- GRangesList(list_locat[[i]])
                 ovs <- lapply(rdss, FUN = function(x) {
                   suppressWarnings(assay(summarizeOverlaps(reads = x, features = rgs, 
-                    ignore.strand = FALSE, mode = "Union", inter.feature = FALSE)))
+                    ignore.strand = !as.logical(strandedness), mode = "Union", inter.feature = FALSE)))
                 })
                 nope <- readlengths[which(!readlengths %in% names(ovs))]
                 if (length(nope) > 0) {
@@ -630,7 +630,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 rgs <- GRangesList(list_locat[[i]])
                 ovs <- lapply(rdss, FUN = function(x) {
                   suppressWarnings(assay(summarizeOverlaps(reads = x, features = rgs, 
-                    ignore.strand = FALSE, mode = "Union", inter.feature = FALSE)))
+                    ignore.strand = !as.logical(strandedness), mode = "Union", inter.feature = FALSE)))
                 })
                 nope <- readlengths[which(!readlengths %in% names(ovs))]
                 if (length(nope) > 0) {
