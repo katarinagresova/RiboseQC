@@ -329,16 +329,10 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
   
   mcols(x)$MD[which(is.na(mcols(x)$MD))]<-"NO"
   
-  x_I<-x[grep("I",cigar(x))]
-  
-  if(length(x_I)>0){
-    x<-x[grep("I",cigar(x),invert=T)]
-    
-  }
-  x_D<-x[grep("D",cigar(x))]
-  if(length(x_D)>0){
-    x<-x[grep("D",cigar(x),invert=T)]
-    
+  # the reads with I or D go: one grepl(), not two grep() for each
+  indel<-grepl("[ID]",cigar(x))
+  if(any(indel)){
+    x<-x[!indel]
   }
   
   # softclipping

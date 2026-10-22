@@ -367,16 +367,10 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         }
         
         mapp <- function(x) {
-            x_I <- x[grep("I", cigar(x))]
-            
-            if (length(x_I) > 0) {
-                x <- x[grep("I", cigar(x), invert = TRUE)]
-                
-            }
-            x_D <- x[grep("D", cigar(x))]
-            if (length(x_D) > 0) {
-                x <- x[grep("D", cigar(x), invert = TRUE)]
-                
+            # the reads with I or D go: one grepl(), not two grep() for each
+            indel <- grepl("[ID]", cigar(x))
+            if (any(indel)) {
+                x <- x[!indel]
             }
             
             
@@ -464,16 +458,10 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             
             # Remove Insertion and Deletion (TBA)
             
-            x_I <- x[grep("I", cigar(x))]
-            
-            if (length(x_I) > 0) {
-                x <- x[grep("I", cigar(x), invert = TRUE)]
-                
-            }
-            x_D <- x[grep("D", cigar(x))]
-            if (length(x_D) > 0) {
-                x <- x[grep("D", cigar(x), invert = TRUE)]
-                
+            # the reads with I or D go: one grepl(), not two grep() for each
+            indel <- grepl("[ID]", cigar(x))
+            if (any(indel)) {
+                x <- x[!indel]
             }
             
             emptyt <- rep(0, length(readlengths))
