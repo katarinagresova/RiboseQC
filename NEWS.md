@@ -131,6 +131,13 @@
   must be TRUE or FALSE`, and `NA` with `missing value where TRUE/FALSE
   needed`; a large BAM file was read once before. The values that worked,
   also `"TRUE"` or `1`, still work.
+- `prepare_for_ORFquant()` stops at once when a compartment of the cutoff
+  file is a chromosome that is not circular, for example `chr22`: a
+  compartment is `nucl` (all chromosomes that are not circular) or the name
+  of a circular chromosome. Before, the reads of that chromosome got P-sites
+  with the rows of the chromosome and also with the rows of `nucl`, so a
+  read length in the two gave each of its reads two P-sites. The help of
+  `path_to_rl_cutoff_file` now says what a compartment is.
 
 ## Changes in results
 

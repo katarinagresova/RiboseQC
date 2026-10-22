@@ -55,7 +55,8 @@
 #' @param annotation_file Full path to the annotation file (*Rannot)
 #' @param bam_file Full path to the bam file
 #' @param chunk_size the number of alignments to read at each iteration, defaults to 5000000, increase when more RAM is available
-#' @param path_to_rl_cutoff_file path to the rl_cutoff_file file specifying in 3 columns the read lengths, cutoffs and compartments ("nucl" for standard chromosomes):
+#' @param path_to_rl_cutoff_file path to the rl_cutoff_file file specifying in 3 columns the read lengths, cutoffs and compartments ("nucl" for all
+#' chromosomes that are not circular, or the name of a circular chromosome):
 #' a tab-separated file with the column names 'read_length', 'cutoff' and 'compartment', for example the file \code{<dest_name>_P_sites_offsets.tsv}
 #' of \code{\link{RiboseQC_analysis}}. Give this file or the two P_sites bigwig files, not both
 #' @param path_to_P_sites_plus_bw path to a bigwig file containing P_sites positions on the plus strand
@@ -130,6 +131,11 @@ prepare_for_ORFquant<-function(annotation_file,bam_file,path_to_rl_cutoff_file=N
       stop("The columns 'read_length' and 'cutoff' of the rl_cutoff file must be numbers")
     }
     #a compartment is "nucl" (all chromosomes that aren't circular) or the name of a (circular) chromosome
+    comps_lin<-intersect(rl_cutoff$compartment,seqlevels(GTF_annotation$seqinfo)[!isCircular(GTF_annotation$seqinfo)%in%TRUE])
+    if(length(comps_lin)>0){
+      stop("These compartments of the rl_cutoff file are chromosomes that are not circular: ",paste(comps_lin,collapse=", "),
+           ". Their reads get P-sites with the rows of 'nucl': a compartment is 'nucl' or the name of a circular chromosome")
+    }
     comps_ok<-unique(rl_cutoff$compartment)%in%c("nucl",seqlevels(GTF_annotation$seqinfo))
     if(!any(comps_ok)){
       stop("No compartment of the rl_cutoff file is 'nucl' or the name of a chromosome of the annotation, so no read would give a P-site; its compartments are: ",
