@@ -31,6 +31,13 @@ test_that("getSeq() of a FaFile_Circ reads ranges across the end of a circular c
   expect_error(suppressWarnings(getSeq(fa, grs)), "not on circ")
 })
 
+test_that("getSeq() of a FaFile_Circ reads ranges that start after the end of a circular chromosome", {
+  fa <- fasta_circ()
+  # Before, these ranges were dropped, so the sequences did not match the ranges; chrM:11-12 crashed R
+  grs <- ranges_circ(c("chrM:19-21:+", "chr2:1-3:+", "chrM:11-12:-", "chrM:28-31:+"))
+  expect_equal(as.character(getSeq(fa, grs)), c(chrM = "GGA", chr2 = "AAA", chrM = "TT", chrM = "AGGA"))
+})
+
 test_that("extractTranscriptSeqs() of a FaFile_Circ joins exons across the end of a circular chromosome", {
   fa <- fasta_circ()
   txs <- GRangesList(GRanges(c("chrM:4-6:+", "chrM:8-11:+")), GRanges(c("chrM:8-11:-", "chrM:4-6:-")))

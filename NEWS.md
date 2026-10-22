@@ -210,6 +210,15 @@
   on both strands, as with `stranded = FALSE`. The results of
   `stranded = TRUE` and `FALSE` do not change. For `prepare_for_ORFquant()`,
   see its new argument `stranded`.
+- `getSeq()` of a `FaFile_Circ` now reads a range that starts after the end
+  of a circular chromosome: the range is first moved back by a multiple of
+  the chromosome's length, so that it starts on the chromosome. Before, such
+  a range was dropped, so the sequences did not match the ranges (with the
+  ranges `chrM:12-14` and `chr2:1-3` on a chrM of 10 nt, the result was one
+  sequence, the sequence of `chr2:1-3` followed by that of `chrM:2-4`), or
+  the function stopped with `subscript is a logical vector with out-of-bounds
+  TRUE values`, or R crashed (a range that starts just after the end). The
+  other ranges give the same sequences as before.
 
 ## Performance
 

@@ -59,6 +59,8 @@ setMethod(seqinfo,'FaFile_Circ',function (x){
 #'
 #' GRanges that start on a circular chromosome may run past its end by up to the
 #' chromosome's length; the rest of the sequence is then taken from its start.
+#' GRanges that start after the end of a circular chromosome are first moved back
+#' by a multiple of the chromosome's length, so that they start on it.
 #'
 #' @param x FaFile_Circ; the object to get the sequences from
 #' @param ... the ranges to get (\code{param}, which may be unnamed) and further
@@ -96,6 +98,9 @@ setMethod('getSeq','FaFile_Circ', function (x, ...){
             seqinfo(param) <- seqinfo(x)[seqlevels(param)]
             idx <- as.logical(strand(param) == "-")
             chrends <- seqlengths(param)[as.character(param@seqnames)]
+            #move ranges that start after the end of a circular chromosome back, so that they start on it
+            is_after <- vapply(start(param) > chrends & isCircular(param)[as.character(param@seqnames)],isTRUE,TRUE)
+            param[is_after] <- shift(param[is_after],-((start(param[is_after])-1)%/%chrends[is_after])*chrends[is_after])
             is_wrapping <- end(param) > chrends
             is_wrapping <- vapply(is_wrapping,isTRUE,TRUE)
             wrapchrs<-as.character(seqnames(param[is_wrapping]))

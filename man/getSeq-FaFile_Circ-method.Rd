@@ -20,6 +20,8 @@ A DNAStringSet with the sequence of each range (reverse-complemented
 \description{
 GRanges that start on a circular chromosome may run past its end by up to the
 chromosome's length; the rest of the sequence is then taken from its start.
+GRanges that start after the end of a circular chromosome are first moved back
+by a multiple of the chromosome's length, so that they start on it.
 }
 \examples{
 
