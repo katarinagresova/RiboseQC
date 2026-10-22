@@ -11,6 +11,25 @@
   1.3.1 and older needs the method for `GRanges`, so it stops with an error
   with this version of RiboseQC. Use ORFquant 1.3.2 or newer.
 
+## New features
+
+- The script `run_riboseqc.R`, installed with the package
+  (`system.file("scripts", "run_riboseqc.R", package = "RiboseQC")`), runs
+  `prepare_annotation_files()` and `RiboseQC_analysis()` from the command
+  line, each in a new R process, for example `Rscript run_riboseqc.R --gtf
+  genes.gtf --fasta genome.fa --bam root.bam,shoots.bam --outdir results`,
+  and lists the files it writes. `--annotation` reuses the annotation of an
+  earlier run; `--sample-names`, `--stranded`, `--readlength-method` and
+  `--cores` are passed to `RiboseQC_analysis()`; `--no-report` and
+  `--extended-report` choose the report; the other parameters have their
+  default values. It checks its options before the first step. `--help`
+  lists all options.
+- The script `run_riboseqc.sbatch`, installed next to `run_riboseqc.R`, runs
+  it as a SLURM job: `sbatch run_riboseqc.sbatch` followed by
+  `run_riboseqc.R`'s options, with `--cores` set to the job's CPUs. It asks
+  for 1 CPU, 32 GB of memory and 12 hours, and its comments give the time
+  and memory measured on human samples.
+
 ## New arguments
 
 - `prepare_annotation_files()` has the new argument `genetic_codes`: the
@@ -191,6 +210,25 @@
   on both strands, as with `stranded = FALSE`. The results of
   `stranded = TRUE` and `FALSE` do not change. For `prepare_for_ORFquant()`,
   see its new argument `stranded`.
+
+## Performance
+
+- `RiboseQC_analysis()` is faster when it makes the P-site profiles for many
+  read lengths, for example with `rescue_all_rls = TRUE` or
+  `readlength_choice_method = "all"`. For the codon tables, it extracted the
+  sequences of the same transcripts from the FASTA file once for each read
+  length. It now extracts them once for each compartment. On a human sample
+  (a 69 MB BAM, GENCODE 47, `rescue_all_rls = TRUE`, 32 read lengths), a run
+  with the report on one core takes 392 s instead of 444 s (12% less). The
+  results don't change.
+- `RiboseQC_analysis()` is faster for BAM files that it reads in two or more
+  chunks (more than `chunk_size` alignments, 5 million by default). It merged
+  the 5' ends and the P-sites of each chunk with the sums of the chunks
+  before it, so each merge took longer than the one before. It now sums the
+  chunks once, after the last chunk. On a human sample (a 2.3 GB BAM, 18
+  chunks, GENCODE 47, `rescue_all_rls = TRUE`), a run with the report on one
+  core takes 2,403 s instead of 3,025 s (21% less), with the same memory. The
+  results don't change.
 
 ## Documentation
 
