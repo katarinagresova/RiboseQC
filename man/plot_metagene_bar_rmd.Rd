@@ -7,18 +7,21 @@
 plot_metagene_bar_rmd(metagene_data, sample = "", output_rds_path = "")
 }
 \arguments{
-\item{metagene_data}{...}
+\item{metagene_data}{Profile data for a specific originating compartment and resolution type,
+generated using \code{\link{get_metagene_data}}.}
 
 \item{sample}{String; sample name (selected from the input names given in the \code{input_sample_names} parameter of \code{create_html_report}).}
 
-\item{output_rds_path}{String; full path to output folder for RDS object files created by this function. Defaults to NOT save RDS; to save RDS, provide path to destination folder.}
+\item{output_rds_path}{String; full path to output folder for RDS object files created by this function. Defaults to NOT save RDS; to save RDS, provide path to destination folder, ending with "/" (the file name is appended to it).}
 }
 \value{
-...
+This function prints the plots for the html report and returns \code{NULL}.
+With \code{output_rds_path}, it also saves the plots as RDS object files (see \code{plot_metagene_bar}).
 }
 \description{
-This function plots a 5' or P-site profile as barplot
-(for a specific originating compartment, resolution type, and read length). \cr \cr
+This function plots the 5' or P-site profiles as barplots with \code{plot_metagene_bar}
+(for a specific originating compartment and resolution type): one for each read length and for all read lengths
+summarized (\code{"all"}) with a profile, with a sum of more than 100 for 5' profiles and more than 0 for P-site profiles. \cr \cr
 This plot is used in the RiboseQC report in section 4.1/4.3.
 }
 \examples{

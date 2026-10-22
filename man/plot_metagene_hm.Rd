@@ -17,14 +17,17 @@ no scaling (\code{none}), log2 scaling (\code{log2}), or z scoring (\code{zscore
 iven in the \code{input_sample_names} parameter of \code{create_html_report}).}
 
 \item{output_rds_path}{String; full path to output folder for RDS object files created by this function.
-Defaults to NOT save RDS; to save RDS, provide path to destination folder.}
+Defaults to NOT save RDS; to save RDS, provide path to destination folder, ending with "/" (the file name is appended to it).}
 }
 \value{
-This function returns a plot that can be integrated in the html report and  #' that can be saved as RDS object file.
+This function prints the plot for the html report and returns \code{NULL}, invisibly.
+With \code{output_rds_path}, it also saves the plot as the RDS object file
+\code{<output_rds_path><sample>_<comp>_4_<profile_type>_metagene_<subcodon or bins>_<scal>}.
 }
 \description{
 This function plots a 5' or P-site profiles for all read lengths as heatmap
-(for a specific originating compartment, resolution type, and scaling method). \cr \cr
+(for a specific originating compartment, resolution type, and scaling method).
+With \code{scal = "none"} and subcodon resolution, it also plots the barplots of \code{plot_metagene_bar_rmd}. \cr \cr
 This plot is used in the RiboseQC report in section 4.1/4.3.
 }
 \seealso{

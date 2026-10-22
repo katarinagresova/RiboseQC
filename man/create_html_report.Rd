@@ -26,6 +26,8 @@ Must be of same length as \code{input_files}.}
 \value{
 The function saves the html report file with the file path \code{output_file} and
 a folder containing all figures shown in the html report as RDS object files (located in the same directory as the html report).
+It also saves the text output of the rendering in \code{<output_file>_report_text_output.txt}, and creates the folder
+\code{<output_file>_plots/pdf/} for \code{create_pdfs_from_rds_objects}.
 }
 \description{
 This function creates the RiboseQC html report based on the RiboseQC analysis files
@@ -33,10 +35,10 @@ generated with \code{RiboseQC_analysis}.
 }
 \details{
 This function creates the html report visualizing the RiboseQC analysis data. \cr \cr
-Input are two lists of the same length: \cr \cr
-a) \code{input_files}: list of full paths to one or multiple input files
+Input are two character vectors of the same length: \cr \cr
+a) \code{input_files}: vector of full paths to one or multiple input files
 (RiboseQC analysis files generated with \code{RiboseQC_analysis}) and \cr \cr
-b) \code{input_sample_names}: list of corresponding names describing the file content in max. 5 characters
+b) \code{input_sample_names}: vector of corresponding names describing the file content in max. 5 characters
 (these are used as names in the report). \cr \cr
 For the report, a RMarkdown file is rendered as html document, saved as \code{output_file}. \cr \cr
 Additionally, all figures in the report are saved as RDS object files
@@ -49,7 +51,7 @@ the folder \code{\\mydir\\myreport.html_plots\\rds\\} for the RDS object files t
 }
 \examples{
 \dontrun{
-sampnames = c("root","shoot")
+sampnames = c("root","shoots")
 create_html_report(input_files=paste(sampnames,"_results_RiboseQC",sep = ""), input_sample_names=sampnames,output_file =  'test_root_shoots.html',extended = FALSE)
 }
 }

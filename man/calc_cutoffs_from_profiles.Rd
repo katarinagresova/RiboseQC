@@ -8,29 +8,31 @@ calc_cutoffs_from_profiles(reads_profile, length_max)
 }
 \arguments{
 \item{reads_profile}{Profile of 5'ends around start and stop codon, as a DataFrame object with
-tx_ids as rows and positions as columns}
+tx_ids as rows and positions as columns: the columns of \code{five_prime_subcodon} in \code{\link{RiboseQC_analysis}}
+(\code{CDS_1} is the first nt of the start codon)}
 
-\item{length_max}{Maximum cutoff to use}
+\item{length_max}{Maximum cutoff to use (the cutoff is at most 24 in any case)}
 }
 \value{
-a list with a \code{final_cutoff} object, the frame analysis containing the % of transcripts
-displaying the max frame and the average % of frame precision per transcript in \code{frames_res},
+a list with a \code{final_cutoff} object, the frame analysis containing the \% of transcripts
+displaying the max frame and the average \% of frame precision per transcript in \code{frames_res},
 all the calculated cutoffs in \code{cutoffs}, data used for the frame analysis in \code{frames},
-and profiles around start codons in  \code{profiles_start}.
+and profiles around start codons in  \code{profiles_start}. \code{NULL} if fewer than 5 transcripts have 5'ends
+in the CDS, or from 24 nt before the start codon to its first nt.
 }
 \description{
 This function calculates cutoffs and frame resolution for Ribo-seq reads,
  for each read length and compartment.
 }
 \details{
-Three methods are used and combined in the final choice:
- the position of maximum coverage around start codon is calculated for each transcript, and
+Four methods are used and combined in the final choice:
+ the position of maximum coverage from 24 nt before the start codon to its first nt (so the cutoff is at most 24) is calculated for each transcript, and
  the most frequent one is stored in the "*_tab" objects. Such frequency values are also
  subjected to k-means clustering (centers=3) and the first value belonging to the highest cluster
  is selected, output as "*km_tab" objects. Analysis of aggregate plots, instead of frequencies, is performed
  again using kmeans (centers=3) using the same analysis above and stored in the "*km_meta" objects,
  and by simply calculating the maximum value in the profile, stored in the "*meta" objects.
- for each method, all reads ("absolute_") or only in-frame positions ("in_frame_") are considered. The final choice takes the most
+ for each method, all positions ("absolute_") or only in-frame positions ("in_frame_") are considered. The final choice takes the most
  frequent cutoff chosen in all methods applied to in-frame positions.
 }
 \examples{

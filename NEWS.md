@@ -262,6 +262,78 @@
   with `stop_in_gtf` `NA` does (the codon after each CDS is its stop codon,
   also for a CDS that includes it). Before, the help said that a GTF file
   with both kinds of CDS gives wrong categories.
+- Corrections to the help pages. The code does not change.
+  - `?RiboseQC_analysis`: the value of the function is now in the help: the
+    paths of the `_results_RiboseQC` files, one for each BAM file. The help
+    lists the output files and when the function writes them:
+    `_results_RiboseQC_all` only with `write_tmp_files = TRUE`,
+    `_for_ORFquant` and the P-site bedgraph files only if there are P-sites,
+    the PDF files of `pdf_plots` only with the report. `write_tmp_files` is
+    one value for all BAM files (before: also one for each BAM file, which
+    stops the run). `read_subset` selects the read lengths by their reads on
+    the CDS and the UTRs. `rescue_all_rls` gives the offset 12 to all read
+    lengths without an offset (before: those without enough reads).
+    `fast_mode` uses 500 transcripts (before: genes). `offsets_df` changes
+    the P-sites and what the function makes from them, not the offsets in
+    `selection_cutoffs`, `summary_P_sites`, `_P_sites_calcs` and the report.
+    In the description of the results: `counts_cds_genes`,
+    `counts_all_genes` and `reads_summary` are in `read_stats`; the P-sites
+    of the uniquely mapping reads are `P_sites_uniq` (before:
+    `P_sites_all_uniq`), and these reads have a mapping quality of more than
+    50; `sequence_analysis` is a GRanges; `Codon_counts` is summed over the
+    transcripts; the first window of 33 nt starts with the start codon
+    (before: after it), and the last one ends at the end of the CDS (before:
+    before the stop codon). The help now names the `_unq` statistics, the A-site
+    and E-site tables and the smaller `_results_RiboseQC` file.
+  - `?prepare_annotation_files`: the value of the function is the path of
+    the `_Rannot` file (before: the help said only that it makes files), and
+    the help lists the files that it makes. `annot_file` is made with
+    `save()` (before: an "rds file"). The help lists the 20 default names of
+    `circ_chroms` (before: `DEFAULT_CIRC_SEQS`, which is not exported). The
+    CDS of transcripts with a CDS shorter than 3 nt are not used, but the
+    transcripts stay in the annotation (before: "are removed"). The columns
+    of `cds_txs_coords` and `trann` are as in the annotation.
+  - `?load_annotation`: only the annotations of ORFquant with
+    `forge_BSgenome = TRUE` have a BSgenome package in `genome_package`
+    (before: also those of RiboseQC 1.2.0 and later, which never have one).
+  - `?get_ps_fromspliceplus`, `?get_ps_fromsplicemin`: the P-sites are sorted
+    by position, not in the order of the reads. `?getSeq` of `FaFile_Circ`: a
+    range must start on the circular chromosome to run past its end.
+  - `?prepare_for_ORFquant`: the value of the function is now in the help:
+    invisibly, the path of the `_for_ORFquant` file. The help says that the
+    function assigns `GTF_annotation` and `genome_seq` in the global
+    environment, and which column names the cutoff file needs.
+    `?forked_processes`, `?input_checks`: `RiboseQC_analysis()` uses these
+    functions too (before: only `prepare_for_ORFquant()`).
+  - The help pages of the report functions. The plot functions print their
+    plot and return `NULL` (before: "returns a plot"); the codon usage plots
+    return the plot. The help gives the name of the RDS file that each one
+    saves, and `output_rds_path` must end with `/`. The `_rmd` functions save
+    RDS files only with `output_rds_path`. `create_html_report()` also writes
+    `<output_file>_report_text_output.txt`; `create_pdfs_from_rds_objects()`
+    writes the PDF files in the folder `pdf/` next to the RDS folder.
+    `generate_rdata_list()` needs a named vector of paths (before: a list).
+    The values of `get_metagene_data()` and `get_codon_usage_data()` are as
+    the functions return them (before: other element names), and
+    `get_metagene_data()` needs the `res_all` of a `_results_RiboseQC` file.
+    `plot_frame_dist_boxplot()` plots the mean and its standard error (before:
+    boxplots). `get_rl_and_cutoffs()` gives all read lengths with a cutoff
+    (before: the selected ones), and `get_default_rl_selection()` the read
+    lengths of `max_coverage`, which are not those of the P-sites with
+    another method. `get_top50_all_genes()` gives 100 genes (before: 50). The
+    codon usage is per codon position (before: per nucleotide position), and
+    the genetic code comes from `RiboseQC_analysis()` (before: "a
+    user-defined genetic code"). The links to `plot_codon_usage()`, which
+    does not exist, now go to `plot_codon_usage_positional()`.
+  - `?calc_cutoffs_from_profiles`: the value of the function is complete
+    (before: an unescaped `%` cut the text), and it is `NULL` with fewer than
+    5 transcripts. Four methods give the cutoffs (before: three), from 24 nt
+    before the start codon to its first nt, so the cutoff is at most 24.
+    `?choose_readlengths`: `summary_data` is `results_cutoffs` (before: the
+    output of `calc_cutoffs_from_profiles()`), and `max_coverage` uses only
+    the windows of the CDS.
+- The new help page `?RiboseQC` gives the steps of an analysis and the
+  functions for them (before, `?RiboseQC` found no page).
 
 # RiboseQC 1.4.0
 

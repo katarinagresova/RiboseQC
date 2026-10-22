@@ -14,11 +14,11 @@ plot_read_length_dist(rld, sample, output_rds_path = "")
 given in the \code{input_sample_names} parameter of \code{create_html_report}).}
 
 \item{output_rds_path}{String; full path to output folder for RDS object files created by this function.
-Defaults to NOT save RDS; to save RDS, provide path to destination folder.}
+Defaults to NOT save RDS; to save RDS, provide path to destination folder, ending with "/" (the file name is appended to it).}
 }
 \value{
-This function returns a plot that can be integrated in the html report and
-that can be saved as RDS object file.
+This function prints the plot for the html report and returns \code{NULL}, invisibly.
+With \code{output_rds_path}, it also saves the plot as the RDS object file \code{<output_rds_path><sample>_2_readlendist}.
 }
 \description{
 This function plots the read length distribution per originating compartment

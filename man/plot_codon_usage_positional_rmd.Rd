@@ -13,15 +13,15 @@ plot_codon_usage_positional_rmd(data, sample = "", output_rds_path = "")
 given in the \code{input_sample_names} parameter of \code{create_html_report}).}
 
 \item{output_rds_path}{String; full path to output folder for RDS object files created by this function.
-Defaults to NOT save RDS; to save RDS, provide path to destination folder.}
+Defaults to NOT save RDS; to save RDS, provide path to destination folder, ending with "/" (the file name is appended to it).}
 }
 \value{
-This function returns iteratively all positional codon usage plots
-for the html report and saves the same plots as RDS object file.
+This function prints iteratively all positional codon usage plots
+for the html report and returns \code{NULL}. With \code{output_rds_path}, it also saves the same plots as RDS object files.
 }
 \description{
 This function generates iteratively all positional codon usage heatmaps;
-iteration over originating compartments, read length, data type (codon count, read count, codon-read count ratio),
+iteration over originating compartments, read length, data type (codon count, and A-, P- and E-site counts and their ratios to the codon counts),
 and scaling method (none, log2, zscale). \cr \cr
 These plots are displayed in the RiboseQC report in section 7.
 }

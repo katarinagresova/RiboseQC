@@ -13,15 +13,15 @@ plot_codon_usage_bulk(codon_usage_data, sample = "", output_rds_path = "")
 given in the \code{input_sample_names} parameter of \code{create_html_report}).}
 
 \item{output_rds_path}{String; full path to output folder for RDS object files created by this function.
-Defaults to NOT save RDS; to save RDS, provide path to destination folder.}
+Defaults to NOT save RDS; to save RDS, provide path to destination folder, ending with "/" (the file name is appended to it).}
 }
 \value{
-This function returns a plot that can be integrated in the html report and
-that can be saved as RDS object file.
+This function prints the plot for the html report and returns it, invisibly.
+With \code{output_rds_path}, it also saves the plot as the RDS object file \code{<output_rds_path><sample>_<comp>_8_codonusage_bulk_<data type>_<rl>}.
 }
 \description{
 This function plots the codon usage summed up over all positions* (bulk codon usage) as bar plot
-for a specific data type, originating compartment, and read length, as well as based on a user-defined genetic code. \cr \cr
+for a specific data type, originating compartment, and read length. \cr \cr
 * Information on positions included in analysis: \cr
 Based on P-site corrected reads, the codon usage within CDS regions for protein coding genes
 is examplatory calculated

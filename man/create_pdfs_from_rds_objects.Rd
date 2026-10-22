@@ -7,10 +7,11 @@
 create_pdfs_from_rds_objects(output_rds_path)
 }
 \arguments{
-\item{output_rds_path}{String; full path to output folder for RDS object files. Example: /my_path_to/rds/}
+\item{output_rds_path}{String; full path to output folder for RDS object files, ending with "/". Example: /my_path_to/rds/}
 }
 \value{
-This function creates PDF files from RDS object files.
+This function creates PDF files from RDS object files: for each RDS object file of a plot function in \code{output_rds_path},
+the file \code{<name>.pdf} in the folder \code{pdf/} next to it (\code{<output_rds_path>../pdf/}). It returns \code{NULL}.
 }
 \description{
 This function generates figures as PDF files from RDS object files -

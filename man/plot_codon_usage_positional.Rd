@@ -21,15 +21,15 @@ no scaling (\code{none}), log2 scaling (\code{log2}), or z scoring (\code{zscore
 given in the \code{input_sample_names} parameter of \code{create_html_report}).}
 
 \item{output_rds_path}{String; full path to output folder for RDS object files created by this function.
-Defaults to NOT save RDS; to save RDS, provide path to destination folder.}
+Defaults to NOT save RDS; to save RDS, provide path to destination folder, ending with "/" (the file name is appended to it).}
 }
 \value{
-This function returns a plot that can be integrated in the html report and
-that can be saved as RDS object file.
+This function prints the plot for the html report and returns it, invisibly.
+With \code{output_rds_path}, it also saves the plot as the RDS object file \code{<output_rds_path><sample>_<comp>_7_codonusage_positional_<data type>_<rl>_<scal>}.
 }
 \description{
-This function plots the codon usage per nucleotide position* (positional codon usage) as heatmap
-for a specific data type, originating compartment, read length, and scaling method, as well as based on a user-defined genetic code. \cr \cr
+This function plots the codon usage per codon position* (positional codon usage) as heatmap
+for a specific data type, originating compartment, read length, and scaling method. \cr \cr
 * Information on positions included in analysis: \cr
 Based on P-site corrected reads, the codon usage within CDS regions for protein coding genes
 is examplatory calculated

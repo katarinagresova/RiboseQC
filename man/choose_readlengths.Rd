@@ -7,14 +7,16 @@
 choose_readlengths(summary_data, choice = "max_coverage", nt_signals)
 }
 \arguments{
-\item{summary_data}{output data from the \code{calc_cutoffs_from_profiles} function}
+\item{summary_data}{for each compartment, a matrix with the \code{cutoff} and the \code{frame_preference} of each read length (rows),
+from the output of the \code{calc_cutoffs_from_profiles} function: \code{res_all$selection_cutoffs$results_cutoffs}}
 
 \item{choice}{Method used to select readlengths, defaults to "max_coverage"}
 
-\item{nt_signals}{Profiles of 5'ends around start codons}
+\item{nt_signals}{Profiles of 5'ends of each transcript, for the compartments of \code{summary_data}, in the same order:
+\code{res_all$profiles_fivepr$five_prime_subcodon}. Only the windows of the CDS are used}
 }
 \value{
-a list object containing different compartments. Each sub-list contains \code{final_choice},
+a list object containing different compartments (those with read lengths with a cutoff). Each sub-list contains \code{final_choice},
 the set of chosen read lengths with cutoffs, and \code{data}, the complete stats for each selection method
 }
 \description{
@@ -22,7 +24,8 @@ This function selects a subset of readlenghts to be used in the P-sites calculat
 }
 \details{
 Three different methods are available to choose readlengths: the "max_coverage" method
-selects all read lenghts with more in-frame signal compared to out-of-frame signal, on all codons;
+selects all read lenghts with more in-frame signal compared to out-of-frame signal, on the codons of the windows of the CDS
+(the positions with signal after the cutoff, on average over the transcripts);
 the "max_inframe" method starts with the most accurate read length and
 progressively selects read lengths which add in-frame signals in codons not covered by previous read lengths;
 the "all" method selects all available read lengths

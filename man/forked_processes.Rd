@@ -36,6 +36,7 @@ mc_lapply(fs, n_cores)
 \code{mc_lapply(fs, n_cores)} is \code{lapply(fs, function(f) f())}, with each \code{f()} in a
 forked process, at most \code{n_cores} at a time (\code{\link[parallel]{mclapply}}).
 The warnings of a forked process are given again in this process, and its error stops here.
-\code{\link{prepare_for_ORFquant}} uses them. RiboseQC exports them for ORFquant.
+\code{\link{prepare_for_ORFquant}} and \code{\link{RiboseQC_analysis}} use \code{mc_job()} and \code{mc_value()}.
+RiboseQC exports them for ORFquant.
 }
 \keyword{internal}

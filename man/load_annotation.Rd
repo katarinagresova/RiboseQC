@@ -7,7 +7,7 @@
 load_annotation(path, envir = parent.frame())
 }
 \arguments{
-\item{path}{Full path to the *Rannot R file in the annotation directory used in the \code{prepare_annotation_files function}}
+\item{path}{Full path to the *Rannot R file made by the \code{prepare_annotation_files} function (its value)}
 
 \item{envir}{The environment to put \code{GTF_annotation} and \code{genome_seq} in; defaults to the environment of the caller}
 }
@@ -20,8 +20,8 @@ This function loads the annotation created by the \code{prepare_annotation_files
 }
 \details{
 Reads the *Rannot files of all versions of RiboseQC and ORFquant: with the name of the BSgenome package in
-\code{genome_package} (from RiboseQC 1.2.0, and ORFquant) or in \code{genome} (RiboseQC before 1.2.0), or with an
-\code{FaFile_Circ} object in \code{genome}.
+\code{genome_package} (ORFquant, with \code{forge_BSgenome=TRUE}) or in \code{genome} (RiboseQC before 1.2.0), or with an
+\code{FaFile_Circ} object in \code{genome} (all other files, and all files of RiboseQC 1.2.0 and later).
 }
 \examples{
 annot_file <- prepare_annotation_files(annotation_directory = tempdir(),
