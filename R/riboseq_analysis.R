@@ -583,6 +583,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 nucl <- subset(x, !seqnames(x) %in% circs)
                 nucl_unq <- subset(x_uniq, !seqnames(x_uniq) %in% circs)
                 list_reads <- list(nucl = nucl)
+                list_reads_unq <- list(nucl = nucl_unq)
                 for (i in circs) {
                   list_reads[[i]] <- subset(x, seqnames(x) == i)
                   list_reads_unq[[i]] <- subset(x_uniq, seqnames(x_uniq) == i)
