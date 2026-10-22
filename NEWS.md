@@ -29,6 +29,12 @@
   `run_riboseqc.R`'s options, with `--cores` set to the job's CPUs. It asks
   for 1 CPU, 32 GB of memory and 12 hours, and its comments give the time
   and memory measured on human samples.
+- The progress messages of `RiboseQC_analysis()`, such as "Analyzing BAM
+  file: ... ", now come from `message()`, not from `cat()`, as the messages
+  of `prepare_annotation_files()` and `prepare_for_ORFquant()`. So they go
+  to the standard error, not to the standard output, and
+  `suppressMessages()` hides them. Their text and date are the same. The
+  scripts `run_riboseqc.R` and `run_riboseqc.sbatch` show them as before.
 
 ## New arguments
 
@@ -166,6 +172,15 @@
   `29`, and their scores and percentages had names too. The positions, their
   widths and sequences, and all other values don't change. The report does
   not show `len_adj`.
+- `RiboseQC_analysis()` on a BAM file that it reads in more than one chunk
+  (with more than `chunk_size` alignments) gives the coverage of the reads
+  on the minus strand (`P_sites_stats` in
+  `<dest_name>_results_RiboseQC_all`) the names `coverage_all_minus` and
+  `coverage_uniq_minus`, as with one chunk and as `?RiboseQC_output` says.
+  Before, their names were `coverage_all_min` and `coverage_uniq_min`. Their
+  values, and all other output files, don't change. Code that reads them
+  with `$coverage_all_min` still gets them, because `$` also finds a name by
+  its start. Code that uses `[["coverage_all_min"]]` must use the new names.
 - `RiboseQC_analysis()` on an annotation with fewer than 250 transcripts:
   the P-sites profiles and the codon counts (`profiles_P_sites`) now use the
   transcripts that the 5' profiles use (one representative transcript of
@@ -309,6 +324,18 @@
   ("all") two times for each compartment. It now makes them once. On the same
   sample (a 69 MB BAM), the P-site profiles take 90 s instead of 98 s. The
   results don't change.
+- `RiboseQC_analysis()` reads the BAM file and counts the reads faster. It
+  counted the reads of each read length in the regions (CDS, UTRs, introns,
+  ...) with one `summarizeOverlaps()` for each read length, and it found the
+  overlaps of the uniquely mapping reads a second time. It now finds the
+  overlaps of all reads once. It also reads only the fields of the BAM file
+  that each pass uses, and it finds the alignments with an insertion or a
+  deletion and the read length without the soft-clipped bases faster, also in
+  `prepare_for_ORFquant()`. On a human sample (a 2.3 GB BAM, 18 chunks,
+  GENCODE 47, `rescue_all_rls = TRUE`), the counts take 327 s instead of
+  506 s, the read lengths 95 s instead of 139 s, and a run with the report on
+  one core takes 1,750 s instead of 2,000 s (12% less), without more memory.
+  The results don't change.
 
 ## Documentation
 
