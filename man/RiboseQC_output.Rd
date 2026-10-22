@@ -114,8 +114,7 @@ The reads, by compartment, read length, region and gene.
 \item{\code{rld}}{A data.frame with one row for each compartment (the row names) and one column
   \code{reads_<read length>} for each read length from the shortest to the longest read of the BAM file (also the
   read lengths without reads): the number of reads.}
-\item{\code{rld_unq}}{The same for the uniquely mapping reads. Its \code{nucl} row also counts the uniquely mapping
-  reads of the circular chromosomes.}
+\item{\code{rld_unq}}{The same for the uniquely mapping reads.}
 \item{\code{positions}}{A data.frame with one row for each region (the row names) and one column
   \code{reads_<compartment>} for each compartment: the number of reads that overlap the region by at least 1 nt
   (the aligned blocks of the read, not only its 5' end). A read on two regions counts for both, and a read on no
