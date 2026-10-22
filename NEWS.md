@@ -211,6 +211,25 @@
   `stranded = TRUE` and `FALSE` do not change. For `prepare_for_ORFquant()`,
   see its new argument `stranded`.
 
+## Performance
+
+- `RiboseQC_analysis()` is faster when it makes the P-site profiles for many
+  read lengths, for example with `rescue_all_rls = TRUE` or
+  `readlength_choice_method = "all"`. For the codon tables, it extracted the
+  sequences of the same transcripts from the FASTA file once for each read
+  length. It now extracts them once for each compartment. On a human sample
+  (a 69 MB BAM, GENCODE 47, `rescue_all_rls = TRUE`, 32 read lengths), a run
+  with the report on one core takes 392 s instead of 444 s (12% less). The
+  results don't change.
+- `RiboseQC_analysis()` is faster for BAM files that it reads in two or more
+  chunks (more than `chunk_size` alignments, 5 million by default). It merged
+  the 5' ends and the P-sites of each chunk with the sums of the chunks
+  before it, so each merge took longer than the one before. It now sums the
+  chunks once, after the last chunk. On a human sample (a 2.3 GB BAM, 18
+  chunks, GENCODE 47, `rescue_all_rls = TRUE`), a run with the report on one
+  core takes 2,403 s instead of 3,025 s (21% less), with the same memory. The
+  results don't change.
+
 ## Documentation
 
 - The help of `prepare_annotation_files()` now says that the order of the
