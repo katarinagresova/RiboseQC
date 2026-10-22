@@ -29,6 +29,12 @@
   `run_riboseqc.R`'s options, with `--cores` set to the job's CPUs. It asks
   for 1 CPU, 32 GB of memory and 12 hours, and its comments give the time
   and memory measured on human samples.
+- The progress messages of `RiboseQC_analysis()`, such as "Analyzing BAM
+  file: ... ", now come from `message()`, not from `cat()`, as the messages
+  of `prepare_annotation_files()` and `prepare_for_ORFquant()`. So they go
+  to the standard error, not to the standard output, and
+  `suppressMessages()` hides them. Their text and date are the same. The
+  scripts `run_riboseqc.R` and `run_riboseqc.sbatch` show them as before.
 
 ## New arguments
 

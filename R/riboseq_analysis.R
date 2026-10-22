@@ -245,8 +245,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
     list_annotations <- list()
     
     for (annots in seq_along(annotation_file)) {
-        cat(paste("Loading annotation files in ", annotation_file[annots], " ... ", 
-            date(), "\n", sep = ""))
+        message(paste("Loading annotation files in ", annotation_file[annots], " ... ", 
+            date(), sep = ""))
         
         load_annotation(annotation_file[annots])
         check_genome_seq(given_genome_seq, genome_seq, annotation_file[annots])
@@ -263,7 +263,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
     }
     
-    cat(paste("Loading annotation files --- Done! ", date(), "\n", sep = ""))
+    message(paste("Loading annotation files --- Done! ", date(), sep = ""))
     
     # the chromosomes of each BAM file and of its annotation, before the first BAM file
     for (bammo in seq_along(bam_files)) {
@@ -389,10 +389,10 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             list(maxr, minr)
         }
         
-        cat(paste("Extracting read lengths from ", bam_file, " ... ", date(), "\n", 
+        message(paste("Extracting read lengths from ", bam_file, " ... ", date(), 
             sep = ""))
         maxmin <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc, n_cores = n_cores)
-        cat(paste("Extracting read lengths --- Done! ", date(), "\n", sep = ""))
+        message(paste("Extracting read lengths --- Done! ", date(), sep = ""))
         # no chunk: else the next line stops with "subscript out of bounds"
         if (length(maxmin) == 0) {
             stop(paste("The BAM file ", bam_file, " has no mapped reads (secondary alignments and duplicates are not used). ", 
@@ -736,7 +736,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         # main for reducebyYield
         
-        cat(paste("Analyzing BAM file:", bam_file, "...", date(), "\n"))
+        message(paste("Analyzing BAM file:", bam_file, "...", date()))
         
         read_stats <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc,
             n_cores = n_cores)
@@ -788,7 +788,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         read_stats$counts_all_genes_unq <- ex_cnts_unq
         
         save(read_stats, file = paste(dira, "read_stats", sep = "/"))
-        cat(paste("Analyzing BAM file --- Done!", date(), "\n"))
+        message(paste("Analyzing BAM file --- Done!", date()))
         
         ps <- read_stats$reads_pos1
         
@@ -805,7 +805,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         }
         list_txs_ok[["nucl"]] <- tile_cds[!tile_cds %in% unlist(list_txs_ok)]
         
-        cat(paste("Building aggregate 5' profiles ...", date(), "\n"))
+        message(paste("Building aggregate 5' profiles ...", date()))
         ps_signals_win_all <- list()
         ps_signals_tiles_all <- list()
         
@@ -1081,9 +1081,9 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         names(profiles_fivepr) <- c("five_prime_bins", "five_prime_subcodon")
         save(profiles_fivepr, file = paste(dira, "profiles_fivepr", sep = "/"))
         
-        cat(paste("Building aggregate 5' profiles --- Done!", date(), "\n"))
+        message(paste("Building aggregate 5' profiles --- Done!", date()))
         
-        cat(paste("Calculating P-sites offsets ...", date(), "\n"))
+        message(paste("Calculating P-sites offsets ...", date()))
         
         
         # calculate cutoffs for each read length
@@ -1114,7 +1114,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         res_rls <- choose_readlengths(summary_res, choice = readlength_choice_method[bammo], 
             nt_signals = profiles_fivepr[["five_prime_subcodon"]])
         
-        cat(paste("Calculating P-sites offsets --- Done!", date(), "\n"))
+        message(paste("Calculating P-sites offsets --- Done!", date()))
         selection_cutoffs <- list(res_rls, summary_res, list_cutoff)
         names(selection_cutoffs) <- c("results_choice", "results_cutoffs", "analysis_frame_cutoff")
         save(selection_cutoffs, file = paste(dira, "selection_cutoffs", sep = "/"))
@@ -1206,7 +1206,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             psites_of_chunk(x, rl_cutoffs_comp, circs, seqllll, seqleee, GTF_annotation$junctions, 
                 with_coverage = TRUE)
         }
-        cat(paste("Calculating P-sites positions and junctions ...", date(), "\n"))
+        message(paste("Calculating P-sites positions and junctions ...", date()))
         
         P_sites_stats <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc,
             n_cores = n_cores)
@@ -1221,12 +1221,11 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         save(P_sites_stats, file = paste(dira, "P_sites_stats", sep = "/"))
         
-        cat(paste("Calculating P-sites positions and junctions --- Done!", date(), 
-            "\n"))
+        message(paste("Calculating P-sites positions and junctions --- Done!", date()))
         
         ps <- P_sites_stats$P_sites_all
         
-        cat(paste("Building aggregate P-sites profiles ...", date(), "\n"))
+        message(paste("Building aggregate P-sites profiles ...", date()))
         
         # here do meta and other plots on P-sites positions ()
         ps_signals_win_all <- list()
@@ -1754,9 +1753,9 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         # save(list =
         # c('ps_signals_tiles','ps_signals_tiles_all','ps_signals_win','ps_signals_win_all'),file
         # = 'ps_results_preprjan15')
-        cat(paste("Building aggregate P-sites profiles --- Done!", date(), "\n"))
+        message(paste("Building aggregate P-sites profiles --- Done!", date()))
         
-        cat(paste("Exporting files ...", date(), "\n"))
+        message(paste("Exporting files ...", date()))
         
         merged_all_ps <- unlist(P_sites_stats$P_sites_all)
         if (length(merged_all_ps) > 0) {
@@ -1997,18 +1996,18 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         rm(res_all, read_stats, profiles_fivepr, selection_cutoffs, P_sites_stats, 
             profiles_P_sites, sequence_analysis)
         gici <- gc()
-        cat(paste("Exporting files --- Done!", date(), "\n\n"))
+        message(paste("Exporting files --- Done!", date(), "\n"))
         
         resfilelist <- c(resfilelist,resfile)
     }
     
       if (create_report) {
-          cat(paste("Creating html report in ", report_file, " ... ", date(), "\n", 
+          message(paste("Creating html report in ", report_file, " ... ", date(), 
               sep = ""))
           
           create_html_report(input_files = resfilelist, 
               input_sample_names = sample_names, output_file = report_file, extended = extended_report)
-          cat(paste("Creating html report --- Done!", date(), "\n\n"))
+          message(paste("Creating html report --- Done!", date(), "\n"))
           
           if (pdf_plots) {
               create_pdfs_from_rds_objects(output_rds_path = paste(report_file, "_plots/rds/", 
