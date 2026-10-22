@@ -235,6 +235,10 @@
   27 s instead of 44 s, and a run of `RiboseQC_analysis()` with the report on
   one core takes 2,064 s instead of 2,393 s (14% less), with the same memory.
   The results don't change.
+- The HTML report is faster: it made each heatmap with the scale "zscore"
+  (the metagene heatmaps and the positional codon usage) two times. On a
+  human sample (a 69 MB BAM, GENCODE 47, `rescue_all_rls = TRUE`, 32 read
+  lengths), the report takes 136 s instead of 157 s. The plots don't change.
 
 ## Documentation
 
