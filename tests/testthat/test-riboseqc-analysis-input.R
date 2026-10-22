@@ -22,6 +22,16 @@ test_that("RiboseQC_analysis() refuses values of stranded other than TRUE, FALSE
   }
 })
 
+test_that("RiboseQC_analysis() refuses values of write_TSV_files other than TRUE and FALSE, before it reads a file", {
+  for (w in list(NA, "TRUE", 1, c(TRUE, FALSE))) {
+    expect_error(RiboseQC_analysis(annotation_file = "a", bam_files = "b", write_TSV_files = w),
+                 "'write_TSV_files' must be TRUE or FALSE", fixed = TRUE)
+  }
+  for (w in list(TRUE, FALSE)) {
+    expect_error(RiboseQC_analysis(annotation_file = "a", bam_files = "b", write_TSV_files = w), "don't exist")
+  }
+})
+
 test_that("RiboseQC_analysis() refuses fewer annotation files than BAM files, but more than 1", {
   expect_error(RiboseQC_analysis(annotation_file = c("a1", "a2"), bam_files = c("b1", "b2", "b3")),
                "length of 'annotation_file' must be 1 or same as 'bam_files'")

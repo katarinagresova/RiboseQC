@@ -3,9 +3,11 @@
 # what RiboseQC gave when the files were made. For each sample: the offsets
 # (P_sites_offsets.tsv), the statistics of the selected read lengths
 # (P_sites_calcs), the reads of each read length and of each region in each
-# compartment (read_stats$rld and read_stats$positions), the reads, RPKM and TPM
-# of each gene (read_stats$counts_all_genes), and the P-sites
-# (P_sites_plus.bedgraph and P_sites_minus.bedgraph).
+# compartment (read_stats$rld and read_stats$positions, in read_lengths.tsv and
+# regions.tsv), the reads, RPKM and TPM of each gene
+# (read_stats$counts_all_genes, in genes.tsv), and the P-sites
+# (P_sites_plus.bedgraph and P_sites_minus.bedgraph). These are the files of
+# RiboseQC_analysis().
 #
 # If a change that must not change results makes this test fail, the change is
 # wrong. If the results must change, make the golden files again and review
@@ -15,17 +17,9 @@
 golden_names <- c("P_sites_offsets.tsv", "P_sites_calcs", "read_lengths.tsv", "regions.tsv", "genes.tsv",
                   "P_sites_plus.bedgraph", "P_sites_minus.bedgraph")
 
-# The results of `sample` as files with the names of golden_names; their paths
+# The paths of the result files of `sample` with the names of golden_names
 result_files <- function(sample) {
-  prefix <- example_analysis()$prefix[[sample]]
-  stats <- example_results(sample)$read_stats
-  files <- stats::setNames(paste0(prefix, "_", golden_names), golden_names)
-  write_tsv <- function(df, f) utils::write.table(df, f, sep = "\t", quote = FALSE, row.names = FALSE)
-  write_tsv(data.frame(compartment = rownames(stats$rld), stats$rld, check.names = FALSE), files[["read_lengths.tsv"]])
-  write_tsv(data.frame(region = rownames(stats$positions), stats$positions, check.names = FALSE), files[["regions.tsv"]])
-  write_tsv(data.frame(gene_id = rownames(stats$counts_all_genes), as.data.frame(stats$counts_all_genes),
-                       check.names = FALSE), files[["genes.tsv"]])
-  files
+  stats::setNames(paste0(example_analysis()$prefix[[sample]], "_", golden_names), golden_names)
 }
 # The golden files of `sample`; the bedgraph files are compressed
 golden_files <- function(sample) {

@@ -111,6 +111,7 @@ For each BAM file, with its entry of `dest_names` as the prefix:
 - `<dest_name>_coverage_plus.bedgraph`, `<dest_name>_coverage_minus.bedgraph` and `<dest_name>_coverage_uniq_*.bedgraph`: the coverage of the reads. With `normalize_cov = TRUE` (the default), the coverage is scaled so that the two strands sum to about one million.
 - `<dest_name>_junctions`: the reads on the annotated splice junctions.
 - `<dest_name>_for_ORFquant`: the P-sites and the junction reads for *ORFquant* (see below).
+- With `write_TSV_files = TRUE` (the default), the main tables of `res_all` as tab-separated files: `<dest_name>_summary.tsv` (one row for each compartment: the reads, the percentage of them on the CDS, the percentage of them that give P-sites, and the frame preference of these reads), `<dest_name>_read_lengths.tsv`, `<dest_name>_regions.tsv`, `<dest_name>_genes.tsv`, `<dest_name>_P_sites_calcs.tsv` (the same table as `<dest_name>_P_sites_calcs`) and `<dest_name>_top50_positions.tsv`. The *Value* section of `?RiboseQC_analysis` gives their columns.
 
 The HTML report is `report_file` (by default, the first BAM file followed by `_RiboseQC_report.html`), with its plots in `<report_file>_plots/`.
 
