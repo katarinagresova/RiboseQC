@@ -564,22 +564,27 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             row.names(rld_len_unq) <- names(list_reads)
             
             
+            # the counts of summarizeOverlaps(mode = "Union", inter.feature = FALSE) for the reads x and for the
+            # unique reads x_uniq, from one findOverlaps() with x: x_uniq are the reads of x with mapq > 50
+            count_reads <- function(features) {
+                hits <- findOverlaps(features, x, ignore.strand = !as.logical(strandedness))
+                unq <- x@elementMetadata$mapq[subjectHits(hits)] > 50
+                list(all = matrix(tabulate(queryHits(hits), length(features)), dimnames = list(names(features), "reads")),
+                  unq = matrix(tabulate(queryHits(hits)[unq], length(features)), dimnames = list(names(features), "reads")))
+            }
+            
             # count reads per biotype location per compartment
             list_rld_loc <- list()
+            list_rld_loc_unq <- list()
             for (i in c("nucl", circs)) {
-                list_rld_loc[[i]] <- (assay(summarizeOverlaps(reads = x, features = GRangesList(list_locat[[i]]), 
-                  ignore.strand = !as.logical(strandedness), mode = "Union", inter.feature = FALSE)))
+                cnts <- count_reads(GRangesList(list_locat[[i]]))
+                list_rld_loc[[i]] <- cnts$all
+                list_rld_loc_unq[[i]] <- cnts$unq
             }
             rld_loc <- do.call(what = cbind.data.frame, list_rld_loc)
             names(rld_loc) <- paste("reads", names(list_rld_loc), sep = "_")
             
             
-            list_rld_loc_unq <- list()
-            for (i in c("nucl", circs)) {
-                list_rld_loc_unq[[i]] <- (assay(summarizeOverlaps(reads = x_uniq, 
-                  features = GRangesList(list_locat[[i]]), ignore.strand = !as.logical(strandedness), 
-                  mode = "Union", inter.feature = FALSE)))
-            }
             rld_loc_unq <- do.call(what = cbind.data.frame, list_rld_loc_unq)
             names(rld_loc_unq) <- paste("reads", names(list_rld_loc_unq), sep = "_")
             
@@ -676,17 +681,16 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             seqgene <- cbind(as.vector(seqnames(GTF_annotation$genes)), GTF_annotation$genes$gene_id)
             
             
-            cnts_cds_genes <- assay(summarizeOverlaps(reads = x, features = red_cdss, 
-                ignore.strand = !as.logical(strandedness), mode = "Union", inter.feature = FALSE))
+            cnts_cds <- count_reads(red_cdss)
+            cnts_all <- count_reads(red_ex)
             
-            cnts_all_genes <- assay(summarizeOverlaps(reads = x, features = red_ex, 
-                ignore.strand = !as.logical(strandedness), mode = "Union", inter.feature = FALSE))
+            cnts_cds_genes <- cnts_cds$all
             
-            cnts_cds_genes_unq <- assay(summarizeOverlaps(reads = x_uniq, features = red_cdss, 
-                ignore.strand = !as.logical(strandedness), mode = "Union", inter.feature = FALSE))
+            cnts_all_genes <- cnts_all$all
             
-            cnts_all_genes_unq <- assay(summarizeOverlaps(reads = x_uniq, features = red_ex, 
-                ignore.strand = !as.logical(strandedness), mode = "Union", inter.feature = FALSE))
+            cnts_cds_genes_unq <- cnts_cds$unq
+            
+            cnts_all_genes_unq <- cnts_all$unq
             
             
             chrsss <- seqgene[match(rownames(cnts_cds_genes), seqgene[, 2]), 1]
