@@ -1416,7 +1416,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 es_cod_rat <- DataFrameList()
                 txs_seqq <- NULL
                 
-                for (len in c("all", names(ps_comp))) {
+                # ps_comp has "all" at the end: do it once, first
+                for (len in c("all", setdiff(names(ps_comp), "all"))) {
                   
                   if ((sum(no3utr) + sum(no5utr)) == 0) {
                     mp <- mapToTranscripts(ps_comp[[len]], transcripts = fivs_gen)

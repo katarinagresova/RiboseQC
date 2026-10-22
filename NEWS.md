@@ -239,6 +239,10 @@
   (the metagene heatmaps and the positional codon usage) two times. On a
   human sample (a 69 MB BAM, GENCODE 47, `rescue_all_rls = TRUE`, 32 read
   lengths), the report takes 136 s instead of 157 s. The plots don't change.
+- `RiboseQC_analysis()` made the P-site profiles of all read lengths together
+  ("all") two times for each compartment. It now makes them once. On the same
+  sample (a 69 MB BAM), the P-site profiles take 90 s instead of 98 s. The
+  results don't change.
 
 ## Documentation
 
