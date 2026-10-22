@@ -305,8 +305,9 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         dest_name <- dest_names[bammo]
         
         opts <- BamFile(file = bam_file, yieldSize = chunk_size)  #read BAMfile in one chunk
+        # without the MD tag: only the P-sites use it, with their own param
         param <- ScanBamParam(flag = scanBamFlag(isDuplicate = FALSE, isSecondaryAlignment = FALSE), 
-            what = c("mapq"), tag = "MD")
+            what = c("mapq"))
         
         dira <- paste(dirname(dest_name), paste("tmp_RiboseQC", basename(dest_name), 
             sep = "_"), sep = "/")
@@ -460,8 +461,6 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 # the inverted reads are on the strand of the RNA: count them as a stranded library
                 strandedness <- T
             }
-            
-            mcols(x)$MD[which(is.na(mcols(x)$MD))] <- "NO"
             
             # Remove Insertion and Deletion (TBA)
             
