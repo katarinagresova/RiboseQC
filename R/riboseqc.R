@@ -1011,7 +1011,8 @@ plot_metagene_hm <- function(metagene_data, scal, sample="", output_rds_path="")
         geom_point(data=data_hm_single[[scal]], aes(size="NA"), shape=NA, colour="gray80") +
         labs(fill=paste0("read count (scale: ", scal, ")")) + guides(size=guide_legend(title=""))
 
-    gg <- arrangeGrob(g1, g2, ncol=1, heights = c(1, 6))
+    # zscore: the plot with other colours below
+    if(scal!="zscore"){gg <- arrangeGrob(g1, g2, ncol=1, heights = c(1, 6))}
 
     suppressMessages(if(scal=="zscore"){gg<-arrangeGrob(g1 + scale_fill_gradient2(low = "blue",mid = "white",high = "firebrick",na.value = "gray80",guide = "colourbar"),
                     g2 + scale_fill_gradient2(low = "blue",mid = "white",high = "firebrick",na.value = "gray80",guide = "colourbar"),
@@ -1842,7 +1843,8 @@ plot_codon_usage_positional <- function(codon_usage_data, scal, sample="", outpu
         geom_point(data=d.m, aes(size="NA"), shape=NA, colour="gray80") +
         labs(fill=paste0(data_type,"(scale: ", scal, ")")) + guides(size=guide_legend(title=""))
 
-    gg <- arrangeGrob(g1, g2, ncol=1, heights = c(1, 8))
+    # zscore: the plot with other colours below
+    if(scal!="zscore"){gg <- arrangeGrob(g1, g2, ncol=1, heights = c(1, 8))}
 
     suppressMessages(if(scal=="zscore"){gg<-arrangeGrob(g1 + scale_fill_gradient2(low = "blue",mid = "white",high = "firebrick",na.value = "gray80",guide = "colourbar"),
                                        g2 + scale_fill_gradient2(low = "blue",mid = "white",high = "firebrick",na.value = "gray80",guide = "colourbar"),

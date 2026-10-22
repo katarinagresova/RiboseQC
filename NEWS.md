@@ -282,6 +282,20 @@
   chunks, GENCODE 47, `rescue_all_rls = TRUE`), a run with the report on one
   core takes 2,403 s instead of 3,025 s (21% less), with the same memory. The
   results don't change.
+- `RiboseQC_analysis()` and `prepare_for_ORFquant()` find the P-sites of each
+  chunk of the BAM file faster. On a human sample (a 2.3 GB BAM, 18 chunks,
+  GENCODE 47, `rescue_all_rls = TRUE`), a chunk of 5 million alignments takes
+  27 s instead of 44 s, and a run of `RiboseQC_analysis()` with the report on
+  one core takes 2,064 s instead of 2,393 s (14% less), with the same memory.
+  The results don't change.
+- The HTML report is faster: it made each heatmap with the scale "zscore"
+  (the metagene heatmaps and the positional codon usage) two times. On a
+  human sample (a 69 MB BAM, GENCODE 47, `rescue_all_rls = TRUE`, 32 read
+  lengths), the report takes 136 s instead of 157 s. The plots don't change.
+- `RiboseQC_analysis()` made the P-site profiles of all read lengths together
+  ("all") two times for each compartment. It now makes them once. On the same
+  sample (a 69 MB BAM), the P-site profiles take 90 s instead of 98 s. The
+  results don't change.
 
 ## Documentation
 

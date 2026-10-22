@@ -432,19 +432,15 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
   
   if(!is.null(rl_cutoffs_comp)){
     list_pss<-list()
+    # the reads of each read length: the indices of pos and neg, split once
+    pos_rl<-split(seq_along(pos),mcols(pos)$len_adj)
+    neg_rl<-split(seq_along(neg),mcols(neg)$len_adj)
     for(comp in names(rl_cutoffs_comp)){
-      all_rl_ps<-GRangesList()
-      uniq_rl_ps<-GRangesList()
-      uniq_rl_mm_ps<-GRangesList()
-      
-      seqlevels(all_rl_ps)<-seqllll
-      seqlevels(uniq_rl_ps)<-seqllll
-      seqlevels(uniq_rl_mm_ps)<-seqllll
-      
-      seqlengths(all_rl_ps)<-seqleee
-      seqlengths(uniq_rl_ps)<-seqleee
-      seqlengths(uniq_rl_mm_ps)<-seqleee
-      
+      # the P-sites of each read length go into lists, and into GRangesLists after the last read length:
+      # [[<- on a GRangesList took longer with each read length
+      all_rl_list<-list()
+      uniq_rl_list<-list()
+      uniq_rl_mm_list<-list()
       
       chroms<-comp
       
@@ -466,7 +462,7 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
         
         rl<-as.numeric(resul$read_length[i])
         ct<-as.numeric(resul$cutoff[i])
-        ok_reads<-pos[mcols(pos)$len_adj%in%rl]
+        ok_reads<-pos[unlist(pos_rl[as.numeric(names(pos_rl))%in%rl],use.names=FALSE)]
         ok_reads<-ok_reads[as.vector(seqnames(ok_reads))%in%chroms]
         
         ps_plus<-GRanges()
@@ -481,8 +477,9 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
           ps_unspl<-shift(resize(GRanges(unspl),width=1,fix="start"),shift=ct)
           
           spl<-ok_reads[grep(pattern="N",x=cigar(ok_reads))]
-          firstb<-as.numeric(sapply(strsplit(cigar(spl),"M"),"[[",1))
-          lastb<-as.numeric(sapply(strsplit(cigar(spl),"M"),function(x){gsub(x[length(x)],pattern="^[^_]*N",replacement="")}))
+          # the lengths of the first and of the last block: the number before the first M, and after the last N
+          firstb<-as.numeric(sub("M.*$","",cigar(spl)))
+          lastb<-as.numeric(gsub(sub("^.*M","",sub("M$","",cigar(spl))),pattern="^[^_]*N",replacement=""))
           firstok<-spl[firstb>ct]
           firstok<-shift(resize(GRanges(firstok),width=1,fix="start"),shift=ct)
           
@@ -524,7 +521,7 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
           mcols(ps_plus_uniq_mm)<-NULL
           
         }
-        ok_reads<-neg[mcols(neg)$len_adj%in%rl]
+        ok_reads<-neg[unlist(neg_rl[as.numeric(names(neg_rl))%in%rl],use.names=FALSE)]
         ok_reads<-ok_reads[as.vector(seqnames(ok_reads))%in%chroms]
         
         ps_neg<-GRanges()
@@ -540,8 +537,9 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
           
           spl<-ok_reads[grep(pattern="N",x=cigar(ok_reads))]
           
-          firstb<-as.numeric(sapply(strsplit(cigar(spl),"M"),"[[",1))
-          lastb<-as.numeric(sapply(strsplit(cigar(spl),"M"),function(x){gsub(x[length(x)],pattern="^[^_]*N",replacement="")}))
+          # the lengths of the first and of the last block: the number before the first M, and after the last N
+          firstb<-as.numeric(sub("M.*$","",cigar(spl)))
+          lastb<-as.numeric(gsub(sub("^.*M","",sub("M$","",cigar(spl))),pattern="^[^_]*N",replacement=""))
           lastok<-spl[lastb>ct]
           lastok<-shift(resize(GRanges(lastok),width=1,fix="start"),shift=-ct)
           
@@ -600,12 +598,23 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
           uniq_mm_ps<-ps_res
           
         }
-        all_rl_ps[[as.character(rl)]]<-all_ps
-        uniq_rl_ps[[as.character(rl)]]<-uniq_ps
-        uniq_rl_mm_ps[[as.character(rl)]]<-uniq_mm_ps
+        all_rl_list[[as.character(rl)]]<-all_ps
+        uniq_rl_list[[as.character(rl)]]<-uniq_ps
+        uniq_rl_mm_list[[as.character(rl)]]<-uniq_mm_ps
         
         
       }
+      all_rl_ps<-GRangesList(all_rl_list)
+      uniq_rl_ps<-GRangesList(uniq_rl_list)
+      uniq_rl_mm_ps<-GRangesList(uniq_rl_mm_list)
+      
+      seqlevels(all_rl_ps)<-seqllll
+      seqlevels(uniq_rl_ps)<-seqllll
+      seqlevels(uniq_rl_mm_ps)<-seqllll
+      
+      seqlengths(all_rl_ps)<-seqleee
+      seqlengths(uniq_rl_ps)<-seqleee
+      seqlengths(uniq_rl_mm_ps)<-seqleee
       #here comps
       list_rlct<-list(all_rl_ps,uniq_rl_ps,uniq_rl_mm_ps)
       names(list_rlct)<-c("P_sites_all","P_sites_uniq","P_sites_uniq_mm")
@@ -614,9 +623,8 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
     #for rl, merge psites
     
     
-    all_ps_comps<-GRangesList()
-    seqlevels(all_ps_comps)<-seqllll
-    seqlengths(all_ps_comps)<-seqleee
+    # the same for the merge of the compartments: lists first, GRangesLists at the end
+    all_ps_list<-list()
     rls_comps<-unique(unlist(lapply(list_pss,FUN=function(x) names(x[["P_sites_all"]]) )))
     for(rl in rls_comps){
       reads_rl_comp<-GRanges()
@@ -632,14 +640,15 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
             reads_rl_comp<-c(reads_rl_comp,oth)
           }
         }          
-        all_ps_comps[[rl]]<-reads_rl_comp
+        all_ps_list[[rl]]<-reads_rl_comp
       }
       
     }
+    all_ps_comps<-GRangesList(all_ps_list)
+    seqlevels(all_ps_comps)<-seqllll
+    seqlengths(all_ps_comps)<-seqleee
     
-    uniq_ps_comps<-GRangesList()
-    seqlevels(uniq_ps_comps)<-seqllll
-    seqlengths(uniq_ps_comps)<-seqleee
+    uniq_ps_list<-list()
     rls_comps<-unique(unlist(lapply(list_pss,FUN=function(x) names(x[["P_sites_uniq"]]) )))
     for(rl in rls_comps){
       reads_rl_comp<-GRanges()
@@ -655,14 +664,15 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
             reads_rl_comp<-c(reads_rl_comp,oth)
           }
         }          
-        uniq_ps_comps[[rl]]<-reads_rl_comp
+        uniq_ps_list[[rl]]<-reads_rl_comp
       }
       
     }
+    uniq_ps_comps<-GRangesList(uniq_ps_list)
+    seqlevels(uniq_ps_comps)<-seqllll
+    seqlengths(uniq_ps_comps)<-seqleee
     
-    uniq_mm_ps_comps<-GRangesList()
-    seqlevels(uniq_mm_ps_comps)<-seqllll
-    seqlengths(uniq_mm_ps_comps)<-seqleee
+    uniq_mm_ps_list<-list()
     rls_comps<-unique(unlist(lapply(list_pss,FUN=function(x) names(x[["P_sites_uniq_mm"]]) )))
     for(rl in rls_comps){
       reads_rl_comp<-GRanges()
@@ -677,10 +687,13 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
             reads_rl_comp<-c(reads_rl_comp,oth)
           }
         }          
-        uniq_mm_ps_comps[[rl]]<-reads_rl_comp
+        uniq_mm_ps_list[[rl]]<-reads_rl_comp
       }
       
     }
+    uniq_mm_ps_comps<-GRangesList(uniq_mm_ps_list)
+    seqlevels(uniq_mm_ps_comps)<-seqllll
+    seqlengths(uniq_mm_ps_comps)<-seqleee
     
   }
   
