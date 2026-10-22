@@ -11,7 +11,7 @@ get_top50_all_genes(rdata_list)
 }
 \value{
 This function returns data to be displayed as table in the html report: a list with a data.frame for each sample,
-the 100 rows of \code{res_all$read_stats$counts_all_genes} with the most reads.
+the 100 rows of \code{res_all$read_stats$counts_all_genes} with the most reads (all rows, if it has fewer).
 }
 \description{
 This function retrieves data on the top 100 abundant genes (the function name says 50). \cr \cr

@@ -234,6 +234,10 @@
   environment. The errors of `get_metagene_data()` and
   `get_codon_usage_data()` for a wrong `comp` now say `Variable comp`, not
   `Variable res`.
+- `get_top50_cds_genes()` and `get_top50_all_genes()` give all genes when the
+  results have fewer than 50 (100) genes. Before, they added rows of `NA` up
+  to 50 (100) rows, which the "Top 50 abundant genes" tables of the report
+  showed. The results with more genes give the same tables.
 
 ## Performance
 
