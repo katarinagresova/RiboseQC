@@ -25,7 +25,8 @@ prepare_for_ORFquant(
 
 \item{bam_file}{Full path to the bam file}
 
-\item{path_to_rl_cutoff_file}{path to the rl_cutoff_file file specifying in 3 columns the read lengths, cutoffs and compartments ("nucl" for standard chromosomes):
+\item{path_to_rl_cutoff_file}{path to the rl_cutoff_file file specifying in 3 columns the read lengths, cutoffs and compartments ("nucl" for all
+chromosomes that are not circular, or the name of a circular chromosome):
 a tab-separated file with the column names 'read_length', 'cutoff' and 'compartment', for example the file \code{<dest_name>_P_sites_offsets.tsv}
 of \code{\link{RiboseQC_analysis}}. Give this file or the two P_sites bigwig files, not both}
 

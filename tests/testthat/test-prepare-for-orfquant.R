@@ -150,6 +150,9 @@ test_that("prepare_for_ORFquant() refuses a wrong cutoff table", {
   out <- prepare_with(write_cutoffs(c(head, "28\t12\tmito")))
   expect_match(out$message, "No compartment of the rl_cutoff file is 'nucl'")
   expect_match(out$message, "mito")
+  # chr22 is not circular: before, its 28-nt reads got P-sites with the rows of nucl and of chr22
+  out <- prepare_with(write_cutoffs(c(head, "28\t12\tnucl", "28\t12\tchr22")), dest = file.path(work, "refused_chr22"))
+  expect_match(out$message, "chromosomes that are not circular: chr22", fixed = TRUE)
 })
 
 test_that("prepare_for_ORFquant() refuses a BAM file with other chromosomes than the annotation", {

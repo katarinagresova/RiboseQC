@@ -146,6 +146,13 @@
   must be TRUE or FALSE`, and `NA` with `missing value where TRUE/FALSE
   needed`; a large BAM file was read once before. The values that worked,
   also `"TRUE"` or `1`, still work.
+- `prepare_for_ORFquant()` stops at once when a compartment of the cutoff
+  file is a chromosome that is not circular, for example `chr22`: a
+  compartment is `nucl` (all chromosomes that are not circular) or the name
+  of a circular chromosome. Before, the reads of that chromosome got P-sites
+  with the rows of the chromosome and also with the rows of `nucl`, so a
+  read length in the two gave each of its reads two P-sites. The help of
+  `path_to_rl_cutoff_file` now says what a compartment is.
 
 ## Changes in results
 
@@ -235,6 +242,27 @@
   on both strands, as with `stranded = FALSE`. The results of
   `stranded = TRUE` and `FALSE` do not change. For `prepare_for_ORFquant()`,
   see its new argument `stranded`.
+- `getSeq()` of a `FaFile_Circ` now reads a range that starts after the end
+  of a circular chromosome: the range is first moved back by a multiple of
+  the chromosome's length, so that it starts on the chromosome. Before, such
+  a range was dropped, so the sequences did not match the ranges (with the
+  ranges `chrM:12-14` and `chr2:1-3` on a chrM of 10 nt, the result was one
+  sequence, the sequence of `chr2:1-3` followed by that of `chrM:2-4`), or
+  the function stopped with `subscript is a logical vector with out-of-bounds
+  TRUE values`, or R crashed (a range that starts just after the end). The
+  other ranges give the same sequences as before.
+- The messages of `load_annotation()` now say where it puts
+  `GTF_annotation` and `genome_seq`: "the global workspace" when `envir` is
+  the global environment, else "the environment envir". Before, they said
+  "the global workspace" and "parent workspace" for any `envir`, also in
+  `RiboseQC_analysis()`, which loads the annotation into its own
+  environment. The errors of `get_metagene_data()` and
+  `get_codon_usage_data()` for a wrong `comp` now say `Variable comp`, not
+  `Variable res`.
+- `get_top50_cds_genes()` and `get_top50_all_genes()` give all genes when the
+  results have fewer than 50 (100) genes. Before, they added rows of `NA` up
+  to 50 (100) rows, which the "Top 50 abundant genes" tables of the report
+  showed. The results with more genes give the same tables.
 
 ## Performance
 

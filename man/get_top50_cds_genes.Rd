@@ -11,7 +11,7 @@ get_top50_cds_genes(rdata_list)
 }
 \value{
 This function returns data to be displayed as table in the html report: a list with a data.frame for each sample,
-the 50 rows of \code{res_all$read_stats$counts_cds_genes} with the most reads.
+the 50 rows of \code{res_all$read_stats$counts_cds_genes} with the most reads (all rows, if it has fewer).
 }
 \description{
 This function retrieves data on the top 50 abundant CDS regions for protein coding genes. \cr \cr
