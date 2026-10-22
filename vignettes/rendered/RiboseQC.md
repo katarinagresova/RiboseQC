@@ -158,11 +158,10 @@ list.files(out_dir, pattern = "^(root|shoots)_")
 ```
 
 With `write_TSV_files = TRUE` (the default), the `.tsv` files have the
-main tables of the results; the *Value* section of `?RiboseQC_analysis`
-gives their columns. `<dest_name>_summary.tsv` has one row for each
-compartment: its reads, the percentage of them on the CDS, the
-percentage of them that give P-sites, and the frame preference of these
-reads:
+main tables of the results; `?RiboseQC_output` gives their columns.
+`<dest_name>_summary.tsv` has one row for each compartment: its reads,
+the percentage of them on the CDS, the percentage of them that give
+P-sites, and the frame preference of these reads:
 
 ``` r
 read.delim(file.path(out_dir, "shoots_summary.tsv"))
@@ -173,9 +172,9 @@ read.delim(file.path(out_dir, "shoots_summary.tsv"))
 ```
 
 `<dest_name>_results_RiboseQC_all` holds all results, in the list
-`res_all`; the *Details* section of `?RiboseQC_analysis` describes its
-elements. `<dest_name>_results_RiboseQC` is a smaller copy of it,
-without the P-sites, which the HTML report uses, and so do we here:
+`res_all`; `?RiboseQC_output` describes its elements and all output
+files. `<dest_name>_results_RiboseQC` is a smaller copy of it, without
+the P-sites, which the HTML report uses, and so do we here:
 
 ``` r
 root <- get(load(file.path(out_dir, "root_results_RiboseQC")))

@@ -77,48 +77,31 @@ gives the offsets of the compartments with selected read lengths: it must have a
 
 \item{n_cores}{number of cores to use, each for one chunk of \code{chunk_size} alignments at a time, in forked processes (not on Windows). Each core needs the memory for one chunk. The results do not depend on it. Defaults to 1}
 
-\item{write_TSV_files}{write the main tables of the results as tab-separated files, for each BAM file (see Value). Defaults to \code{TRUE}}
+\item{write_TSV_files}{write the main tables of the results as tab-separated files, for each BAM file (see \code{\link{RiboseQC_output}}). Defaults to \code{TRUE}}
 }
 \value{
 The paths of the 'results_RiboseQC' files, one for each bam file, in the order of \code{bam_files} (the \code{input_files}
 of \code{\link{create_html_report}}). For each bam file, the function saves these files, with the prefix in \code{dest_names}
 (by default the bam_files path):\cr
-'results_RiboseQC_all': an R file with the complete list of outputs described in Details. Only with \code{write_tmp_files = TRUE}.\cr
-'results_RiboseQC': a smaller R file used for creating the html report (see Details).\cr
-'P_sites_calcs': a tab-separated summary of P_sites selection statistics (\code{summary_P_sites} in Details).\cr
+'results_RiboseQC_all': an R file with the list \code{res_all} of all results. Only with \code{write_tmp_files = TRUE}.\cr
+'results_RiboseQC': a smaller R file used for creating the html report.\cr
+'P_sites_calcs': a tab-separated summary of P_sites selection statistics (\code{summary_P_sites} of \code{res_all}).\cr
 'P_sites_offsets.tsv': the tab-separated file with the offsets that were used to calculate the P_sites, with the columns 'read_length', 'cutoff' and 'compartment'
 (\code{"nucl"} or the name of a circular chromosome): one row for each read length and compartment, including the read lengths of \code{offsets_df} and of \code{rescue_all_rls}.
 It is the cutoff file that \code{\link{prepare_for_ORFquant}} reads, and it gives the P_sites_all, P_sites_uniq and P_sites_uniq_mm of 'for_ORFquant'.\cr
 'for_ORFquant': an R object that can be used in the ORFquant pipeline: the list \code{for_ORFquant} with the P_sites (P_sites_all, P_sites_uniq,
 P_sites_uniq_mm) and the \code{junctions}. Only if there are P_sites.\cr
-'junctions': an R file with the object \code{juns}, the \code{junctions} of Details.\cr
+'junctions': an R file with the object \code{juns}, the reads on the annotated splice junctions.\cr
 'P_sites_plus.bedgraph', 'P_sites_minus.bedgraph', 'P_sites_uniq_plus.bedgraph' and 'P_sites_uniq_minus.bedgraph': the P_sites positions of all and of
 uniquely mapping reads, on each strand. Only if there are such P_sites.\cr
 'coverage_plus.bedgraph', 'coverage_minus.bedgraph', 'coverage_uniq_plus.bedgraph' and 'coverage_uniq_minus.bedgraph': the coverage of the reads
 (see \code{normalize_cov}).\cr
-With \code{write_TSV_files = TRUE}, also these tab-separated files with a header line. They have tables of
-\code{res_all} (see Details), with the same names:
-\itemize{
-\item 'read_lengths.tsv' (\code{read_stats$rld}): one row for each compartment (\code{"nucl"} and each circular chromosome of the BAM file),
-  with the column 'compartment' and the number of reads of each read length ('reads_<read length>').
-\item 'regions.tsv' (\code{read_stats$positions}): one row for each region ('cds', 'fiveutrs', 'threeutrs', 'ncIsof', 'ncRNAs', 'introns' and
-  'intergenic', the "biotypes" of the report), with the column 'region' and the number of reads on it in each compartment ('reads_<compartment>').
-  A read on two regions counts for both.
-\item 'genes.tsv' (\code{read_stats$counts_all_genes}): one row for each gene, with the columns 'gene_id', 'reads', 'chromosome', 'gene_name',
-  'gene_biotype', 'RPKM' and 'TPM'.
-\item 'P_sites_calcs.tsv': the same table as 'P_sites_calcs' (\code{summary_P_sites}), the offset ('cutoff') and the 'frame_preference'
-  of each read length and compartment ('comp').
-\item 'top50_positions.tsv' (\code{sequence_analysis}): the 50 5' end positions and read lengths with the most reads, one row for each,
-  with the columns 'seqnames', 'start', 'end', 'width' and 'strand' of the reads, 'score' (their number), 'len_adj' (their read length),
-  'pct' (their percentage of all reads on the chromosomes of the annotation), 'seq' (their sequence), and the 'region', 'gene' and 'gene_biotype' that they overlap.
-  More values are separated by commas.
-\item 'summary.tsv': one row for each compartment, with the columns 'sample' (of \code{sample_names}), 'compartment', 'reads', 'pct_cds'
-  (the percentage of the reads of the compartment on its 'cds' region), 'pct_P_sites' (the percentage of the reads of the compartment
-  with a read length that has an offset in 'P_sites_offsets.tsv': these reads give the P_sites) and 'frame_preference' (the mean 'frame_preference' of these read lengths, weighted by their reads). Read lengths
-  without a 'frame_preference' in 'P_sites_calcs', from \code{offsets_df} or \code{rescue_all_rls}, are not in the mean; it is \code{NA} if
-  no read length has one. The percentages are \code{NA} for a compartment without reads.
-}
 With \code{create_report = TRUE}, it also saves the html report \code{report_file} and its plots (see \code{\link{create_html_report}}).
+
+With \code{write_TSV_files = TRUE}, also the tab-separated files 'summary.tsv', 'read_lengths.tsv', 'regions.tsv', 'genes.tsv',
+'P_sites_calcs.tsv' and 'top50_positions.tsv', with the main tables of \code{res_all}.
+
+\code{\link{RiboseQC_output}} describes each file and each element of \code{res_all}.
 }
 \description{
 This function loads annotation created by the prepare_annotation_files function, and analyzes a BAM file.
@@ -126,43 +109,7 @@ This function loads annotation created by the prepare_annotation_files function,
 \details{
 This function loads different genomic regions created in the \code{prepare_annotation_files} step,
 separating features on different recognized organelles. The bam files is then analyzed in chunks to minimize RAM usage.\cr
-The complete list of analysis and output is as follows:\cr\cr
-\code{read_stats}: contains:\cr read length distribution (rld) per organelle, \code{positions} containes mapping statistics
-on different genomic regions, \code{reads_pos1} contains 5' end mapping positions, with the number of reads in \code{score}, separated by read length.
-\code{counts_cds_genes} contains read mapping statistics on CDS regions of protein coding genes, including gene symbols, counts, RPKM and TPM values,
-\code{counts_all_genes} is a similar object, but contains statistics on all annotated genes, and
-\code{reads_summary} reports mapping statistics on different genomic regions and divided by read length and organelle.
-The same statistics for uniquely mapping reads (mapping quality more than 50) have the suffix \code{_unq}, e.g. \code{rld_unq}.\cr\cr
-\code{profiles_fivepr} contains:\cr
-\code{five_prime_bins}: for each compartment, a DataFrame object for each read length (see \code{read_subset}) and for all of them (\code{"all"}),
-with one row for each transcript and signal values over 50 5'UTR bins, 100 CDS bins and 50 3'UTR bins; in the nuclear compartment, one representative
-transcript (reprentative_mostcommon) is selected for each gene (see also \code{fast_mode}). \code{five_prime_subcodon} containes a similar structure, but for 25nt downstream the Transcription
-Start Site (TSS), 25nt upstream start codons, the first 33nt of the CDS (from the start codon), 33nt in the middle of the CDS, the last 33nt of the CDS,
-25nt downstream the stop codon, and 25nt upstream the Transcription End Site (TES).\cr\cr
-\code{selection_cutoffs} contains:\cr
-\code{results_choice}: containing the calculated cutoffs and selected readlengths, together with \code{data} about the different
-methods (see \code{choose_readlengths}). \code{results_cutoffs} has statistics about calculated cutoffs, while \code{analysis_frame_cutoff} has extensive
-statistics concerning cutoff calculations, see \code{calc_cutoffs_from_profiles} for more details.
-These are the calculated cutoffs: \code{offsets_df} and \code{rescue_all_rls} do not change them.\cr\cr
-\code{P_sites_stats}: contains the list of calculated P_sites, from all reads (P_sites_all), uniquely mapping reads (P_sites_uniq, mapping quality more than 50),
-or uniquely mapping reads with mismatches (P_sites_uniq_mm, from the MD tag of the bam file: empty without MD tags). \code{junctions} contains stastics on read mapping on annotated splice junctions.
-coverage for entire reads (no 5'ends or P_sites-transformed) on different strands and for all and uniquely mapping reads are also calculated.\cr\cr
-\code{profiles_P_sites} contains:\cr
-\code{P_sites_bins}: profiles for each organelle and read length around binned transcript locations.\cr
-\code{P_sites_subcodon}: profiles for each organelle and read length around transcript start/ends and ORF start/ends.\cr
-\code{Codon_counts}: codon occurrences in the first 11 codons, middle 11 codons, and last 11 codons of the CDS, summed over the transcripts.\cr
-\code{P_sites_percodon}: P_sites counts on each codon, separated by ORF positions as described above. Values are separated by organelle and read length.\cr
-\code{P_sites_percodon_ratio}: ratio of P_sites_percodon/Codon_counts, as a measure of P_site occupancy on each codon, divided again by organelle and read length, for different ORF positions.\cr
-\code{A_sites_percodon}, \code{A_sites_percodon_ratio}, \code{E_sites_percodon} and \code{E_sites_percodon_ratio}: the same for the A site and the E site
-(the codon after and the codon before the P_site).\cr\cr
-\code{sequence_analysis}: contains a GRanges object with the 50 top mapping locations in the genome (5' end positions, for each read length), with the corresponding DNA sequence,
-number of reads mapping (also in percentage of total n of reads), and genomic feature annotation.\cr\cr
-\code{summary_P_sites}: contains a DataFrame object summarizing the P_sites calculation and read length selection, including statistics on percentage of total reads used
-(the table of 'P_sites_calcs').
-
-The smaller 'results_RiboseQC' file has the same list \code{res_all}, but without \code{read_stats$reads_pos1} and \code{P_sites_stats}
-(they are \code{""}), and with the profiles of \code{five_prime_bins}, \code{five_prime_subcodon}, \code{P_sites_bins} and \code{P_sites_subcodon}
-summed over the transcripts: a numeric vector for each compartment and read length.
+The results of each bam file are in the list \code{res_all}, described in \code{\link{RiboseQC_output}}.
 
 Alignments flagged as duplicates, secondary alignments and alignments with an insertion or a deletion (\code{I} or \code{D} in the CIGAR string)
 are not used: the read counts, the read length distributions, the offsets, the P_sites, the coverage and the junction reads do not include them,
@@ -175,7 +122,7 @@ than an end-to-end alignment of the same reads (STAR: \code{--alignEndsType EndT
 An \code{offsets_df} must come from the same alignments.
 }
 \seealso{
-\code{\link{prepare_annotation_files}}, \code{\link{calc_cutoffs_from_profiles}}, \code{\link{choose_readlengths}}, \code{\link{create_html_report}}.
+\code{\link{RiboseQC_output}}, \code{\link{prepare_annotation_files}}, \code{\link{calc_cutoffs_from_profiles}}, \code{\link{choose_readlengths}}, \code{\link{create_html_report}}.
 }
 \author{
 Lorenzo Calviello, \email{calviello.l.bio@gmail.com}

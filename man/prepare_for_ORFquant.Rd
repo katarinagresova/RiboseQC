@@ -43,7 +43,7 @@ of \code{\link{RiboseQC_analysis}}. Give this file or the two P_sites bigwig fil
 
 \item{path_to_P_sites_uniq_mm_minus_bw}{(Optional) path to a bigwig file containing uniquely mapping (with mismatches) P_sites positions on the minus strand}
 
-\item{dest_name}{prefix to use for the output files. Defaults to same as \code{bam_file} (appends "for_ORFquant" to its filename)}
+\item{dest_name}{prefix to use for the output files. Defaults to same as \code{bam_file} (appends "_for_ORFquant" to its filename)}
 
 \item{n_cores}{number of cores to use, each for one chunk of \code{chunk_size} alignments at a time. Defaults to 1}
 
@@ -89,7 +89,7 @@ add them to the GTF file of \code{\link{prepare_annotation_files}}.
 }
 \seealso{
 \code{run_ORFquant()} of ORFquant, which uses the "for_ORFquant" file, and
-\code{\link{RiboseQC_analysis}}, which also writes one
+\code{\link{RiboseQC_analysis}}, which also writes one, and \code{\link{RiboseQC_output}}, which describes it
 }
 \author{
 Lorenzo Calviello, \email{calviello.l.bio@gmail.com}

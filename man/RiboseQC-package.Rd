@@ -13,6 +13,7 @@ and organellar ribosomes (Calviello et al., bioRxiv 2019, \doi{10.1101/601468}).
 \item \code{\link{RiboseQC_analysis}} analyzes the BAM files with this annotation, writes the results and makes
 the html report (\code{\link{create_html_report}}).
 }
+\code{\link{RiboseQC_output}} describes the output files and the results (the list \code{res_all}).
 \code{\link{prepare_for_ORFquant}} calculates the P-sites for ORFquant from a BAM file and a table of offsets.
 The vignette runs the two steps on the example data of the package: \code{vignette("RiboseQC", package = "RiboseQC")}.
 }

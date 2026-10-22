@@ -56,8 +56,8 @@ create_html_report(input_files=paste(sampnames,"_results_RiboseQC",sep = ""), in
 }
 }
 \seealso{
-\code{\link{plot_read_biotype_dist_1}}, \code{\link{plot_read_biotype_dist_2}},
-\code{\link{plot_read_length_dist}}, \code{\link{plot_read_length_dist_by_biotype}},
+\code{\link{RiboseQC_output}} (the files of the report), \code{\link{plot_read_biotype_dist_1}},
+\code{\link{plot_read_biotype_dist_2}}, \code{\link{plot_read_length_dist}}, \code{\link{plot_read_length_dist_by_biotype}},
 \code{\link{plot_read_biotype_dist_by_length}},
 \code{\link{get_metagene_data}},
 \code{\link{plot_metagene_hm_rmd}}, \code{\link{plot_metagene_hm}},
