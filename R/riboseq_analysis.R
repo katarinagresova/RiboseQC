@@ -360,8 +360,9 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         reduc <- function(x, y) {
             list(max(x[[1]], y[[1]]), min(x[[2]], y[[2]]))
         }
+        # the read lengths need only the cigars: the flags of param, without its other fields
         yiel <- function(x) {
-            readGAlignments(x, param = param)
+            readGAlignments(x, param = ScanBamParam(flag = bamFlag(param, asInteger = TRUE)))
         }
         
         mapp <- function(x) {
