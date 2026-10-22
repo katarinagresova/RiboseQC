@@ -305,8 +305,9 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         dest_name <- dest_names[bammo]
         
         opts <- BamFile(file = bam_file, yieldSize = chunk_size)  #read BAMfile in one chunk
+        # without the MD tag: only the P-sites use it, with their own param
         param <- ScanBamParam(flag = scanBamFlag(isDuplicate = FALSE, isSecondaryAlignment = FALSE), 
-            what = c("mapq"), tag = "MD")
+            what = c("mapq"))
         
         dira <- paste(dirname(dest_name), paste("tmp_RiboseQC", basename(dest_name), 
             sep = "_"), sep = "/")
@@ -360,27 +361,21 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         reduc <- function(x, y) {
             list(max(x[[1]], y[[1]]), min(x[[2]], y[[2]]))
         }
+        # the read lengths need only the cigars: the flags of param, without its other fields
         yiel <- function(x) {
-            readGAlignments(x, param = param)
+            readGAlignments(x, param = ScanBamParam(flag = bamFlag(param, asInteger = TRUE)))
         }
         
         mapp <- function(x) {
-            x_I <- x[grep("I", cigar(x))]
-            
-            if (length(x_I) > 0) {
-                x <- x[grep("I", cigar(x), invert = TRUE)]
-                
-            }
-            x_D <- x[grep("D", cigar(x))]
-            if (length(x_D) > 0) {
-                x <- x[grep("D", cigar(x), invert = TRUE)]
-                
+            # the reads with I or D go: one grepl(), not two grep() for each
+            indel <- grepl("[ID]", cigar(x))
+            if (any(indel)) {
+                x <- x[!indel]
             }
             
             
-            clipp <- width(cigarillo::cigars_as_ranges_along_query(x@cigar, ops = "S"))
-            clipp[elementNROWS(clipp) == 0] <- 0
-            len_adj <- qwidth(x) - sum(clipp)
+            # the read length without the soft clips
+            len_adj <- cigarillo::cigar_extent_along_query(x@cigar, after.soft.clipping = TRUE)
             mcols(x)$len_adj <- len_adj
             
             
@@ -460,20 +455,12 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 strandedness <- T
             }
             
-            mcols(x)$MD[which(is.na(mcols(x)$MD))] <- "NO"
-            
             # Remove Insertion and Deletion (TBA)
             
-            x_I <- x[grep("I", cigar(x))]
-            
-            if (length(x_I) > 0) {
-                x <- x[grep("I", cigar(x), invert = TRUE)]
-                
-            }
-            x_D <- x[grep("D", cigar(x))]
-            if (length(x_D) > 0) {
-                x <- x[grep("D", cigar(x), invert = TRUE)]
-                
+            # the reads with I or D go: one grepl(), not two grep() for each
+            indel <- grepl("[ID]", cigar(x))
+            if (any(indel)) {
+                x <- x[!indel]
             }
             
             emptyt <- rep(0, length(readlengths))
@@ -483,9 +470,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             # softclipping part
             
             
-            clipp <- width(cigarillo::cigars_as_ranges_along_query(x@cigar, ops = "S"))
-            clipp[elementNROWS(clipp) == 0] <- 0
-            len_adj <- qwidth(x) - sum(clipp)
+            # the read length without the soft clips
+            len_adj <- cigarillo::cigar_extent_along_query(x@cigar, after.soft.clipping = TRUE)
             mcols(x)$len_adj <- len_adj
             
             # Remove S from Cigar (read positions/length are already adjusted) it helps
@@ -564,22 +550,27 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             row.names(rld_len_unq) <- names(list_reads)
             
             
+            # the counts of summarizeOverlaps(mode = "Union", inter.feature = FALSE) for the reads x and for the
+            # unique reads x_uniq, from one findOverlaps() with x: x_uniq are the reads of x with mapq > 50
+            count_reads <- function(features) {
+                hits <- findOverlaps(features, x, ignore.strand = !as.logical(strandedness))
+                unq <- x@elementMetadata$mapq[subjectHits(hits)] > 50
+                list(all = matrix(tabulate(queryHits(hits), length(features)), dimnames = list(names(features), "reads")),
+                  unq = matrix(tabulate(queryHits(hits)[unq], length(features)), dimnames = list(names(features), "reads")))
+            }
+            
             # count reads per biotype location per compartment
             list_rld_loc <- list()
+            list_rld_loc_unq <- list()
             for (i in c("nucl", circs)) {
-                list_rld_loc[[i]] <- (assay(summarizeOverlaps(reads = x, features = GRangesList(list_locat[[i]]), 
-                  ignore.strand = !as.logical(strandedness), mode = "Union", inter.feature = FALSE)))
+                cnts <- count_reads(GRangesList(list_locat[[i]]))
+                list_rld_loc[[i]] <- cnts$all
+                list_rld_loc_unq[[i]] <- cnts$unq
             }
             rld_loc <- do.call(what = cbind.data.frame, list_rld_loc)
             names(rld_loc) <- paste("reads", names(list_rld_loc), sep = "_")
             
             
-            list_rld_loc_unq <- list()
-            for (i in c("nucl", circs)) {
-                list_rld_loc_unq[[i]] <- (assay(summarizeOverlaps(reads = x_uniq, 
-                  features = GRangesList(list_locat[[i]]), ignore.strand = !as.logical(strandedness), 
-                  mode = "Union", inter.feature = FALSE)))
-            }
             rld_loc_unq <- do.call(what = cbind.data.frame, list_rld_loc_unq)
             names(rld_loc_unq) <- paste("reads", names(list_rld_loc_unq), sep = "_")
             
@@ -592,12 +583,13 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             for (i in names(list_reads)) {
                 reads_by_length <- list()
                 rdss <- list_reads[[i]]
-                rdss <- split(rdss, mcols(rdss)$len_adj)
                 
                 rgs <- GRangesList(list_locat[[i]])
-                ovs <- lapply(rdss, FUN = function(x) {
-                  suppressWarnings(assay(summarizeOverlaps(reads = x, features = rgs, 
-                    ignore.strand = FALSE, mode = "Union", inter.feature = FALSE)))
+                # one findOverlaps() for the reads of all read lengths, then the counts of each read length: the
+                # counts of summarizeOverlaps(mode = "Union", inter.feature = FALSE) for each read length
+                ovs <- suppressWarnings(findOverlaps(rgs, rdss, ignore.strand = FALSE))
+                ovs <- lapply(split(queryHits(ovs), factor(mcols(rdss)$len_adj)[subjectHits(ovs)]), FUN = function(x) {
+                  matrix(tabulate(x, length(rgs)), dimnames = list(names(rgs), "reads"))
                 })
                 nope <- readlengths[which(!readlengths %in% names(ovs))]
                 if (length(nope) > 0) {
@@ -625,12 +617,13 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             for (i in names(list_reads_unq)) {
                 reads_by_length <- list()
                 rdss <- list_reads_unq[[i]]
-                rdss <- split(rdss, mcols(rdss)$len_adj)
                 
                 rgs <- GRangesList(list_locat[[i]])
-                ovs <- lapply(rdss, FUN = function(x) {
-                  suppressWarnings(assay(summarizeOverlaps(reads = x, features = rgs, 
-                    ignore.strand = FALSE, mode = "Union", inter.feature = FALSE)))
+                # one findOverlaps() for the reads of all read lengths, then the counts of each read length: the
+                # counts of summarizeOverlaps(mode = "Union", inter.feature = FALSE) for each read length
+                ovs <- suppressWarnings(findOverlaps(rgs, rdss, ignore.strand = FALSE))
+                ovs <- lapply(split(queryHits(ovs), factor(mcols(rdss)$len_adj)[subjectHits(ovs)]), FUN = function(x) {
+                  matrix(tabulate(x, length(rgs)), dimnames = list(names(rgs), "reads"))
                 })
                 nope <- readlengths[which(!readlengths %in% names(ovs))]
                 if (length(nope) > 0) {
@@ -674,17 +667,16 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             seqgene <- cbind(as.vector(seqnames(GTF_annotation$genes)), GTF_annotation$genes$gene_id)
             
             
-            cnts_cds_genes <- assay(summarizeOverlaps(reads = x, features = red_cdss, 
-                ignore.strand = !as.logical(strandedness), mode = "Union", inter.feature = FALSE))
+            cnts_cds <- count_reads(red_cdss)
+            cnts_all <- count_reads(red_ex)
             
-            cnts_all_genes <- assay(summarizeOverlaps(reads = x, features = red_ex, 
-                ignore.strand = !as.logical(strandedness), mode = "Union", inter.feature = FALSE))
+            cnts_cds_genes <- cnts_cds$all
             
-            cnts_cds_genes_unq <- assay(summarizeOverlaps(reads = x_uniq, features = red_cdss, 
-                ignore.strand = !as.logical(strandedness), mode = "Union", inter.feature = FALSE))
+            cnts_all_genes <- cnts_all$all
             
-            cnts_all_genes_unq <- assay(summarizeOverlaps(reads = x_uniq, features = red_ex, 
-                ignore.strand = !as.logical(strandedness), mode = "Union", inter.feature = FALSE))
+            cnts_cds_genes_unq <- cnts_cds$unq
+            
+            cnts_all_genes_unq <- cnts_all$unq
             
             
             chrsss <- seqgene[match(rownames(cnts_cds_genes), seqgene[, 2]), 1]
