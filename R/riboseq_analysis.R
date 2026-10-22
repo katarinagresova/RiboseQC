@@ -592,12 +592,13 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             for (i in names(list_reads)) {
                 reads_by_length <- list()
                 rdss <- list_reads[[i]]
-                rdss <- split(rdss, mcols(rdss)$len_adj)
                 
                 rgs <- GRangesList(list_locat[[i]])
-                ovs <- lapply(rdss, FUN = function(x) {
-                  suppressWarnings(assay(summarizeOverlaps(reads = x, features = rgs, 
-                    ignore.strand = FALSE, mode = "Union", inter.feature = FALSE)))
+                # one findOverlaps() for the reads of all read lengths, then the counts of each read length: the
+                # counts of summarizeOverlaps(mode = "Union", inter.feature = FALSE) for each read length
+                ovs <- suppressWarnings(findOverlaps(rgs, rdss, ignore.strand = FALSE))
+                ovs <- lapply(split(queryHits(ovs), factor(mcols(rdss)$len_adj)[subjectHits(ovs)]), FUN = function(x) {
+                  matrix(tabulate(x, length(rgs)), dimnames = list(names(rgs), "reads"))
                 })
                 nope <- readlengths[which(!readlengths %in% names(ovs))]
                 if (length(nope) > 0) {
@@ -625,12 +626,13 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             for (i in names(list_reads_unq)) {
                 reads_by_length <- list()
                 rdss <- list_reads_unq[[i]]
-                rdss <- split(rdss, mcols(rdss)$len_adj)
                 
                 rgs <- GRangesList(list_locat[[i]])
-                ovs <- lapply(rdss, FUN = function(x) {
-                  suppressWarnings(assay(summarizeOverlaps(reads = x, features = rgs, 
-                    ignore.strand = FALSE, mode = "Union", inter.feature = FALSE)))
+                # one findOverlaps() for the reads of all read lengths, then the counts of each read length: the
+                # counts of summarizeOverlaps(mode = "Union", inter.feature = FALSE) for each read length
+                ovs <- suppressWarnings(findOverlaps(rgs, rdss, ignore.strand = FALSE))
+                ovs <- lapply(split(queryHits(ovs), factor(mcols(rdss)$len_adj)[subjectHits(ovs)]), FUN = function(x) {
+                  matrix(tabulate(x, length(rgs)), dimnames = list(names(rgs), "reads"))
                 })
                 nope <- readlengths[which(!readlengths %in% names(ovs))]
                 if (length(nope) > 0) {
