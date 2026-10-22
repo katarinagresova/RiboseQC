@@ -229,6 +229,12 @@
   chunks, GENCODE 47, `rescue_all_rls = TRUE`), a run with the report on one
   core takes 2,403 s instead of 3,025 s (21% less), with the same memory. The
   results don't change.
+- `RiboseQC_analysis()` and `prepare_for_ORFquant()` find the P-sites of each
+  chunk of the BAM file faster. On a human sample (a 2.3 GB BAM, 18 chunks,
+  GENCODE 47, `rescue_all_rls = TRUE`), a chunk of 5 million alignments takes
+  27 s instead of 44 s, and a run of `RiboseQC_analysis()` with the report on
+  one core takes 2,064 s instead of 2,393 s (14% less), with the same memory.
+  The results don't change.
 
 ## Documentation
 

@@ -420,6 +420,9 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
   
   if(!is.null(rl_cutoffs_comp)){
     list_pss<-list()
+    # the reads of each read length: the indices of pos and neg, split once
+    pos_rl<-split(seq_along(pos),mcols(pos)$len_adj)
+    neg_rl<-split(seq_along(neg),mcols(neg)$len_adj)
     for(comp in names(rl_cutoffs_comp)){
       # the P-sites of each read length go into lists, and into GRangesLists after the last read length:
       # [[<- on a GRangesList took longer with each read length
@@ -447,7 +450,7 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
         
         rl<-as.numeric(resul$read_length[i])
         ct<-as.numeric(resul$cutoff[i])
-        ok_reads<-pos[mcols(pos)$len_adj%in%rl]
+        ok_reads<-pos[unlist(pos_rl[as.numeric(names(pos_rl))%in%rl],use.names=FALSE)]
         ok_reads<-ok_reads[as.vector(seqnames(ok_reads))%in%chroms]
         
         ps_plus<-GRanges()
@@ -506,7 +509,7 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
           mcols(ps_plus_uniq_mm)<-NULL
           
         }
-        ok_reads<-neg[mcols(neg)$len_adj%in%rl]
+        ok_reads<-neg[unlist(neg_rl[as.numeric(names(neg_rl))%in%rl],use.names=FALSE)]
         ok_reads<-ok_reads[as.vector(seqnames(ok_reads))%in%chroms]
         
         ps_neg<-GRanges()
