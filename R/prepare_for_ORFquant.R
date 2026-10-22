@@ -421,18 +421,11 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
   if(!is.null(rl_cutoffs_comp)){
     list_pss<-list()
     for(comp in names(rl_cutoffs_comp)){
-      all_rl_ps<-GRangesList()
-      uniq_rl_ps<-GRangesList()
-      uniq_rl_mm_ps<-GRangesList()
-      
-      seqlevels(all_rl_ps)<-seqllll
-      seqlevels(uniq_rl_ps)<-seqllll
-      seqlevels(uniq_rl_mm_ps)<-seqllll
-      
-      seqlengths(all_rl_ps)<-seqleee
-      seqlengths(uniq_rl_ps)<-seqleee
-      seqlengths(uniq_rl_mm_ps)<-seqleee
-      
+      # the P-sites of each read length go into lists, and into GRangesLists after the last read length:
+      # [[<- on a GRangesList took longer with each read length
+      all_rl_list<-list()
+      uniq_rl_list<-list()
+      uniq_rl_mm_list<-list()
       
       chroms<-comp
       
@@ -588,12 +581,23 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
           uniq_mm_ps<-ps_res
           
         }
-        all_rl_ps[[as.character(rl)]]<-all_ps
-        uniq_rl_ps[[as.character(rl)]]<-uniq_ps
-        uniq_rl_mm_ps[[as.character(rl)]]<-uniq_mm_ps
+        all_rl_list[[as.character(rl)]]<-all_ps
+        uniq_rl_list[[as.character(rl)]]<-uniq_ps
+        uniq_rl_mm_list[[as.character(rl)]]<-uniq_mm_ps
         
         
       }
+      all_rl_ps<-GRangesList(all_rl_list)
+      uniq_rl_ps<-GRangesList(uniq_rl_list)
+      uniq_rl_mm_ps<-GRangesList(uniq_rl_mm_list)
+      
+      seqlevels(all_rl_ps)<-seqllll
+      seqlevels(uniq_rl_ps)<-seqllll
+      seqlevels(uniq_rl_mm_ps)<-seqllll
+      
+      seqlengths(all_rl_ps)<-seqleee
+      seqlengths(uniq_rl_ps)<-seqleee
+      seqlengths(uniq_rl_mm_ps)<-seqleee
       #here comps
       list_rlct<-list(all_rl_ps,uniq_rl_ps,uniq_rl_mm_ps)
       names(list_rlct)<-c("P_sites_all","P_sites_uniq","P_sites_uniq_mm")
@@ -602,9 +606,8 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
     #for rl, merge psites
     
     
-    all_ps_comps<-GRangesList()
-    seqlevels(all_ps_comps)<-seqllll
-    seqlengths(all_ps_comps)<-seqleee
+    # the same for the merge of the compartments: lists first, GRangesLists at the end
+    all_ps_list<-list()
     rls_comps<-unique(unlist(lapply(list_pss,FUN=function(x) names(x[["P_sites_all"]]) )))
     for(rl in rls_comps){
       reads_rl_comp<-GRanges()
@@ -620,14 +623,15 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
             reads_rl_comp<-c(reads_rl_comp,oth)
           }
         }          
-        all_ps_comps[[rl]]<-reads_rl_comp
+        all_ps_list[[rl]]<-reads_rl_comp
       }
       
     }
+    all_ps_comps<-GRangesList(all_ps_list)
+    seqlevels(all_ps_comps)<-seqllll
+    seqlengths(all_ps_comps)<-seqleee
     
-    uniq_ps_comps<-GRangesList()
-    seqlevels(uniq_ps_comps)<-seqllll
-    seqlengths(uniq_ps_comps)<-seqleee
+    uniq_ps_list<-list()
     rls_comps<-unique(unlist(lapply(list_pss,FUN=function(x) names(x[["P_sites_uniq"]]) )))
     for(rl in rls_comps){
       reads_rl_comp<-GRanges()
@@ -643,14 +647,15 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
             reads_rl_comp<-c(reads_rl_comp,oth)
           }
         }          
-        uniq_ps_comps[[rl]]<-reads_rl_comp
+        uniq_ps_list[[rl]]<-reads_rl_comp
       }
       
     }
+    uniq_ps_comps<-GRangesList(uniq_ps_list)
+    seqlevels(uniq_ps_comps)<-seqllll
+    seqlengths(uniq_ps_comps)<-seqleee
     
-    uniq_mm_ps_comps<-GRangesList()
-    seqlevels(uniq_mm_ps_comps)<-seqllll
-    seqlengths(uniq_mm_ps_comps)<-seqleee
+    uniq_mm_ps_list<-list()
     rls_comps<-unique(unlist(lapply(list_pss,FUN=function(x) names(x[["P_sites_uniq_mm"]]) )))
     for(rl in rls_comps){
       reads_rl_comp<-GRanges()
@@ -665,10 +670,13 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
             reads_rl_comp<-c(reads_rl_comp,oth)
           }
         }          
-        uniq_mm_ps_comps[[rl]]<-reads_rl_comp
+        uniq_mm_ps_list[[rl]]<-reads_rl_comp
       }
       
     }
+    uniq_mm_ps_comps<-GRangesList(uniq_mm_ps_list)
+    seqlevels(uniq_mm_ps_comps)<-seqllll
+    seqlengths(uniq_mm_ps_comps)<-seqleee
     
   }
   
