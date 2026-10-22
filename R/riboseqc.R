@@ -753,7 +753,7 @@ get_metagene_data <- function(data, profile_type, res, comp){
         }
     }
     if(!(comp %in% names(data[[profile_type]][[res]]))) {
-        stop("Variable res takes only: ", paste(names(data[[profile_type]][[res]]), collapse=", "))
+        stop("Variable comp takes only: ", paste(names(data[[profile_type]][[res]]), collapse=", "))
     }
 
     # get metagene data
@@ -1583,7 +1583,7 @@ get_codon_usage_data <- function(data, data_type, comp, rl) {
         stop("Variable data_type takes only: \"Codon_counts\" or \"P_sites_percodon\" or \"P_sites_percodon_ratio\" or \"A_sites_percodon\" or \"A_sites_percodon_ratio\" \"E_sites_percodon\" or \"E_sites_percodon_ratio\"")
     }
     if(!(comp %in% names(data$profiles_P_sites[[data_type]]))) {
-        stop("Variable res takes only: ", paste(names(data$profiles_P_sites[[data_type]]), collapse=", "))
+        stop("Variable comp takes only: ", paste(names(data$profiles_P_sites[[data_type]]), collapse=", "))
     }
     if(!(rl %in% names(data$profiles_P_sites[[data_type]][[comp]]))) {
         stop("Variable rl takes only: ", paste(names(data[["profiles_P_sites"]][[data_type]][[comp]]), collapse=", "))
@@ -2352,18 +2352,19 @@ load_annotation<-function(path,envir=parent.frame()){
     GTF_annotation<-get(load(path))
 	  genome_package <- if(is.character(GTF_annotation$genome)) GTF_annotation$genome else GTF_annotation$genome_package
 	  haspackage <- isTRUE(is.character(genome_package))
+    where <- if(identical(envir,globalenv())) 'the global workspace' else 'the environment envir'
     if(haspackage){
       library(genome_package,character.only = TRUE)
       genome_sequence<-get(genome_package)
-	    message(paste0('assigning genome package ',genome_package,' to the global workspace as genome_seq'))
+	    message(paste0('assigning genome package ',genome_package,' to ',where,' as genome_seq'))
       assign('genome_seq',genome_sequence,envir = envir)
     }else{
       genome_sequence<-GTF_annotation$genome
-      message(paste0('assigning FaFile_Circ object ',GTF_annotation$genome$path,' to the global workspace as genome_seq'))
+      message(paste0('assigning FaFile_Circ object ',GTF_annotation$genome$path,' to ',where,' as genome_seq'))
       assign('genome_seq',genome_sequence,envir = envir)
     }
 
-	  message(paste0('assigning GTF_annotation object GTF_annotation to parent workspace'))
+	  message(paste0('assigning GTF_annotation object GTF_annotation to ',where))
     assign('GTF_annotation',GTF_annotation,envir = envir)
     invisible(list(GTF_annotation=GTF_annotation,genome_seq=genome_sequence))
 }

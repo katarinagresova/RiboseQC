@@ -226,6 +226,14 @@
   the function stopped with `subscript is a logical vector with out-of-bounds
   TRUE values`, or R crashed (a range that starts just after the end). The
   other ranges give the same sequences as before.
+- The messages of `load_annotation()` now say where it puts
+  `GTF_annotation` and `genome_seq`: "the global workspace" when `envir` is
+  the global environment, else "the environment envir". Before, they said
+  "the global workspace" and "parent workspace" for any `envir`, also in
+  `RiboseQC_analysis()`, which loads the annotation into its own
+  environment. The errors of `get_metagene_data()` and
+  `get_codon_usage_data()` for a wrong `comp` now say `Variable comp`, not
+  `Variable res`.
 
 ## Performance
 

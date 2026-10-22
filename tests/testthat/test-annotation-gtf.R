@@ -229,6 +229,10 @@ test_that("load_annotation() returns the annotation invisibly, and assigns it in
   expect_identical(res$value$GTF_annotation$trann, ann_genc$trann)
   expect_identical(env$GTF_annotation, res$value$GTF_annotation)
   expect_identical(env$genome_seq, res$value$genome_seq)
+  # Before, the messages said "the global workspace" and "parent workspace" for any envir
+  msgs <- testthat::capture_messages(load_annotation(file.path(work, "genc", "genes.gtf_Rannot"), envir = env))
+  expect_length(msgs, 2)
+  expect_match(msgs, "to the environment envir", all = TRUE)
 })
 
 test_that("load_annotation() refuses a file that prepare_annotation_files() did not make", {
