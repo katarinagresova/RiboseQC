@@ -79,6 +79,11 @@ test_that("the command-line script runs with the annotation, and gives the resul
                c(normalizePath(example$annotation),
                  file.path(normalizePath(outdir), c("root_P_sites_offsets.tsv", "root_for_ORFquant"))))
   expect_false(any(c("report", "report_plots") %in% listed$V1))
+  # all tab-separated files, with those of write_TSV_files = TRUE (the default)
+  expect_setequal(listed$V1[grepl("\\.tsv$", listed$V2)],
+                  c("offsets", "summary", "read_lengths", "regions", "genes", "P_sites_calcs_tsv", "top50_positions"))
+  expect_setequal(listed$V2[grepl("\\.tsv$", listed$V2)],
+                  file.path(normalizePath(outdir), list.files(outdir, pattern = "\\.tsv$")))
   # the same files as the run of RiboseQC_analysis() in helper-example.R
   for (f in c("_P_sites_offsets.tsv", "_P_sites_calcs", "_P_sites_plus.bedgraph", "_coverage_plus.bedgraph")) {
     expect_identical(readLines(file.path(outdir, paste0("root", f))), readLines(paste0(example$prefix[["root"]], f)),

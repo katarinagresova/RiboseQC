@@ -180,7 +180,10 @@ sample_files <- c(results_all = "_results_RiboseQC_all", results = "_results_Rib
                   P_sites_uniq_minus = "_P_sites_uniq_minus.bedgraph",
                   coverage_plus = "_coverage_plus.bedgraph", coverage_minus = "_coverage_minus.bedgraph",
                   coverage_uniq_plus = "_coverage_uniq_plus.bedgraph",
-                  coverage_uniq_minus = "_coverage_uniq_minus.bedgraph")
+                  coverage_uniq_minus = "_coverage_uniq_minus.bedgraph",
+                  summary = "_summary.tsv", read_lengths = "_read_lengths.tsv", regions = "_regions.tsv",
+                  genes = "_genes.tsv", P_sites_calcs_tsv = "_P_sites_calcs.tsv",
+                  top50_positions = "_top50_positions.tsv")
 outputs <- c(annotation = annotation_file,
              unlist(lapply(prefixes, function(p) setNames(paste0(p, sample_files), names(sample_files)))),
              report = report_file,
