@@ -43,7 +43,7 @@
   `_top50_positions.tsv` (the 50 positions with the most reads, with their
   sequences) and `_summary.tsv` (for each compartment: the reads, the
   percentage of them on the CDS, the percentage of them that give P-sites,
-  and the frame preference of these reads). `?RiboseQC_analysis` gives
+  and the frame preference of these reads). `?RiboseQC_output` gives
   their columns. The other output files do not change. With `FALSE`, the
   function writes none of these files, as before. A value other than `TRUE`
   or `FALSE` stops the function before it reads a file.
@@ -359,6 +359,19 @@
     the windows of the CDS.
 - The new help page `?RiboseQC` gives the steps of an analysis and the
   functions for them (before, `?RiboseQC` found no page).
+- The new help page `?RiboseQC_output` (also `?res_all`) describes each
+  output file of `RiboseQC_analysis()`, each element of the list `res_all`
+  (its rows, columns, units and the reads that it counts), the files of the
+  report and the file of `prepare_for_ORFquant()`. The description of
+  `res_all` moved there from `?RiboseQC_analysis`, and it now says what the
+  code does where the old text did not: for example, `sequence_analysis`
+  has the reads of a 5' end and a read length (the range has the width of
+  the read length, and `seq` is the sequence of the genome), the P-sites of
+  `_for_ORFquant` and of the bedgraph files are summed over the read
+  lengths, so a range can be longer than 1 nt, `summary_P_sites` has all
+  read lengths with an offset (not only the selected ones), and
+  `P_sites_percodon_ratio` is `NaN` where a codon does not occur. The code
+  does not change.
 
 # RiboseQC 1.4.0
 

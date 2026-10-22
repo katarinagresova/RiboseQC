@@ -54,6 +54,7 @@ Suggests:
 Collate: 
     'FaFile_Circ.R'
     'RiboseQC-package.R'
+    'RiboseQC_output.R'
     'checks.R'
     'forked.R'
     'prepare_for_ORFquant.R'

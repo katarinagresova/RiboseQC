@@ -64,7 +64,7 @@
 #' @param path_to_P_sites_uniq_minus_bw (Optional) path to a bigwig file containing uniquely mapping P_sites positions on the minus strand
 #' @param path_to_P_sites_uniq_mm_plus_bw (Optional) path to a bigwig file containing uniquely mapping (with mismatches) P_sites positions on the plus strand
 #' @param path_to_P_sites_uniq_mm_minus_bw (Optional) path to a bigwig file containing uniquely mapping (with mismatches) P_sites positions on the minus strand
-#' @param dest_name prefix to use for the output files. Defaults to same as \code{bam_file} (appends "for_ORFquant" to its filename)
+#' @param dest_name prefix to use for the output files. Defaults to same as \code{bam_file} (appends "_for_ORFquant" to its filename)
 #' @param n_cores number of cores to use, each for one chunk of \code{chunk_size} alignments at a time. Defaults to 1
 #' @param stranded \code{TRUE}, \code{FALSE} or \code{'inverse'}, as in \code{\link{RiboseQC_analysis}}. Defaults to \code{TRUE}.
 #' Use \code{'inverse'} for libraries with the reads on the strand opposite to the RNA: the strand of each read is inverted
@@ -75,7 +75,7 @@
 #' and the \code{junctions} of the annotation with their reads. The function stops if there are no P_sites.
 #' It also assigns \code{GTF_annotation} and \code{genome_seq} in the global environment (see \code{\link{load_annotation}}).
 #' @seealso \code{run_ORFquant()} of ORFquant, which uses the "for_ORFquant" file, and
-#' \code{\link{RiboseQC_analysis}}, which also writes one
+#' \code{\link{RiboseQC_analysis}}, which also writes one, and \code{\link{RiboseQC_output}}, which describes it
 #' @export
 
 prepare_for_ORFquant<-function(annotation_file,bam_file,path_to_rl_cutoff_file=NA,chunk_size=5000000,path_to_P_sites_plus_bw=NA,
