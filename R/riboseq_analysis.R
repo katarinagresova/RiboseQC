@@ -843,8 +843,6 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             # if read subset, discard low abundance
             if (read_subset[bammo] == TRUE) {
                 rl_ok <- names(cuma[1:which(cuma > 99)[1]])
-                # rl_ok<-as.character(seq(sort(as.numeric(rl_ok),decreasing =
-                # FALSE)[1],sort(as.numeric(rl_ok),decreasing = TRUE)[1]))
                 ps_comp <- ps_comp[names(ps_comp) %in% rl_ok]
             }
             
@@ -1746,9 +1744,6 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             "P_sites_percodon", "P_sites_percodon_ratio", "A_sites_percodon", "A_sites_percodon_ratio", 
             "E_sites_percodon", "E_sites_percodon_ratio")
         save(profiles_P_sites, file = paste(dira, "profiles_P_sites", sep = "/"))
-        # save(list =
-        # c('ps_signals_tiles','ps_signals_tiles_all','ps_signals_win','ps_signals_win_all'),file
-        # = 'ps_results_preprjan15')
         message(paste("Building aggregate P-sites profiles --- Done!", date()))
         
         message(paste("Exporting files ...", date()))
