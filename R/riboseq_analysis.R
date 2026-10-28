@@ -361,26 +361,27 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         reduc <- function(x, y) {
             list(max(x[[1]], y[[1]]), min(x[[2]], y[[2]]))
         }
-        # the read lengths need only the cigars: the flags of param, without its other fields
+        # the read lengths need only the cigars: the cigars of the mapped reads (as readGAlignments()), with
+        # the flags of param
         yiel <- function(x) {
-            readGAlignments(x, param = ScanBamParam(flag = bamFlag(param, asInteger = TRUE)))
+            scanBam(x, param = ScanBamParam(flag = bamFlagAND(bamFlag(param, asInteger = TRUE), scanBamFlag(isUnmappedQuery = FALSE)),
+                what = "cigar"))[[1]]$cigar
         }
-        
+
         mapp <- function(x) {
             # the reads with I or D go: one grepl(), not two grep() for each
-            indel <- grepl("[ID]", cigar(x))
+            indel <- grepl("[ID]", x)
             if (any(indel)) {
                 x <- x[!indel]
             }
-            
-            
+
+
             # the read length without the soft clips
-            len_adj <- cigarillo::cigar_extent_along_query(x@cigar, after.soft.clipping = TRUE)
-            mcols(x)$len_adj <- len_adj
-            
-            
-            maxr <- max(mcols(x)$len_adj)
-            minr <- min(mcols(x)$len_adj)
+            len_adj <- cigarillo::cigar_extent_along_query(x, after.soft.clipping = TRUE)
+
+
+            maxr <- max(len_adj)
+            minr <- min(len_adj)
             list(maxr, minr)
         }
         
@@ -550,22 +551,27 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             row.names(rld_len_unq) <- names(list_reads)
             
             
-            # the counts of summarizeOverlaps(mode = "Union", inter.feature = FALSE) for the reads x and for the
-            # unique reads x_uniq, from one findOverlaps() with x: x_uniq are the reads of x with mapq > 50
-            count_reads <- function(features) {
-                hits <- findOverlaps(features, x, ignore.strand = !as.logical(strandedness))
-                unq <- x@elementMetadata$mapq[subjectHits(hits)] > 50
+            # the counts of summarizeOverlaps(mode = "Union", inter.feature = FALSE) for the reads (x, or the reads of
+            # a compartment) and for their unique reads, from one findOverlaps(), and its hits: the unique reads
+            # (x_uniq) are the reads with mapq > 50
+            count_reads <- function(features, reads = x) {
+                hits <- findOverlaps(features, reads, ignore.strand = !as.logical(strandedness))
+                unq <- reads@elementMetadata$mapq[subjectHits(hits)] > 50
                 list(all = matrix(tabulate(queryHits(hits), length(features)), dimnames = list(names(features), "reads")),
-                  unq = matrix(tabulate(queryHits(hits)[unq], length(features)), dimnames = list(names(features), "reads")))
+                  unq = matrix(tabulate(queryHits(hits)[unq], length(features)), dimnames = list(names(features), "reads")),
+                  hits = hits)
             }
-            
-            # count reads per biotype location per compartment
+
+            # count reads per biotype location per compartment, with the reads of the compartment (its regions
+            # are on its chromosomes): the hits give also reads_summary and reads_summary_unq
             list_rld_loc <- list()
             list_rld_loc_unq <- list()
+            hits_loc <- list()
             for (i in c("nucl", circs)) {
-                cnts <- count_reads(GRangesList(list_locat[[i]]))
+                cnts <- count_reads(GRangesList(list_locat[[i]]), list_reads[[i]])
                 list_rld_loc[[i]] <- cnts$all
                 list_rld_loc_unq[[i]] <- cnts$unq
+                hits_loc[[i]] <- cnts$hits
             }
             rld_loc <- do.call(what = cbind.data.frame, list_rld_loc)
             names(rld_loc) <- paste("reads", names(list_rld_loc), sep = "_")
@@ -582,11 +588,11 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             # iterate over genome types and compartments
             for (i in names(list_reads)) {
                 rdss <- list_reads[[i]]
-                
+
                 rgs <- GRangesList(list_locat[[i]])
-                # one findOverlaps() for the reads of all read lengths, then the counts of each read length: the
+                # the hits of rld_loc (the reads of all read lengths), then the counts of each read length: the
                 # counts of summarizeOverlaps(mode = "Union", inter.feature = FALSE) for each read length
-                ovs <- suppressWarnings(findOverlaps(rgs, rdss, ignore.strand = !as.logical(strandedness)))
+                ovs <- hits_loc[[i]]
                 ovs <- lapply(split(queryHits(ovs), factor(mcols(rdss)$len_adj)[subjectHits(ovs)]), FUN = function(x) {
                   matrix(tabulate(x, length(rgs)), dimnames = list(names(rgs), "reads"))
                 })
@@ -614,13 +620,16 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             
             # iterate over genome types and compartments
             for (i in names(list_reads_unq)) {
-                rdss <- list_reads_unq[[i]]
-                
+                # the reads of the compartment, with the read length NA for the reads that are not unique
+                # (mapq <= 50): split() drops their hits
+                len_unq <- mcols(list_reads[[i]])$len_adj
+                len_unq[!mcols(list_reads[[i]])$mapq > 50] <- NA
+
                 rgs <- GRangesList(list_locat[[i]])
-                # one findOverlaps() for the reads of all read lengths, then the counts of each read length: the
+                # the hits of rld_loc (the reads of all read lengths), then the counts of each read length: the
                 # counts of summarizeOverlaps(mode = "Union", inter.feature = FALSE) for each read length
-                ovs <- suppressWarnings(findOverlaps(rgs, rdss, ignore.strand = !as.logical(strandedness)))
-                ovs <- lapply(split(queryHits(ovs), factor(mcols(rdss)$len_adj)[subjectHits(ovs)]), FUN = function(x) {
+                ovs <- hits_loc[[i]]
+                ovs <- lapply(split(queryHits(ovs), factor(len_unq)[subjectHits(ovs)]), FUN = function(x) {
                   matrix(tabulate(x, length(rgs)), dimnames = list(names(rgs), "reads"))
                 })
                 nope <- readlengths[which(!readlengths %in% names(ovs))]
