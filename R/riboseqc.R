@@ -400,15 +400,12 @@ plot_read_length_dist <- function(rld, sample, output_rds_path=""){
     rld <- as.matrix(rld)
     colnames(rld) <- as.integer(gsub("reads_", "", colnames(rld)))
 
-    levels_rl <- as.integer(colnames(rld))
     levels_comp <- rownames(rld)
 
     # read count
     rld.m <- suppressMessages(melt(rld))
     rld.m$Var1 <- factor(rld.m$Var1, levels=levels_comp)
-    #rld.m$Var2 <- factor(rld.m$Var2, levels=levels_rl)
     rld.m$Var2 <- as.numeric(rld.m$Var2)
-    #colssi<-alpha(rainbow(length(unique(rld.m$Var1))),alpha = .7)
     colssi<-alpha(c("blue","dark red","forestgreen",rainbow(length(unique(rld.m$Var1))-3)),alpha = .7)
 
 
@@ -429,8 +426,6 @@ plot_read_length_dist <- function(rld, sample, output_rds_path=""){
     rld_norm <- rld/rowSums(rld)
     rld_norm.m <- suppressMessages(melt(rld_norm))
     rld_norm.m$Var1 <- factor(rld_norm.m$Var1, levels=levels_comp)
-    #rld_norm.m$Var2 <- factor(rld_norm.m$Var2, levels=levels_rl)
-    #colssi<-alpha(rainbow(length(unique(rld.m$Var1))),alpha = .7)
     colssi<-alpha(c("blue","dark red","forestgreen",rainbow(length(unique(rld.m$Var1))-3)),alpha = .7)
 
     g2 <- ggplot(data=rld_norm.m, aes(x=Var2, y=value)) +
@@ -499,7 +494,6 @@ plot_read_length_dist_by_biotype <- function(reads_summary, sample, output_rds_p
 
     levels_bio <- row.names(reads_summary[[1]])
     levels_comp <- names(reads_summary)
-    levels_rl <- as.integer(gsub("reads_", "", names(reads_summary[[1]])))
 
     rld <- lapply(reads_summary, function(x) as.matrix(x))
 
@@ -507,7 +501,6 @@ plot_read_length_dist_by_biotype <- function(reads_summary, sample, output_rds_p
     rld.m <- suppressMessages(melt(rld))
     rld.m$Var1 <- factor(rld.m$Var1, levels=levels_bio)
     rld.m$Var2 <- as.integer(gsub("reads_", "", rld.m$Var2))
-    #rld.m$Var2 <- factor(rld.m$Var2, levels=levels_rl)
     rld.m$L1 <- factor(rld.m$L1, levels=levels_comp)
 
     g1 <- ggplot(data=rld.m, aes(x=Var2, y=value)) +
@@ -534,7 +527,6 @@ plot_read_length_dist_by_biotype <- function(reads_summary, sample, output_rds_p
     rld_norm.m <- suppressMessages(melt(rld_norm))
     rld_norm.m$Var1 <- factor(rld_norm.m$Var1, levels=levels_bio)
     rld_norm.m$Var2 <- as.integer(gsub("reads_", "", rld_norm.m$Var2))
-    #rld_norm.m$Var2 <- factor(rld_norm.m$Var2, levels=levels_rl)
     rld_norm.m$L1 <- factor(rld_norm.m$L1, levels=levels_comp)
 
     g2 <- ggplot(data=rld_norm.m, aes(x=Var2, y=value)) +
@@ -603,7 +595,6 @@ plot_read_length_dist_by_biotype <- function(reads_summary, sample, output_rds_p
 plot_read_biotype_dist_by_length <- function(reads_summary, sample, output_rds_path=""){
     levels_bio <- row.names(reads_summary[[1]])
     levels_comp <- names(reads_summary)
-    levels_rl <- as.integer(gsub("reads_", "", names(reads_summary[[1]])))
 
     rld <- lapply(reads_summary, function(x) as.matrix(x))
 
@@ -611,11 +602,7 @@ plot_read_biotype_dist_by_length <- function(reads_summary, sample, output_rds_p
     rld.m <- suppressMessages(melt(rld))
     rld.m$Var1 <- factor(rld.m$Var1, levels=levels_bio)
     rld.m$Var2 <- as.integer(gsub("reads_", "", rld.m$Var2))
-    #rld.m$Var2 <- factor(rld.m$Var2, levels=levels_rl)
     rld.m$L1 <- factor(rld.m$L1, levels=levels_comp)
-
-    #ggplot(data=rld.m, aes(x=Var2, y=value, fill=Var1)) +
-    #    geom_bar(stat="identity")
 
 
     # read count
@@ -628,7 +615,6 @@ plot_read_biotype_dist_by_length <- function(reads_summary, sample, output_rds_p
         theme_minimal() +
         theme(plot.margin = margin(.3, .3, .3, .3, "cm"),
               panel.background=element_blank(),
-              #axis.ticks.x=element_blank(),
               axis.text.x=element_text(angle=90, vjust=0.5, size=14),
               axis.text.y=element_text(size=14),
               axis.title=element_text(size=14),
@@ -647,7 +633,6 @@ plot_read_biotype_dist_by_length <- function(reads_summary, sample, output_rds_p
         theme_minimal() +
         theme(plot.margin = margin(.3, .3, .3, .3, "cm"),
               panel.background=element_blank(),
-              #axis.ticks.x=element_blank(),
               axis.text.x=element_text(angle = 90, vjust=0.5, size=14),
               axis.text.y=element_text(size=14),
               axis.title=element_text(size=14),
@@ -791,8 +776,6 @@ get_metagene_data <- function(data, profile_type, res, comp){
     rownames(data_none) <- rl_ok_single
     colnames(data_none) <- seq_len(dim(data_none)[2])
     data_log2 <- log2(data_none+1)
-    #modified to direct scaling
-    #data_zscore <- t(scale(t(data_none), center=TRUE, scale=TRUE)) # scale centers (true) and scales (true) the columns of a numeric matrix, we want to scale per read length > transpose data_none to have rl as column
     data_zscore <- scale(data_none, center=TRUE, scale=TRUE) # scale centers (true) and scales (true) the columns of a numeric matrix, we want to scale per read length > transpose data_none to have rl as column
     data <- list(none=suppressMessages(melt(t(data_none))), log2=suppressMessages(melt(t(data_log2))), zscore=suppressMessages(melt(t(data_zscore))))
     data$none$Var2 <- factor(data$none$Var2,levels=rl_ok_single)
@@ -997,10 +980,8 @@ plot_metagene_hm <- function(metagene_data, scal, sample="", output_rds_path="")
         scale_fill_gradient(low="white", high="steelblue", na.value="gray80") +
         scale_x_continuous(breaks=res_breaks, labels=res_labels) +
         scale_y_continuous(breaks=scales::pretty_breaks(n=10)) +
-        #scale_y_discrete(expand=c(0, 0)) +
         theme(axis.text=element_text(size=18),
               axis.title=element_text(size=18),
-              #axis.ticks.y=element_blank(),
               panel.background=element_blank(),
               legend.position = "bottom",
               legend.direction = "horizontal",
@@ -1182,7 +1163,6 @@ plot_metagene_bar <- function(metagene_data, rl, sample="", output_rds_path="") 
             geom_segment(aes(colour=frame, group=frame)) +
             scale_color_manual(values = c("red","forestgreen","blue")) +
             scale_x_continuous(breaks=res_breaks, labels=res_labels) +
-            #scale_y_continuous(expand=c(0, 0)) +
             labs(x=res_x_lab, y="read count\n") +
             theme_minimal() +
             theme(legend.position = "bottom",
@@ -1194,7 +1174,6 @@ plot_metagene_bar <- function(metagene_data, rl, sample="", output_rds_path="") 
         g3 <- ggplot(data=x.m, aes(x=pos, xend=pos, y=0, yend=value)) +
             geom_segment(aes(group=frame), colour="black") +
             scale_x_continuous(breaks=res_breaks, labels=res_labels) +
-            #scale_y_continuous(expand=c(0, 0)) +
             labs(x=res_x_lab, y="read count\n") +
             theme_minimal() +
             theme(legend.position = "bottom",
@@ -1305,34 +1284,19 @@ plot_frame_dist_boxplot_rmd <- function(analysis_frame_cutoff, sample="", output
 plot_frame_dist_boxplot <- function(analysis_frame_cutoff, comp, sample="", output_rds_path="") {
     rl <- names(analysis_frame_cutoff[[comp]])
     rl_list <- NULL
-    rl_list_mean <- NULL
 
     for (k in rl){
         data <- analysis_frame_cutoff[[comp]][[k]]$frames
         colnames(data) <- c("frame 0", "frame 1", "frame 2")
         rl_list[[k]] <- data
-        rl_list_mean[[k]] <- colMeans(data)[1]
     }
     data <- suppressMessages(melt(rl_list))
 
     ## order read lengths
     data$L1 <- factor(data$L1, levels=sort(names(analysis_frame_cutoff[[comp]])))
-    # or by fraction of reads in maximal frame
-    # data$L1 <- factor(data$L1, levels=c(row.names(res_all$selection_cutoffs$results_choice[[comp]]$data), "all"))
-
-    #from boxplot to stat_summary
-    # gg <- ggplot(data, aes(x = L1, y = value, fill=Var2)) +
-    #     geom_boxplot() +
-    #     #stat_summary(fun.y = mean, geom="point",colour="magenta", size=2) +
-    #     scale_x_discrete(name="read length") +
-    #     scale_y_continuous(name="read distribution between frames") +
-    #     theme(legend.position = "bottom", panel.background=element_blank()) +
-    #     labs(fill = "frame") +
-    #     guides(fill=guide_legend(title=""))
 
     gg <- ggplot(data, aes(x = L1, y = value, color=Var2, group=Var2)) +
         stat_summary(fun.data = mean_se,size=1.5) +
-        #stat_summary(fun.y = mean, geom="point",colour="magenta", size=2) +
         scale_x_discrete(name="read length") +
         scale_color_manual(values = alpha(c("red","forestgreen","blue"),alpha = .8)) +
         scale_y_continuous(name="read distribution between frames",limits=c(0,1)) +
@@ -1794,7 +1758,6 @@ plot_codon_usage_positional <- function(codon_usage_data, scal, sample="", outpu
     # heatmap for start and stop codons
     d <- d_positional[d_positional$aa=="*" | d_positional$codon=="ATG", ]  # get start and stop codons
     d.m <- suppressMessages(melt(d))
-    #d.m$variable<-factor(rep(1:11,length(unique(d.m$codon))))
     d.m$position <- factor(c(rep("start", nrow(d.m)/3),
                              rep("middle", nrow(d.m)/3),
                              rep("stop", nrow(d.m)/3)),
@@ -1822,7 +1785,6 @@ plot_codon_usage_positional <- function(codon_usage_data, scal, sample="", outpu
     # heatmap for NON start and stop codons
     d <- d_positional[!(d_positional$aa=="*" | d_positional$codon=="ATG"), ]  # remove start and stop codons
     d.m <- suppressMessages(melt(d))
-    #d.m$variable<-factor(rep(1:11,length(unique(d.m$codon))))
     d.m$position <- factor(c(rep("start", nrow(d.m)/3),
                              rep("middle", nrow(d.m)/3),
                              rep("stop", nrow(d.m)/3)),
@@ -1914,7 +1876,6 @@ plot_codon_usage_bulk_rmd <- function(data, sample="", output_rds_path="") {
 
     # assumption that list structure is exactly the same for Codon_counts, P_sites_percodon, P_sites_percodon_ratio
     comps <- names(data[["profiles_P_sites"]][["Codon_counts"]])
-    rls <- lapply(data[["profiles_P_sites"]][["Codon_counts"]], function(x) names(x))
 
     for (comp in comps) {
 
@@ -2005,9 +1966,7 @@ plot_codon_usage_bulk <- function(codon_usage_data, sample="", output_rds_path="
         facet_grid(.~aa, scales="free", space="free") +
         labs(x="", y=data_type) +
         scale_y_continuous(expand=c(0, 0)) +  # remove y axis offset
-        #scale_colour_hue() +  # hue colors
         scale_fill_manual(values=c("gray")) + # same color for all amino acids
-        #coord_fixed(ratio=0.2) +
         theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5, size=16, family="Courier"),
               axis.text.y=element_text(size=16),
               axis.title.x=element_blank(),
@@ -2026,8 +1985,6 @@ plot_codon_usage_bulk <- function(codon_usage_data, sample="", output_rds_path="
         labs(x="", y=data_type) +
         scale_y_continuous(expand=c(0, 0)) +  # remove y axis offset
         scale_colour_hue() +  # hue colors
-        #scale_fill_manual(values=rep("steelblue", 21)) + # same color for all amino acids
-        #coord_fixed(ratio=0.2) +
         theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5, size=16, family="Courier"),
               axis.text.y=element_text(size=16),
               axis.title=element_blank(),
@@ -2119,18 +2076,12 @@ choose_readlengths<-function(summary_data,choice="max_coverage",nt_signals){
         mat_fr<-matrix(0,nrow = nrow(sign[[1]]),ncol = 99)
         net_all<-c()
         net_all_cov<-c()
-        net_all_cov_ok<-c()
         gains_cod_all<-c()
         gains_sign_all<-c()
-        gains_cod<-c()
-        gains_sign<-c()
         for(cnt in seq_along(rownames(data))){
-            if(cnt>length(rownames(data))){break}
             rl<-rownames(data)[cnt]
             cutf<-data$cutoff[cnt]
             sig<-as.matrix(sign[[rl]])
-            #sig<-do.call(args = sig[c("5-UTR_1","5-UTR_2","CDS_1","CDS_2","3-UTR_1")],what = cbind.data.frame)
-            #sig<-sig[,-c(1,2)]
             cdss<-grep(colnames(sig),pattern = "CDS")
             sig_ctf<-cbind(matrix(0,ncol = cutf,nrow = nrow(sig)),sig[,seq_len(length(sig[1,])-cutf)])[,cdss]
             sig_ctf<-as.matrix(sig_ctf)
@@ -2162,7 +2113,6 @@ choose_readlengths<-function(summary_data,choice="max_coverage",nt_signals){
                 codongain<-c(sum(fr1>0),sum(fr2>0),sum(fr3>0))
                 codongain<-codongain/sum(codongain)
                 codongain
-                #signalgain<-c(sum(fr1),sum(fr2),sum(fr3))
 
             }))
             codon_gain<-codon_gain[!apply(codon_gain,1,FUN = function(y){sum(is.na(y))>0}),]
@@ -2186,28 +2136,15 @@ choose_readlengths<-function(summary_data,choice="max_coverage",nt_signals){
             if(gain_cod>0){
                 mat_fr[sig_ctf>1]<-1
                 net_all<-rbind(net_all,av_codongain)
-                gains_cod<-c(gains_cod,gain_cod)
 
             }
 
             if(gain_sign>0){
                 net_all_cov<-rbind(net_all_cov,av_codoncov)
-                gains_sign<-c(gains_sign,gain_sign)
 
             }
 
 
-        }
-
-        if(length(gains_sign)>0){
-            ln<-length(unique(gains_sign))
-            if(ln<4){
-                net_all_cov_ok<-net_all_cov
-            }
-            if(ln>3){
-                km<-kmeans_seeded(gains_sign,3)
-                net_all_cov_ok<-net_all_cov[!km$cluster==km$cluster[which.min(gains_sign)][1],]
-            }
         }
 
         data$read_length<-rownames(data)
@@ -2229,7 +2166,6 @@ choose_readlengths<-function(summary_data,choice="max_coverage",nt_signals){
         }
 
         final_choice<-data[,c("read_length","cutoff")][data[,choice],]
-        if(length(final_choice)==0){final_choice<-c()}
         choices<-list(final_choice=final_choice,data=data)
         choices_res[[i]]<-choices
     }
@@ -2416,13 +2352,11 @@ load_annotation<-function(path,envir=parent.frame()){
 
 calc_cutoffs_from_profiles<-function(reads_profile,length_max){
     profok<-as.matrix(reads_profile[,grep("CDS",x = colnames(reads_profile))])
-    #profok<-do.call(args = reads_profile[c("CDS_1","CDS_2")],what = cbind.data.frame)
     sums<-rowSums(profok)
     profok<-profok[sums>0,,drop=FALSE]
     #what if no reads?
     if((dim(profok)[1])<5){return(c())}
 
-    sums<-rowSums(profok)
     frames<-t(apply(profok,1,function(y){
         sumy<-sum(y)
         fr0<-sum(y[seq(1,length(y),by=3)])/sumy
@@ -2437,11 +2371,8 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
     frameans<-colMeans(frames)
     frameans<-(frameans/sum(frameans))*100
     names(frameans)<-seq_len(3)
-    fra2<-as.numeric(names(which.max(frameans)))-1
 
     infra<-seq(fra,-24,by=-3)
-    #dists<-c(-24:123)
-    #profok<-do.call(args = reads_profile[c("5-UTR_2","CDS_1","CDS_2","3-UTR_1")],what = cbind.data.frame)
 
     #just offset
     profok<-as.matrix(reads_profile)
@@ -2472,10 +2403,6 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
     }
     tbcut<-table(apply(profok,1,which.max))
     names(tbcut)<-abs(as.numeric(colnames(profok)[as.numeric(names(tbcut))]))
-    profcut<-c(rep(0,25))
-    names(profcut)<-0:24
-    profcut<-profcut[as.numeric(names(profcut))<=length_max]
-    profcut[names(tbcut)]<-as.numeric(tbcut)
     cutoff<-abs(as.numeric(names(tbcut)[which.max(tbcut)]))
     cutoff_km<-NA
     cutoff_km_fra<-NA
