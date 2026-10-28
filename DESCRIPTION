@@ -18,7 +18,7 @@ Imports:
     DT,
     GenomicAlignments,
     GenomicFeatures,
-    ggplot2,
+    ggplot2 (>= 3.4.0),
     ggpubr,
     grDevices,
     gridExtra,

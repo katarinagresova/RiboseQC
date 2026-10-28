@@ -358,6 +358,10 @@
   - The text of the subcodon profiles (sections 4.1 and 4.3) says that their
     windows are the first and the last 33 nt of the CDS. Before, it said 33
     nt after the start codon and 33 nt before the stop codon.
+- `plot_read_length_dist()` and `plot_read_length_dist_by_biotype()` no
+  longer give the *ggplot2* warning "Using `size` aesthetic for lines was
+  deprecated in ggplot2 3.4.0". They give the line width with `linewidth`,
+  so RiboseQC now needs *ggplot2* 3.4.0 or newer. The plots do not change.
 
 ## Performance
 

@@ -160,13 +160,11 @@ Most reads of the organelles are on CDS. The example BAM files also have reads
 outside the 309 genes of the example annotation, so here many reads of the
 nuclear genome are intergenic.
 
-The plot functions of the report draw the same data. (They use the `size`
-aesthetic for lines, which *ggplot2* 3.4.0 deprecated; this vignette hides
-these warnings.) The read length distribution of each compartment shows that
-the chloroplast ribosomes protect fragments of more lengths than the
-cytoplasmic ribosomes (`nucl`):
+The plot functions of the report draw the same data. The read length
+distribution of each compartment shows that the chloroplast ribosomes protect
+fragments of more lengths than the cytoplasmic ribosomes (`nucl`):
 
-```{r read_lengths, results = "hide", warning = FALSE, fig.width = 10, fig.height = 5, out.width = "100%"}
+```{r read_lengths, results = "hide", fig.width = 10, fig.height = 5, out.width = "100%"}
 plot_read_length_dist(shoots$read_stats$rld, "shoots")
 ```
 
@@ -205,7 +203,7 @@ calcs[, c("comp", "read_length", "cutoff", "frame_preference", "pct_map", "max_c
 The 5' ends of each selected read length of the chloroplast are mostly in one
 frame of the CDS:
 
-```{r frames, results = "hide", warning = FALSE, fig.width = 7, fig.height = 5}
+```{r frames, results = "hide", fig.width = 7, fig.height = 5}
 plot_frame_dist_boxplot(shoots$selection_cutoffs$analysis_frame_cutoff, "ChrC", "shoots")
 ```
 
@@ -213,7 +211,7 @@ So their P-sites show the reading frame. Here are the P-sites of the 28-nt
 reads around the start and stop codons of the chloroplast genes, coloured by
 their frame:
 
-```{r metagene, results = "hide", warning = FALSE, fig.width = 10, fig.height = 5, out.width = "100%"}
+```{r metagene, results = "hide", fig.width = 10, fig.height = 5, out.width = "100%"}
 psites_chrc <- get_metagene_data(shoots, "profiles_P_sites", "P_sites_subcodon", "ChrC")
 plot_metagene_bar(psites_chrc, "28", "shoots")
 ```
