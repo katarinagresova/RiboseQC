@@ -428,6 +428,10 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
     # the reads of each read length: the indices of pos and neg, split once
     pos_rl<-split(seq_along(pos),mcols(pos)$len_adj)
     neg_rl<-split(seq_along(neg),mcols(neg)$len_adj)
+    # no P-sites, with the seqlevels and seqlengths of the P-sites: made once, not for each read length
+    no_ps<-GRanges()
+    seqlevels(no_ps)<-seqllll
+    seqlengths(no_ps)<-seqleee
     for(comp in names(rl_cutoffs_comp)){
       # the P-sites of each read length go into lists, and into GRangesLists after the last read length:
       # [[<- on a GRangesList took longer with each read length
@@ -442,25 +446,12 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
       
       for(i in seq_along(resul$read_length)){
         
-        all_ps<-GRangesList()
-        uniq_ps<-GRangesList()
-        uniq_mm_ps<-GRangesList()
-        seqlevels(all_ps)<-seqllll
-        seqlevels(uniq_ps)<-seqllll
-        seqlevels(uniq_mm_ps)<-seqllll
-        
-        seqlengths(all_ps)<-seqleee
-        seqlengths(uniq_ps)<-seqleee
-        seqlengths(uniq_mm_ps)<-seqleee
-        
         rl<-as.numeric(resul$read_length[i])
         ct<-as.numeric(resul$cutoff[i])
         ok_reads<-pos[unlist(pos_rl[as.numeric(names(pos_rl))%in%rl],use.names=FALSE)]
         ok_reads<-ok_reads[as.vector(seqnames(ok_reads))%in%chroms]
         
-        ps_plus<-GRanges()
-        seqlevels(ps_plus)<-seqllll
-        seqlengths(ps_plus)<-seqleee
+        ps_plus<-no_ps
         ps_plus_uniq<-ps_plus
         ps_plus_uniq_mm<-ps_plus
         
@@ -483,9 +474,7 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
           multi<-spl[firstb<=ct & lastb<rl-ct]
           
           
-          ps_spl<-GRanges()
-          seqlevels(ps_spl)<-seqllll
-          seqlengths(ps_spl)<-seqleee
+          ps_spl<-no_ps
           
           if(length(multi)>0){
             ps_spl<-get_ps_fromspliceplus(multi,cutoff=ct)
@@ -517,9 +506,7 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
         ok_reads<-neg[unlist(neg_rl[as.numeric(names(neg_rl))%in%rl],use.names=FALSE)]
         ok_reads<-ok_reads[as.vector(seqnames(ok_reads))%in%chroms]
         
-        ps_neg<-GRanges()
-        seqlevels(ps_neg)<-seqllll
-        seqlengths(ps_neg)<-seqleee
+        ps_neg<-no_ps
         ps_neg_uniq<-ps_neg
         ps_neg_uniq_mm<-ps_neg
         
@@ -542,9 +529,7 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
           multi<-spl[firstb<rl-ct & lastb<=ct]
           
           
-          ps_spl<-GRanges()
-          seqlevels(ps_spl)<-seqllll
-          seqlengths(ps_spl)<-seqleee
+          ps_spl<-no_ps
           
           
           if(length(multi)>0){
@@ -574,20 +559,25 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
         all_ps<-sort(c(ps_plus,ps_neg))
         uniq_ps<-sort(c(ps_plus_uniq,ps_neg_uniq))
         uniq_mm_ps<-sort(c(ps_plus_uniq_mm,ps_neg_uniq_mm))
+        # the P-sites are sorted, so equal P-sites are next to each other: the score of a unique P-site is the
+        # number of its copies, as countOverlaps(type="equal") gave (no seqlevel of a BAM file is circular)
         if(length(all_ps)>0){
-          ps_res<-unique(all_ps)
-          ps_res$score<-countOverlaps(ps_res,all_ps,type="equal")
+          first<-!duplicated(all_ps)
+          ps_res<-all_ps[first]
+          ps_res$score<-diff(c(which(first),length(all_ps)+1L))
           all_ps<-ps_res
         }
         if(length(uniq_ps)>0){
-          ps_res<-unique(uniq_ps)
-          ps_res$score<-countOverlaps(ps_res,uniq_ps,type="equal")
+          first<-!duplicated(uniq_ps)
+          ps_res<-uniq_ps[first]
+          ps_res$score<-diff(c(which(first),length(uniq_ps)+1L))
           uniq_ps<-ps_res
           
         }
         if(length(uniq_mm_ps)>0){
-          ps_res<-unique(uniq_mm_ps)
-          ps_res$score<-countOverlaps(ps_res,uniq_mm_ps,type="equal")
+          first<-!duplicated(uniq_mm_ps)
+          ps_res<-uniq_mm_ps[first]
+          ps_res$score<-diff(c(which(first),length(uniq_mm_ps)+1L))
           uniq_mm_ps<-ps_res
           
         }
@@ -620,21 +610,18 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
     all_ps_list<-list()
     rls_comps<-unique(unlist(lapply(list_pss,FUN=function(x) names(x[["P_sites_all"]]) )))
     for(rl in rls_comps){
-      reads_rl_comp<-GRanges()
-      seqlevels(reads_rl_comp)<-seqllll
-      seqlengths(reads_rl_comp)<-seqleee
+      # the P-sites of the read length in each compartment, concatenated with one c()
+      reads_rl_comp<-list(no_ps)
       for(comp in names(list_pss)){
         if(sum(rl%in%names(list_pss[[comp]][["P_sites_all"]]))>0){
           oth<-list_pss[[comp]][["P_sites_all"]][[rl]]
           
           if(!is.null(oth)){
-            seqlevels(oth)<-seqllll
-            seqlengths(oth)<-seqleee
-            reads_rl_comp<-c(reads_rl_comp,oth)
+            reads_rl_comp<-c(reads_rl_comp,list(oth))
           }
         }          
-        all_ps_list[[rl]]<-reads_rl_comp
       }
+      all_ps_list[[rl]]<-do.call(c,reads_rl_comp)
       
     }
     all_ps_comps<-GRangesList(all_ps_list)
@@ -644,21 +631,18 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
     uniq_ps_list<-list()
     rls_comps<-unique(unlist(lapply(list_pss,FUN=function(x) names(x[["P_sites_uniq"]]) )))
     for(rl in rls_comps){
-      reads_rl_comp<-GRanges()
-      seqlevels(reads_rl_comp)<-seqllll
-      seqlengths(reads_rl_comp)<-seqleee
+      # the P-sites of the read length in each compartment, concatenated with one c()
+      reads_rl_comp<-list(no_ps)
       for(comp in names(list_pss)){
         if(sum(rl%in%names(list_pss[[comp]][["P_sites_uniq"]]))>0){
           oth<-list_pss[[comp]][["P_sites_uniq"]][[rl]]
           
           if(!is.null(oth)){
-            seqlevels(oth)<-seqllll
-            seqlengths(oth)<-seqleee
-            reads_rl_comp<-c(reads_rl_comp,oth)
+            reads_rl_comp<-c(reads_rl_comp,list(oth))
           }
         }          
-        uniq_ps_list[[rl]]<-reads_rl_comp
       }
+      uniq_ps_list[[rl]]<-do.call(c,reads_rl_comp)
       
     }
     uniq_ps_comps<-GRangesList(uniq_ps_list)
@@ -668,20 +652,17 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
     uniq_mm_ps_list<-list()
     rls_comps<-unique(unlist(lapply(list_pss,FUN=function(x) names(x[["P_sites_uniq_mm"]]) )))
     for(rl in rls_comps){
-      reads_rl_comp<-GRanges()
-      seqlevels(reads_rl_comp)<-seqllll
-      seqlengths(reads_rl_comp)<-seqleee
+      # the P-sites of the read length in each compartment, concatenated with one c()
+      reads_rl_comp<-list(no_ps)
       for(comp in names(list_pss)){
         if(sum(rl%in%names(list_pss[[comp]][["P_sites_uniq_mm"]]))>0){
           oth<-list_pss[[comp]][["P_sites_uniq_mm"]][[rl]]
           if(!is.null(oth)){
-            seqlevels(oth)<-seqllll
-            seqlengths(oth)<-seqleee
-            reads_rl_comp<-c(reads_rl_comp,oth)
+            reads_rl_comp<-c(reads_rl_comp,list(oth))
           }
         }          
-        uniq_mm_ps_list[[rl]]<-reads_rl_comp
       }
+      uniq_mm_ps_list[[rl]]<-do.call(c,reads_rl_comp)
       
     }
     uniq_mm_ps_comps<-GRangesList(uniq_mm_ps_list)

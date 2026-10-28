@@ -429,6 +429,16 @@
   instead of 267 s, the read lengths 60 s instead of 76 s, and a run with the
   report on one core 1,367 s instead of 1,417 s (3.5% less), without more
   memory. The results don't change.
+- `RiboseQC_analysis()` and `prepare_for_ORFquant()` find the P-sites of each
+  chunk of the BAM file faster. For each read length, they counted the
+  P-sites at each position with `countOverlaps()`; they now count them in
+  the sorted P-sites. They also make the empty P-sites once, not for each
+  read length, and they join the P-sites of the compartments with one `c()`
+  for each read length. On a human sample (a 2.3 GB BAM, 18 chunks,
+  GENCODE 47, `rescue_all_rls = TRUE`), a chunk of 5 million alignments
+  takes 29.5 s instead of 35.4 s, the P-sites 468 s instead of 518 s, and a
+  run with the report on one core 1,270 s instead of 1,306 s (2.8% less),
+  with the same memory. The results don't change.
 
 ## Documentation
 
