@@ -70,14 +70,15 @@ test_that("the command-line script runs with the annotation, and gives the resul
   skip_if_not(loads, "RiboseQC is not installed in the library of Rscript")
   example <- example_analysis()
   outdir <- tempfile("riboseqc_cli_")
-  r <- run_cli("--annotation", example$annotation, "--bam", file.path(ext_data, "simp_arab_root.bam"),
-               "--sample-names", "root", "--outdir", outdir, "--cores", "2", "--no-report")
+  # the shoots BAM file: the root sample has no P-sites, so no _for_ORFquant
+  r <- run_cli("--annotation", example$annotation, "--bam", file.path(ext_data, "simp_arab_shoots.bam"),
+               "--sample-names", "shoots", "--outdir", outdir, "--cores", "2", "--no-report")
   expect_equal(r$status, 0L, info = r$output)
   # the list of the output files at the end
   listed <- read.delim(text = sub(".*RiboseQC output files:\n", "", r$output), header = FALSE)
   expect_equal(listed$V2[listed$V1 %in% c("annotation", "offsets", "for_ORFquant")],
                c(normalizePath(example$annotation),
-                 file.path(normalizePath(outdir), c("root_P_sites_offsets.tsv", "root_for_ORFquant"))))
+                 file.path(normalizePath(outdir), c("shoots_P_sites_offsets.tsv", "shoots_for_ORFquant"))))
   expect_false(any(c("report", "report_plots") %in% listed$V1))
   # all tab-separated files, with those of write_TSV_files = TRUE (the default)
   expect_setequal(listed$V1[grepl("\\.tsv$", listed$V2)],
@@ -86,10 +87,10 @@ test_that("the command-line script runs with the annotation, and gives the resul
                   file.path(normalizePath(outdir), list.files(outdir, pattern = "\\.tsv$")))
   # the same files as the run of RiboseQC_analysis() in helper-example.R
   for (f in c("_P_sites_offsets.tsv", "_P_sites_calcs", "_P_sites_plus.bedgraph", "_coverage_plus.bedgraph")) {
-    expect_identical(readLines(file.path(outdir, paste0("root", f))), readLines(paste0(example$prefix[["root"]], f)),
+    expect_identical(readLines(file.path(outdir, paste0("shoots", f))), readLines(paste0(example$prefix[["shoots"]], f)),
                      info = f)
   }
   # equal, not identical: the sequences of the top positions (a DNAStringSet) are in a memory pool that
   # is different in each run
-  expect_equal(get(load(file.path(outdir, "root_results_RiboseQC_all"))), example_results("root"), tolerance = 0)
+  expect_equal(get(load(file.path(outdir, "shoots_results_RiboseQC_all"))), example_results("shoots"), tolerance = 0)
 })

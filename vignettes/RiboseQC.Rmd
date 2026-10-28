@@ -185,9 +185,13 @@ read.delim(file.path(out_dir, "root_P_sites_offsets.tsv"))
 read.delim(file.path(out_dir, "shoots_P_sites_offsets.tsv"))
 ```
 
-In both samples, the 28-nt reads of the cytoplasmic ribosomes have the offset
-12. In the shoot sample, 9 read lengths of the chloroplast are selected too. No
-read length of the mitochondrion is selected, in either sample.
+No read length of the cytoplasmic ribosomes (`nucl`) has an offset: the
+offset of a read length needs at least 5 transcripts with reads near their
+start codon, and few nuclear transcripts of the example have them. So the root
+sample has no P-sites, and `RiboseQC_analysis()` warned: "Not enough signal or
+low frame preference". In the shoot sample, 9 read lengths of the chloroplast
+are selected. No read length of the mitochondrion is selected, in either
+sample.
 `<dest_name>_P_sites_calcs` has more data on each read length, such as its
 frame preference, its percentage of the reads of its compartment (`pct_map`),
 and for each method of `readlength_choice_method` if it selects the read
@@ -198,19 +202,20 @@ calcs <- read.delim(file.path(out_dir, "shoots_P_sites_calcs"))
 calcs[, c("comp", "read_length", "cutoff", "frame_preference", "pct_map", "max_coverage")]
 ```
 
-The 5' ends of the 28-nt reads are mostly in one frame of the CDS:
+The 5' ends of each selected read length of the chloroplast are mostly in one
+frame of the CDS:
 
 ```{r frames, results = "hide", warning = FALSE, fig.width = 7, fig.height = 5}
-plot_frame_dist_boxplot(shoots$selection_cutoffs$analysis_frame_cutoff, "nucl", "shoots")
+plot_frame_dist_boxplot(shoots$selection_cutoffs$analysis_frame_cutoff, "ChrC", "shoots")
 ```
 
 So their P-sites show the reading frame. Here are the P-sites of the 28-nt
-reads around the start and stop codons of the nuclear genes, coloured by
+reads around the start and stop codons of the chloroplast genes, coloured by
 their frame:
 
 ```{r metagene, results = "hide", warning = FALSE, fig.width = 10, fig.height = 5, out.width = "100%"}
-psites_nucl <- get_metagene_data(shoots, "profiles_P_sites", "P_sites_subcodon", "nucl")
-plot_metagene_bar(psites_nucl, "28", "shoots")
+psites_chrc <- get_metagene_data(shoots, "profiles_P_sites", "P_sites_subcodon", "ChrC")
+plot_metagene_bar(psites_chrc, "28", "shoots")
 ```
 
 

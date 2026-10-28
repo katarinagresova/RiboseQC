@@ -25,9 +25,10 @@ iteration over originating compartments, read length, and data type (codon count
 These plots are displayed in the RiboseQC report in section 8.
 }
 \examples{
-# This draws all plots of section 8 of the report: 14 on the bundled data.
-load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
-plot_codon_usage_bulk_rmd(res_all, "root")
+# This draws all plots of section 8 of the report: 70, about 1 min, on the bundled shoots
+# sample (the root sample has no P-sites).
+load(system.file("ext_data", "shoots_results_RiboseQC", package = "RiboseQC"))
+plot_codon_usage_bulk_rmd(res_all, "shoots")
 }
 \seealso{
 \code{\link{create_html_report}}, \code{\link{get_codon_usage_data}}, \code{\link{plot_codon_usage_bulk}}

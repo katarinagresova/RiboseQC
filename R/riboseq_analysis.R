@@ -902,7 +902,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             threes_gen <- threes_gen[threes_gen$hit]
             threes_gen <- split(threes_gen, names(threes_gen))
             
-            cds_gen <- GTF_annotation$cds_txs[ok_txs]
+            # the order of the 5' and 3' windows (split() sorts by name): cbind() joins the rows by position
+            cds_gen <- GTF_annotation$cds_txs[names(fivs_gen)]
             
             
             tile_cds <- tile_cds[as.character(seqnames(tile_cds)) %in% ok_txs]
@@ -1320,7 +1321,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 threes_gen <- threes_gen[threes_gen$hit]
                 threes_gen <- split(threes_gen, names(threes_gen))
                 
-                cds_gen <- GTF_annotation$cds_txs[ok_txs]
+                # the order of the 5' and 3' windows (split() sorts by name): cbind() joins the rows by position
+                cds_gen <- GTF_annotation$cds_txs[names(fivs_gen)]
                 
                 
                 tile_cds <- tile_cds[as.character(seqnames(tile_cds)) %in% ok_txs]

@@ -31,9 +31,11 @@ example_analysis <- local({
                                                    genome_seq = file.path(ext_data, "simp_arab.fa.gz")),
             expected = c("some CDS phases are missing", "genome version information is not available"))
       prefix <- c(root = file.path(work, "root"), shoots = file.path(work, "shoots"))
+      # No read length of root has an offset, so root has no P-sites
       quiet(RiboseQC_analysis(annotation_file = annotation,
                               bam_files = file.path(ext_data, c("simp_arab_root.bam", "simp_arab_shoots.bam")),
-                              dest_names = prefix, create_report = FALSE))
+                              dest_names = prefix, create_report = FALSE),
+            expected = "Not enough signal or low frame preference")
       res <<- list(annotation = annotation, prefix = prefix)
     }
     res
