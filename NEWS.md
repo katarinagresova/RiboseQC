@@ -229,6 +229,23 @@
   selects the read lengths from them, so with `stranded = FALSE` the run
   can now calculate the offsets of other read lengths, and its P-sites can
   change. The results of `stranded = TRUE` and `"inverse"` do not change.
+- `RiboseQC_analysis()`: the 5' profile of `"all"` of a compartment
+  (`profiles_fivepr$five_prime_bins` and `$five_prime_subcodon`, in
+  `<dest_name>_results_RiboseQC_all`) is now the sum of the profiles of the
+  read lengths, as `?RiboseQC_output` says, also when a transcript of the
+  compartment has a UTR shorter than 50 nt. Before, then it was the profile
+  of the last (longest) read length. For example, in the bundled root
+  sample, `"all"` of ChrC was the profile of the 45 nt reads, and `"all"` of
+  ChrM the profile of the 35 nt reads. `nucl` is affected when the
+  transcripts used for it have such UTRs, for example with an annotation
+  without UTRs. This changes the `"all"` row of
+  `selection_cutoffs$results_cutoffs`, the `"all"` element of
+  `selection_cutoffs$analysis_frame_cutoff`, and the plots of `"all"` in
+  sections 4.1 and 4.2.1 of the report. For example, ChrC of the bundled
+  root sample now has an `"all"` row (cutoff 21, frame preference 39), and
+  before, it had none, because the profile of the 45 nt reads gave no
+  offset. The profiles of the single read lengths, the offsets, the
+  selected read lengths and the P-sites do not change.
 
 ## Bug fixes
 

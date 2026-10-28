@@ -1,5 +1,6 @@
 # calc_cutoffs_from_profiles() and choose_readlengths() on the 5' profiles of the
-# root sample of the example data (example_analysis() in helper-example.R)
+# root sample of the example data (example_analysis() in helper-example.R), and
+# the 5' profiles of both samples
 
 test_that("calc_cutoffs_from_profiles() finds the offset of the 28 nt reads, and in-frame signal", {
   profiles <- example_results("root")$profiles_fivepr$five_prime_subcodon
@@ -44,4 +45,20 @@ test_that("choose_readlengths() selects a read length with in-frame signal, and 
                             profiles["nucl"])
   expect_lt(sel$nucl$data$gain_codons, 0)
   expect_equal(nrow(sel$nucl$final_choice), 0)
+})
+
+# "all" is the sum of the read lengths. Before, in a compartment with a transcript with a
+# UTR shorter than 50 nt (here ChrC and ChrM) it was the profile of the last read length
+test_that("the 5' profiles of \"all\" are the sum of the profiles of the read lengths", {
+  for (s in c("root", "shoots")) {
+    for (profiles in example_results(s)$profiles_fivepr) {
+      expect_true(all(c("nucl", "ChrC", "ChrM") %in% names(profiles)))
+      for (comp in names(profiles)) {
+        rls <- setdiff(names(profiles[[comp]]), "all")
+        expect_equal(as.matrix(profiles[[comp]][["all"]]),
+                     Reduce(`+`, lapply(rls, function(r) as.matrix(profiles[[comp]][[r]]))),
+                     info = paste(s, comp))
+      }
+    }
+  }
 })
