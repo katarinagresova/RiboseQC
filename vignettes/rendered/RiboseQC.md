@@ -63,10 +63,11 @@ mitochondrial genome (`ChrM`).
 ext_data <- system.file("ext_data", package = "RiboseQC")
 list.files(ext_data)
 #>  [1] "README.md"                "root_results_RiboseQC"   
-#>  [3] "simp_arab_root.bam"       "simp_arab_root.bam.bai"  
-#>  [5] "simp_arab_shoots.bam"     "simp_arab_shoots.bam.bai"
-#>  [7] "simp_arab.fa.gz"          "simp_arab.fa.gz.fai"     
-#>  [9] "simp_arab.fa.gz.gzi"      "simp_arab.gtf.gz"
+#>  [3] "shoots_results_RiboseQC"  "simp_arab_root.bam"      
+#>  [5] "simp_arab_root.bam.bai"   "simp_arab_shoots.bam"    
+#>  [7] "simp_arab_shoots.bam.bai" "simp_arab.fa.gz"         
+#>  [9] "simp_arab.fa.gz.fai"      "simp_arab.fa.gz.gzi"     
+#> [11] "simp_arab.gtf.gz"
 ```
 
 All output files go to a temporary directory:
@@ -131,30 +132,32 @@ RiboseQC_analysis(annotation_file = annotation_file,
                   dest_names = file.path(out_dir, c("root", "shoots")),
                   sample_names = c("root", "shoots"),
                   create_report = FALSE)
+#> Warning in RiboseQC_analysis(annotation_file = annotation_file, bam_files =
+#> file.path(ext_data, : Not enough signal or low frame preference, skipped
+#> P-sites & codon occupancy calculation. Set readlength_choice_method = 'all' to
+#> ignore this warning and get P-sites positions in a new run
 ```
 
 ``` r
 list.files(out_dir, pattern = "^(root|shoots)_")
 #>  [1] "root_coverage_minus.bedgraph"        "root_coverage_plus.bedgraph"        
 #>  [3] "root_coverage_uniq_minus.bedgraph"   "root_coverage_uniq_plus.bedgraph"   
-#>  [5] "root_for_ORFquant"                   "root_genes.tsv"                     
-#>  [7] "root_junctions"                      "root_P_sites_calcs"                 
-#>  [9] "root_P_sites_calcs.tsv"              "root_P_sites_minus.bedgraph"        
-#> [11] "root_P_sites_offsets.tsv"            "root_P_sites_plus.bedgraph"         
-#> [13] "root_P_sites_uniq_minus.bedgraph"    "root_P_sites_uniq_plus.bedgraph"    
-#> [15] "root_read_lengths.tsv"               "root_regions.tsv"                   
-#> [17] "root_results_RiboseQC"               "root_results_RiboseQC_all"          
-#> [19] "root_summary.tsv"                    "root_top50_positions.tsv"           
-#> [21] "shoots_coverage_minus.bedgraph"      "shoots_coverage_plus.bedgraph"      
-#> [23] "shoots_coverage_uniq_minus.bedgraph" "shoots_coverage_uniq_plus.bedgraph" 
-#> [25] "shoots_for_ORFquant"                 "shoots_genes.tsv"                   
-#> [27] "shoots_junctions"                    "shoots_P_sites_calcs"               
-#> [29] "shoots_P_sites_calcs.tsv"            "shoots_P_sites_minus.bedgraph"      
-#> [31] "shoots_P_sites_offsets.tsv"          "shoots_P_sites_plus.bedgraph"       
-#> [33] "shoots_P_sites_uniq_minus.bedgraph"  "shoots_P_sites_uniq_plus.bedgraph"  
-#> [35] "shoots_read_lengths.tsv"             "shoots_regions.tsv"                 
-#> [37] "shoots_results_RiboseQC"             "shoots_results_RiboseQC_all"        
-#> [39] "shoots_summary.tsv"                  "shoots_top50_positions.tsv"
+#>  [5] "root_genes.tsv"                      "root_junctions"                     
+#>  [7] "root_P_sites_calcs"                  "root_P_sites_calcs.tsv"             
+#>  [9] "root_P_sites_offsets.tsv"            "root_read_lengths.tsv"              
+#> [11] "root_regions.tsv"                    "root_results_RiboseQC"              
+#> [13] "root_results_RiboseQC_all"           "root_summary.tsv"                   
+#> [15] "root_top50_positions.tsv"            "shoots_coverage_minus.bedgraph"     
+#> [17] "shoots_coverage_plus.bedgraph"       "shoots_coverage_uniq_minus.bedgraph"
+#> [19] "shoots_coverage_uniq_plus.bedgraph"  "shoots_for_ORFquant"                
+#> [21] "shoots_genes.tsv"                    "shoots_junctions"                   
+#> [23] "shoots_P_sites_calcs"                "shoots_P_sites_calcs.tsv"           
+#> [25] "shoots_P_sites_minus.bedgraph"       "shoots_P_sites_offsets.tsv"         
+#> [27] "shoots_P_sites_plus.bedgraph"        "shoots_P_sites_uniq_minus.bedgraph" 
+#> [29] "shoots_P_sites_uniq_plus.bedgraph"   "shoots_read_lengths.tsv"            
+#> [31] "shoots_regions.tsv"                  "shoots_results_RiboseQC"            
+#> [33] "shoots_results_RiboseQC_all"         "shoots_summary.tsv"                 
+#> [35] "shoots_top50_positions.tsv"
 ```
 
 With `write_TSV_files = TRUE` (the default), the `.tsv` files have the
@@ -166,7 +169,7 @@ P-sites, and the frame preference of these reads:
 ``` r
 read.delim(file.path(out_dir, "shoots_summary.tsv"))
 #>   sample compartment reads  pct_cds pct_P_sites frame_preference
-#> 1 shoots        nucl 29636  23.8089     54.1099          91.6663
+#> 1 shoots        nucl 29636  23.8089      0.0000               NA
 #> 2 shoots        ChrC 20705 100.0000     95.0398          75.7105
 #> 3 shoots        ChrM  2775  99.5315      0.0000               NA
 ```
@@ -236,62 +239,64 @@ lengths, which it used for the P-sites:
 
 ``` r
 read.delim(file.path(out_dir, "root_P_sites_offsets.tsv"))
-#>   read_length cutoff compartment
-#> 1          28     12        nucl
+#> [1] read_length cutoff      compartment
+#> <0 rows> (or 0-length row.names)
 read.delim(file.path(out_dir, "shoots_P_sites_offsets.tsv"))
-#>    read_length cutoff compartment
-#> 1           28     12        nucl
-#> 2           24     14        ChrC
-#> 3           32     16        ChrC
-#> 4           27     11        ChrC
-#> 5           29     13        ChrC
-#> 6           28     12        ChrC
-#> 7           31     15        ChrC
-#> 8           30     14        ChrC
-#> 9           25     15        ChrC
-#> 10          26     10        ChrC
+#>   read_length cutoff compartment
+#> 1          24     14        ChrC
+#> 2          32     16        ChrC
+#> 3          27     11        ChrC
+#> 4          29     13        ChrC
+#> 5          28     12        ChrC
+#> 6          31     15        ChrC
+#> 7          30     14        ChrC
+#> 8          25     15        ChrC
+#> 9          26     10        ChrC
 ```
 
-In both samples, the 28-nt reads of the cytoplasmic ribosomes have the
-offset 12. In the shoot sample, 9 read lengths of the chloroplast are
-selected too. No read length of the mitochondrion is selected, in either
-sample. `<dest_name>_P_sites_calcs` has more data on each read length,
-such as its frame preference, its percentage of the reads of its
-compartment (`pct_map`), and for each method of
-`readlength_choice_method` if it selects the read length. Some of its
-columns:
+No read length of the cytoplasmic ribosomes (`nucl`) has an offset: the
+offset of a read length needs at least 5 transcripts with reads near
+their start codon, and few nuclear transcripts of the example have them.
+So the root sample has no P-sites, and `RiboseQC_analysis()` warned:
+“Not enough signal or low frame preference”. In the shoot sample, 9 read
+lengths of the chloroplast are selected. No read length of the
+mitochondrion is selected, in either sample. `<dest_name>_P_sites_calcs`
+has more data on each read length, such as its frame preference, its
+percentage of the reads of its compartment (`pct_map`), and for each
+method of `readlength_choice_method` if it selects the read length. Some
+of its columns:
 
 ``` r
 calcs <- read.delim(file.path(out_dir, "shoots_P_sites_calcs"))
 calcs[, c("comp", "read_length", "cutoff", "frame_preference", "pct_map", "max_coverage")]
-#>    comp read_length cutoff frame_preference pct_map max_coverage
-#> 1  nucl          28     12         91.66629 30.1905         TRUE
-#> 2  ChrC          24     14         84.89899  1.1315         TRUE
-#> 3  ChrC          32     16         78.25593  3.7766         TRUE
-#> 4  ChrC          27     11         77.41758  1.9693         TRUE
-#> 5  ChrC          29     13         77.15380  9.4115         TRUE
-#> 6  ChrC          28     12         76.73259  5.8193         TRUE
-#> 7  ChrC          31     15         75.72022  5.1190         TRUE
-#> 8  ChrC          30     14         72.71184  7.3933         TRUE
-#> 9  ChrC          25     15         67.67677  1.1898         TRUE
-#> 10 ChrC          26     10         66.63623  1.2369         TRUE
+#>   comp read_length cutoff frame_preference pct_map max_coverage
+#> 1 ChrC          24     14         84.89899  1.1315         TRUE
+#> 2 ChrC          32     16         78.25593  3.7766         TRUE
+#> 3 ChrC          27     11         77.41758  1.9693         TRUE
+#> 4 ChrC          29     13         77.15380  9.4115         TRUE
+#> 5 ChrC          28     12         76.73259  5.8193         TRUE
+#> 6 ChrC          31     15         75.72022  5.1190         TRUE
+#> 7 ChrC          30     14         72.71184  7.3933         TRUE
+#> 8 ChrC          25     15         67.67677  1.1898         TRUE
+#> 9 ChrC          26     10         66.63623  1.2369         TRUE
 ```
 
-The 5’ ends of the 28-nt reads are mostly in one frame of the CDS:
+The 5’ ends of each selected read length of the chloroplast are mostly
+in one frame of the CDS:
 
 ``` r
-plot_frame_dist_boxplot(shoots$selection_cutoffs$analysis_frame_cutoff, "nucl", "shoots")
+plot_frame_dist_boxplot(shoots$selection_cutoffs$analysis_frame_cutoff, "ChrC", "shoots")
 ```
 
 ![](RiboseQC_files/figure-gfm/frames-1.png)<!-- -->
 
 So their P-sites show the reading frame. Here are the P-sites of the
-28-nt reads around the start and stop codons of the nuclear genes,
+28-nt reads around the start and stop codons of the chloroplast genes,
 coloured by their frame:
 
 ``` r
-psites_nucl <- get_metagene_data(shoots, "profiles_P_sites", "P_sites_subcodon", "nucl")
-plot_metagene_bar(psites_nucl, "28", "shoots")
+psites_chrc <- get_metagene_data(shoots, "profiles_P_sites", "P_sites_subcodon", "ChrC")
+plot_metagene_bar(psites_chrc, "28", "shoots")
 ```
 
 <img src="RiboseQC_files/figure-gfm/metagene-1.png" width="100%" />

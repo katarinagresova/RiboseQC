@@ -27,9 +27,10 @@ These plots are displayed in the RiboseQC report in section 7.
 }
 \examples{
 \dontrun{
-# This draws all plots of section 7 of the report: about 2 min on the bundled data.
-load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
-plot_codon_usage_positional_rmd(res_all, "root")
+# This draws all plots of section 7 of the report: 210 plots, about 7 min, on the bundled
+# shoots sample (the root sample has no P-sites).
+load(system.file("ext_data", "shoots_results_RiboseQC", package = "RiboseQC"))
+plot_codon_usage_positional_rmd(res_all, "shoots")
 }
 }
 \seealso{

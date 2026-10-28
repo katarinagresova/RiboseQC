@@ -32,8 +32,9 @@ This function generates iteratively all frame coverage boxplots
 These plots are displayed in the RiboseQC report in section 4.2.1.
 }
 \examples{
-load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
-plot_frame_dist_boxplot_rmd(res_all$selection_cutoffs$analysis_frame_cutoff, "root")
+# the shoots sample: no read length of the root sample has an offset
+load(system.file("ext_data", "shoots_results_RiboseQC", package = "RiboseQC"))
+plot_frame_dist_boxplot_rmd(res_all$selection_cutoffs$analysis_frame_cutoff, "shoots")
 }
 \seealso{
 \code{\link{create_html_report}}

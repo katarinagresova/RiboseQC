@@ -3,8 +3,10 @@
 # summary of each compartment. test-example-golden.R compares read_lengths.tsv,
 # regions.tsv and genes.tsv with golden files
 
-# A tab-separated file as a data.frame; the columns `text` as they are written, also "NA"
+# A tab-separated file as a data.frame; the columns `text` as they are written, also "NA".
+# An empty file (P_sites_calcs without offsets) gives a data.frame without columns
 read_tsv <- function(f, text = character()) {
+  if (!any(nzchar(readLines(f)))) return(data.frame())
   df <- utils::read.delim(f, quote = "", stringsAsFactors = FALSE, check.names = FALSE)
   if (length(text) > 0) {
     df[text] <- utils::read.delim(f, quote = "", colClasses = "character", na.strings = character(),
@@ -56,30 +58,32 @@ for (s in c("root", "shoots")) {
     }
 
     summ <- read_tsv(paste0(prefix, "_summary.tsv"))
+    # all NA for root: read.delim() reads the column as logical
+    summ$frame_preference <- as.numeric(summ$frame_preference)
     # example_analysis() gives no sample_names: the default names
     expect_identical(summ$sample, rep(c(root = "sample1", shoots = "sample2")[[s]], 3))
     expected <- expected_summary(res_all, read_tsv(paste0(prefix, "_P_sites_offsets.tsv")),
                                  read_tsv(paste0(prefix, "_P_sites_calcs")))
     expect_equal(summ[-1], expected)
-    # root has offsets only for the 28-nt reads of nucl; shoots for nucl and ChrC
-    expect_identical(!is.na(summ$frame_preference), c(TRUE, s == "shoots", FALSE))
+    # root has no offsets; shoots has offsets only for ChrC
+    expect_identical(!is.na(summ$frame_preference), c(FALSE, s == "shoots", FALSE))
   })
 }
 
 test_that("the summary has the reads of all read lengths with an offset, and the frame preference of those with one", {
-  res_all <- example_results("root")
+  res_all <- example_results("shoots")
   finn <- res_all$summary_P_sites
-  prefix <- file.path(withr::local_tempdir(), "root")
+  prefix <- file.path(withr::local_tempdir(), "shoots")
   summary_of <- function(...) {
-    write_tsv_files(res_all, ..., dest_name = prefix, sample_name = "root")
+    write_tsv_files(res_all, ..., dest_name = prefix, sample_name = "shoots")
     read_tsv(paste0(prefix, "_summary.tsv"))
   }
   rld <- res_all$read_stats$rld
 
-  # 29 nt has an offset but no frame preference, as with rescue_all_rls or offsets_df; 99 nt has no reads
-  summ <- summary_of(finn, data.frame(read_length = c(28, 29, 99), cutoff = 12, compartment = "nucl"))
-  expect_equal(summ$pct_P_sites[1], round((rld["nucl", "reads_28"] + rld["nucl", "reads_29"]) / sum(rld["nucl", ]) * 100, 4))
-  expect_equal(summ$frame_preference[1], round(finn$frame_preference[finn$read_length == "28"], 4))
+  # 33 nt has an offset but no frame preference, as with rescue_all_rls or offsets_df; 99 nt has no reads
+  summ <- summary_of(finn, data.frame(read_length = c(28, 33, 99), cutoff = 12, compartment = "ChrC"))
+  expect_equal(summ$pct_P_sites[2], round((rld["ChrC", "reads_28"] + rld["ChrC", "reads_33"]) / sum(rld["ChrC", ]) * 100, 4))
+  expect_equal(summ$frame_preference[2], round(finn$frame_preference[finn$read_length == "28" & finn$comp == "ChrC"], 4))
 
   # no read length has an offset
   summ <- summary_of(NULL, data.frame(read_length = numeric(), cutoff = numeric(), compartment = character()))
@@ -90,7 +94,7 @@ test_that("the summary has the reads of all read lengths with an offset, and the
   # a compartment without reads
   res_all$read_stats$rld["ChrM", ] <- 0
   res_all$read_stats$positions[, "reads_ChrM"] <- 0
-  summ <- summary_of(finn, data.frame(read_length = 28, cutoff = 12, compartment = "nucl"))
+  summ <- summary_of(finn, data.frame(read_length = 28, cutoff = 12, compartment = "ChrC"))
   expect_identical(summ$reads[3], 0L)
   expect_true(is.na(summ$pct_cds[3]) && is.na(summ$pct_P_sites[3]) && is.na(summ$frame_preference[3]))
 })

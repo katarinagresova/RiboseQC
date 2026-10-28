@@ -201,6 +201,27 @@
   17,154: without the 1,768 reads of ChrC and the 3,173 reads of ChrM. All
   other values, and the results of annotations without circular
   chromosomes, do not change. The report does not use `rld_unq`.
+- `RiboseQC_analysis()`: in each row of the transcript profiles
+  (`profiles_fivepr` and `profiles_P_sites` in
+  `<dest_name>_results_RiboseQC_all`), the CDS columns are now those of the
+  transcript of the row. Before, when no transcript of a compartment had a
+  UTR shorter than 51 nt (usually in `nucl`), the 5'UTR and 3'UTR columns
+  were in the order of the transcript names and the CDS columns in another
+  order, so most rows had the CDS columns of another transcript. The
+  offsets come from these rows. So the offsets and the chosen read lengths
+  (`selection_cutoffs`, `<dest_name>_P_sites_offsets.tsv` and
+  `<dest_name>_P_sites_calcs`), the P-sites (the P-site bedgraph files,
+  `<dest_name>_for_ORFquant`, `P_sites_stats`, `profiles_P_sites`) and the
+  report can change. Many of the changed offsets were 0 and are now 3, 6, 9
+  or 12: for example, on chromosome 1 of a human sample, the 29-nt reads
+  (37 % of the reads) have the offset 12, not 0. The frame preference of
+  each read length, the coverage tracks, the read counts and the 5'
+  profiles of the report (the sum of all rows) do not change. In the
+  bundled example, few nuclear transcripts have reads, and with the correct
+  rows `nucl` gets no offset. So the root sample now has no P-sites (with
+  the warning "Not enough signal or low frame preference"), and the shoots
+  sample has only the P-sites of ChrC. Before, both had the P-sites of the
+  28-nt reads of `nucl`, with the offset 12.
 
 ## Bug fixes
 

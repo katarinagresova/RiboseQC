@@ -1248,8 +1248,9 @@ plot_metagene_bar <- function(metagene_data, rl, sample="", output_rds_path="") 
 #'
 #' @seealso \code{\link{create_html_report}}
 #' @examples
-#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
-#' plot_frame_dist_boxplot_rmd(res_all$selection_cutoffs$analysis_frame_cutoff, "root")
+#' # the shoots sample: no read length of the root sample has an offset
+#' load(system.file("ext_data", "shoots_results_RiboseQC", package = "RiboseQC"))
+#' plot_frame_dist_boxplot_rmd(res_all$selection_cutoffs$analysis_frame_cutoff, "shoots")
 #' @export
 
 plot_frame_dist_boxplot_rmd <- function(analysis_frame_cutoff, sample="", output_rds_path=""){
@@ -1668,9 +1669,10 @@ get_codon_usage_data <- function(data, data_type, comp, rl) {
 #' @seealso \code{\link{create_html_report}}
 #' @examples
 #' \dontrun{
-#' # This draws all plots of section 7 of the report: about 2 min on the bundled data.
-#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
-#' plot_codon_usage_positional_rmd(res_all, "root")
+#' # This draws all plots of section 7 of the report: 210 plots, about 7 min, on the bundled
+#' # shoots sample (the root sample has no P-sites).
+#' load(system.file("ext_data", "shoots_results_RiboseQC", package = "RiboseQC"))
+#' plot_codon_usage_positional_rmd(res_all, "shoots")
 #' }
 #' @export
 
@@ -1761,9 +1763,10 @@ plot_codon_usage_positional_rmd <- function(data, sample="", output_rds_path="")
 #'
 #' @seealso \code{\link{create_html_report}}
 #' @examples
-#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
-#' codon_usage_data <- get_codon_usage_data(res_all, "P_sites_percodon", "nucl", "all")
-#' plot_codon_usage_positional(codon_usage_data, "zscore", "root")
+#' # the P-sites of ChrC of the shoots sample: the root sample has no P-sites
+#' load(system.file("ext_data", "shoots_results_RiboseQC", package = "RiboseQC"))
+#' codon_usage_data <- get_codon_usage_data(res_all, "P_sites_percodon", "ChrC", "all")
+#' plot_codon_usage_positional(codon_usage_data, "zscore", "shoots")
 #' @export
 
 plot_codon_usage_positional <- function(codon_usage_data, scal, sample="", output_rds_path="") {
@@ -1891,9 +1894,10 @@ plot_codon_usage_positional <- function(codon_usage_data, scal, sample="", outpu
 #'
 #' @seealso \code{\link{create_html_report}}, \code{\link{get_codon_usage_data}}, \code{\link{plot_codon_usage_bulk}}
 #' @examples
-#' # This draws all plots of section 8 of the report: 14 on the bundled data.
-#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
-#' plot_codon_usage_bulk_rmd(res_all, "root")
+#' # This draws all plots of section 8 of the report: 70, about 1 min, on the bundled shoots
+#' # sample (the root sample has no P-sites).
+#' load(system.file("ext_data", "shoots_results_RiboseQC", package = "RiboseQC"))
+#' plot_codon_usage_bulk_rmd(res_all, "shoots")
 #' @export
 
 plot_codon_usage_bulk_rmd <- function(data, sample="", output_rds_path="") {
@@ -1969,9 +1973,10 @@ plot_codon_usage_bulk_rmd <- function(data, sample="", output_rds_path="") {
 #'
 #' @seealso \code{\link{create_html_report}}
 #' @examples
-#' load(system.file("ext_data", "root_results_RiboseQC", package = "RiboseQC"))
-#' codon_usage_data <- get_codon_usage_data(res_all, "P_sites_percodon", "nucl", "all")
-#' plot_codon_usage_bulk(codon_usage_data, "root")
+#' # the P-sites of ChrC of the shoots sample: the root sample has no P-sites
+#' load(system.file("ext_data", "shoots_results_RiboseQC", package = "RiboseQC"))
+#' codon_usage_data <- get_codon_usage_data(res_all, "P_sites_percodon", "ChrC", "all")
+#' plot_codon_usage_bulk(codon_usage_data, "shoots")
 #' @export
 
 plot_codon_usage_bulk <- function(codon_usage_data, sample="", output_rds_path="") {

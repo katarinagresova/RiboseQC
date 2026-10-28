@@ -311,8 +311,10 @@
 #' names(res_all)
 #' res_all$read_stats$rld[, 1:10]
 #' res_all$read_stats$positions
-#' res_all$summary_P_sites
 #' res_all$sequence_analysis[1:5]
+#' # the root sample has no P-sites; the shoots sample has those of ChrC
+#' load(system.file("ext_data", "shoots_results_RiboseQC", package = "RiboseQC"))
+#' res_all$summary_P_sites
 #' @seealso \code{\link{RiboseQC_analysis}}, \code{\link{create_html_report}}, \code{\link{prepare_for_ORFquant}},
 #' \code{\link{prepare_annotation_files}}, \code{\link{calc_cutoffs_from_profiles}}, \code{\link{choose_readlengths}}
 #' @name RiboseQC_output
