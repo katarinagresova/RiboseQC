@@ -314,6 +314,9 @@
     section 4.2.2, and that with `offsets_df` or `rescue_all_rls = TRUE`, the
     P-sites come from other or more read lengths and offsets, which
     `_P_sites_offsets.tsv` lists.
+  - The two tables of section 6 ("Top 50 abundant genes") show the 50 genes
+    with the most reads, or all genes if there are fewer. Before, they showed
+    100 rows, with rows of `NA` when there were fewer than 100 genes.
 
 ## Performance
 

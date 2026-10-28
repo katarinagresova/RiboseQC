@@ -317,7 +317,7 @@ datasets <- list()
 for (i in c(1:length(rdata_list))){
   res_all <- rdata_list[[names(rdata_list)[i]]]
   rc_cds <- as.data.frame(res_all$read_stats$counts_cds_genes)
-  rc_cds <- rc_cds[with(rc_cds, order(-reads, chromosome)), ][1:100,]
+  rc_cds <- rc_cds[with(rc_cds, order(-reads, chromosome)), ][seq_len(min(50, nrow(rc_cds))),]
   datasets[[i]] <- rc_cds
 }
 ```
@@ -343,7 +343,7 @@ datasets <- list()
 for (i in c(1:length(rdata_list))){
   res_all <- rdata_list[[names(rdata_list)[i]]]
   rc_cds <- as.data.frame(res_all$read_stats$counts_all_genes)
-  rc_cds <- rc_cds[with(rc_cds, order(-reads, chromosome)), ][1:100,]
+  rc_cds <- rc_cds[with(rc_cds, order(-reads, chromosome)), ][seq_len(min(50, nrow(rc_cds))),]
   datasets[[i]] <- rc_cds
 }
 ```

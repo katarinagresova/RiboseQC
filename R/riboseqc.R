@@ -1493,7 +1493,7 @@ get_top50_cds_genes <- function(rdata_list) {
 #' Get top 50 abundant genes (all genes)
 #'
 #' This function retrieves data on the top 100 abundant genes (the function name says 50). \cr \cr
-#' This data is used in the RiboseQC report in section 6 (displayed as table).
+#' The RiboseQC report shows the first 50 of these rows in section 6 (displayed as table).
 #'
 #' @keywords RiboseQC
 #' @author Dominique Sydow, \email{dominique.sydow@@posteo.de}
