@@ -884,9 +884,9 @@ plot_metagene_hm_rmd <- function(data, profile_type, sample="", output_rds_path=
         cat("Select a *resolution* (subcodon or bins):\n")
         cat("In case of *subcodon* resolution, read coverage is shown for
             the first 25nt after the transcription start site (TSS),
-            25nt before and 33nt after the start codon,
+            25nt before the start codon and the first 33nt of the CDS (from the start codon),
             33nt from the middle of the CDS,
-            33nt before and 25nt after the stop codon,
+            the last 33nt of the CDS and 25nt after the stop codon,
             and the last 25nt before the transcription end site (TES).\n")
         cat("In case of *bins*, read coverage is shown for 50 bins between TSS and start codon (5'UTR),
             100 bins for the CDS, and 50 after stop codon (3'UTR). \n\n")
@@ -1399,7 +1399,8 @@ get_rl_and_cutoffs <- function(rdata_list) {
 #' metagene and codon usage analyses
 #' (e.g. \code{plot_metagene_hm} and \code{plot_codon_usage_positional}); with another method,
 #' \code{offsets_df} or \code{rescue_all_rls}, other read lengths do. \cr \cr
-#' This data is used in the RiboseQC report in section 4.2.3 (displayed as table).
+#' With the default method, the RiboseQC report shows these read lengths in section 4.2.3 (displayed as table);
+#' with another method, it shows the read lengths of that method (\code{final_choice}).
 #'
 #' @keywords RiboseQC
 #' @author Dominique Sydow, \email{dominique.sydow@@posteo.de}
@@ -1493,7 +1494,7 @@ get_top50_cds_genes <- function(rdata_list) {
 #' Get top 50 abundant genes (all genes)
 #'
 #' This function retrieves data on the top 100 abundant genes (the function name says 50). \cr \cr
-#' This data is used in the RiboseQC report in section 6 (displayed as table).
+#' The RiboseQC report shows the first 50 of these rows in section 6 (displayed as table).
 #'
 #' @keywords RiboseQC
 #' @author Dominique Sydow, \email{dominique.sydow@@posteo.de}
