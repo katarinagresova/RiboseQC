@@ -55,9 +55,11 @@ Collate:
     'FaFile_Circ.R'
     'RiboseQC-package.R'
     'RiboseQC_output.R'
+    'annotation.R'
     'checks.R'
     'forked.R'
+    'offsets.R'
     'prepare_for_ORFquant.R'
-    'riboseqc.R'
+    'report.R'
     'riboseq_analysis.R'
 Config/roxygen2/version: 8.1.0
