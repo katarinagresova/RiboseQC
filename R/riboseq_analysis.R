@@ -1271,11 +1271,13 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 ps_comp[["all"]] <- all_ps
                 mp <- mapToTranscripts(all_ps, transcripts = GTF_annotation$exons_txs[as.vector(seqnames(tile_cds))])
                 mp$score <- all_ps$score[mp$xHits]
-                # put seqlevels for compartment only to speed up stuff
-                seqlevels(mp) <- names(GTF_annotation$exons_txs)
-                seqlengths(mp) <- sum(width(GTF_annotation$exons_txs))
+                # only the transcripts of tile_cds, in the order of all transcripts: the others have no P-sites,
+                # so they are not in ok_txs, and their sum is 0
+                txs_tile <- names(GTF_annotation$exons_txs)[names(GTF_annotation$exons_txs) %in% as.vector(seqnames(tile_cds))]
+                seqlevels(mp) <- txs_tile
+                seqlengths(mp) <- sum(width(GTF_annotation$exons_txs))[txs_tile]
                 covtx <- coverage(mp, weight = mp$score)
-                ok_txs <- names(covtx[elementNROWS(runValue(covtx)) > 1])
+                ok_txs <- names(covtx)[elementNROWS(runValue(covtx)) > 1]
                 if (length(ok_txs) < 5) {
                   ps_signals_tiles_all[[comp]] <- c()
                   ps_signals_win_all[[comp]] <- c()
@@ -1283,8 +1285,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 }
                 # keep all txs if small n of txs
                 
-                if (length(ok_txs) >= 5 & length(covtx) < 250) {
-                  # covtx has all transcripts: keep the selected ones, as the 5' profiles do
+                if (length(ok_txs) >= 5 & length(GTF_annotation$exons_txs) < 250) {
+                  # covtx has the transcripts of tile_cds: keep the selected ones, as the 5' profiles do
                   ok_txs <- names(covtx)[names(covtx) %in% as.vector(seqnames(tile_cds))]
                 }
                 
