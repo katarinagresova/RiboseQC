@@ -415,6 +415,16 @@
   less), with less memory (2.5 GB instead of 3.1 GB). On a human sample with
   a 2.3 GB BAM (18 chunks), the P-site profiles take 113 s instead of 167 s,
   with the same memory. The results don't change.
+- `RiboseQC_analysis()` counts the reads in the regions and finds the read
+  lengths faster. It found the overlaps of the regions (CDS, UTRs, introns,
+  ...) of each compartment three times: with all reads, with the reads of the
+  compartment, and with their uniquely mapping reads. It now finds them once,
+  with the reads of the compartment. To find the read lengths, it read the
+  alignments; it now reads only their cigars. On a human sample (a 2.3 GB
+  BAM, 18 chunks, GENCODE 47, `rescue_all_rls = TRUE`), the counts take 219 s
+  instead of 267 s, the read lengths 60 s instead of 76 s, and a run with the
+  report on one core 1,367 s instead of 1,417 s (3.5% less), without more
+  memory. The results don't change.
 
 ## Documentation
 
