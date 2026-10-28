@@ -317,6 +317,9 @@
   - The two tables of section 6 ("Top 50 abundant genes") show the 50 genes
     with the most reads, or all genes if there are fewer. Before, they showed
     100 rows, with rows of `NA` when there were fewer than 100 genes.
+  - The text of the subcodon profiles (sections 4.1 and 4.3) says that their
+    windows are the first and the last 33 nt of the CDS. Before, it said 33
+    nt after the start codon and 33 nt before the stop codon.
 
 ## Performance
 
