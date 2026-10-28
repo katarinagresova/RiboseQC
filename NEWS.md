@@ -503,6 +503,13 @@
   read lengths with an offset (not only the selected ones), and
   `P_sites_percodon_ratio` is `NaN` where a codon does not occur. The code
   does not change.
+- The help of `n_cores` (`?RiboseQC_analysis`) and the comments of
+  `run_riboseqc.sbatch` now give the time and the memory of a human sample
+  with a 2.3 GB BAM file with 1, 2 and 4 cores: 31 min and 18 GB, 24 min and
+  25 GB, 21 min and 33 GB. Only the passes over the BAM file use more than
+  one core, and each core needs the memory for one chunk of alignments. The
+  comments of `run_riboseqc.sbatch` gave 65 min and 15.6 GB for one core,
+  measured on an older version.
 
 # RiboseQC 1.4.0
 
