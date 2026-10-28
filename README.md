@@ -64,7 +64,7 @@ RiboseQC_analysis(annotation_file = annotation_file,
                   report_file = "example/report.html")
 ```
 
-The report can be opened using a browser like Chrome, Firefox or others. It includes all plots, so it is large: 60 MB for this example. The plots are also in `example/report.html_plots/`, as PDF files (`pdf/`) and as R objects (`rds/`: `readRDS(file)[[1]]` is a ggplot, or a gtable to draw with `grid::grid.draw()`). `create_html_report()` creates a new report from the `*_results_RiboseQC` files of one or more analyses.
+The report can be opened using a browser like Chrome, Firefox or others. It includes all plots, so it is large: 29 MB for this example, and 41 MB for one human sample (a 2.3 GB BAM file, GENCODE 47). The plots are also in `example/report.html_plots/` (41 MB for this example, 57 MB for the human sample), as PDF files (`pdf/`) and as R objects (`rds/`: `readRDS(file)[[1]]` is a ggplot, or a gtable to draw with `grid::grid.draw()`). `create_html_report()` creates a new report from the `*_results_RiboseQC` files of one or more analyses.
 
 The [vignette](vignettes/RiboseQC.Rmd) runs the same analysis without the report, and shows some of the results: the reads of each compartment, the read lengths, the P-site offsets and the frame of the P-sites. To read it with its results, without running it, open [vignettes/rendered/RiboseQC.md](vignettes/rendered/RiboseQC.md).
 
