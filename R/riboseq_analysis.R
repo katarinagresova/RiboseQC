@@ -10,7 +10,7 @@ NULL
 #' @param annotation_file Full path to the annotation file (*Rannot). Or, a vector with paths to one annotation file per bam file.
 #' @param bam_files character vector containing the full path to the bam files
 #' @param chunk_size the number of alignments to read at each iteration, defaults to 5000000, increase when more RAM is available. Must be more than 100000 and at most 100000000
-#' @param n_cores number of cores to use, each for one chunk of \code{chunk_size} alignments at a time, in forked processes (not on Windows). Each core needs the memory for one chunk. The results do not depend on it. Defaults to 1
+#' @param n_cores number of cores to use, each for one chunk of \code{chunk_size} alignments at a time, in forked processes (not on Windows). Each core needs the memory for one chunk. Only the passes over the BAM file use more than one core, not the profiles, the output files and the report. For example, a human sample with a 2.3 GB BAM file (18 chunks, GENCODE 47, with the report) took 31 min and 18 GB of memory with 1 core, 24 min and 25 GB with 2 cores, and 21 min and 33 GB with 4 cores. The results do not depend on it. Defaults to 1
 #' @param read_subset Calculate the offsets only for the read lengths with the most reads in each compartment: by number of reads on CDS and UTRs,
 #' until they have more than 99 percent of these reads. Defaults to \code{TRUE}. Must be of length 1 or same length as bam_files.
 #' @param readlength_choice_method Method used to subset relevant read lengths (see \code{choose_readlengths} function); defaults to 'max_coverage'. Must be of length 1 or same length as bam_files.
@@ -902,7 +902,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             threes_gen <- threes_gen[threes_gen$hit]
             threes_gen <- split(threes_gen, names(threes_gen))
             
-            cds_gen <- GTF_annotation$cds_txs[ok_txs]
+            # the order of the 5' and 3' windows (split() sorts by name): cbind() joins the rows by position
+            cds_gen <- GTF_annotation$cds_txs[names(fivs_gen)]
             
             
             tile_cds <- tile_cds[as.character(seqnames(tile_cds)) %in% ok_txs]
@@ -984,7 +985,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             # ps_comp has "all" at the end: do it once, first (a second time it would
             # use the covtx of the last read length)
             for (len in c("all", setdiff(names(ps_comp), "all"))) {
-
+                
                 if ((sum(no3utr) + sum(no5utr)) == 0) {
                   mp <- mapToTranscripts(ps_comp[[len]], transcripts = fivs_gen)
                   mp$score <- ps_comp[[len]]$score[mp$xHits]
@@ -1322,7 +1323,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 threes_gen <- threes_gen[threes_gen$hit]
                 threes_gen <- split(threes_gen, names(threes_gen))
                 
-                cds_gen <- GTF_annotation$cds_txs[ok_txs]
+                # the order of the 5' and 3' windows (split() sorts by name): cbind() joins the rows by position
+                cds_gen <- GTF_annotation$cds_txs[names(fivs_gen)]
                 
                 
                 tile_cds <- tile_cds[as.character(seqnames(tile_cds)) %in% ok_txs]

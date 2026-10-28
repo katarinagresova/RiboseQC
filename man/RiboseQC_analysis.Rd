@@ -75,7 +75,7 @@ and cutoffs for the P_sites, and so for \code{P_sites_stats}, \code{profiles_P_s
 A data.frame gives the offsets of the nuclear compartment (\code{"nucl"}); a list with one such table for each compartment, named as the compartments,
 gives the offsets of the compartments with selected read lengths: it must have all of them, and the other compartments of the list are not used}
 
-\item{n_cores}{number of cores to use, each for one chunk of \code{chunk_size} alignments at a time, in forked processes (not on Windows). Each core needs the memory for one chunk. The results do not depend on it. Defaults to 1}
+\item{n_cores}{number of cores to use, each for one chunk of \code{chunk_size} alignments at a time, in forked processes (not on Windows). Each core needs the memory for one chunk. Only the passes over the BAM file use more than one core, not the profiles, the output files and the report. For example, a human sample with a 2.3 GB BAM file (18 chunks, GENCODE 47, with the report) took 31 min and 18 GB of memory with 1 core, 24 min and 25 GB with 2 cores, and 21 min and 33 GB with 4 cores. The results do not depend on it. Defaults to 1}
 
 \item{write_TSV_files}{write the main tables of the results as tab-separated files, for each BAM file (see \code{\link{RiboseQC_output}}). Defaults to \code{TRUE}}
 }

@@ -19,7 +19,8 @@ With this method, these read lengths build the basis for all P-site based calcul
 metagene and codon usage analyses
 (e.g. \code{plot_metagene_hm} and \code{plot_codon_usage_positional}); with another method,
 \code{offsets_df} or \code{rescue_all_rls}, other read lengths do. \cr \cr
-This data is used in the RiboseQC report in section 4.2.3 (displayed as table).
+With the default method, the RiboseQC report shows these read lengths in section 4.2.3 (displayed as table);
+with another method, it shows the read lengths of that method (\code{final_choice}).
 }
 \seealso{
 \code{\link{create_html_report}}

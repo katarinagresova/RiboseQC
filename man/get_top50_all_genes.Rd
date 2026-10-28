@@ -15,7 +15,7 @@ the 100 rows of \code{res_all$read_stats$counts_all_genes} with the most reads (
 }
 \description{
 This function retrieves data on the top 100 abundant genes (the function name says 50). \cr \cr
-This data is used in the RiboseQC report in section 6 (displayed as table).
+The RiboseQC report shows the first 50 of these rows in section 6 (displayed as table).
 }
 \seealso{
 \code{\link{create_html_report}}

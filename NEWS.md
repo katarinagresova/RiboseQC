@@ -229,6 +229,27 @@
   selects the read lengths from them, so with `stranded = FALSE` the run
   can now calculate the offsets of other read lengths, and its P-sites can
   change. The results of `stranded = TRUE` and `"inverse"` do not change.
+- `RiboseQC_analysis()`: in each row of the transcript profiles
+  (`profiles_fivepr` and `profiles_P_sites` in
+  `<dest_name>_results_RiboseQC_all`), the CDS columns are now those of the
+  transcript of the row. Before, when no transcript of a compartment had a
+  UTR shorter than 51 nt (usually in `nucl`), the 5'UTR and 3'UTR columns
+  were in the order of the transcript names and the CDS columns in another
+  order, so most rows had the CDS columns of another transcript. The
+  offsets come from these rows. So the offsets and the chosen read lengths
+  (`selection_cutoffs`, `<dest_name>_P_sites_offsets.tsv` and
+  `<dest_name>_P_sites_calcs`), the P-sites (the P-site bedgraph files,
+  `<dest_name>_for_ORFquant`, `P_sites_stats`, `profiles_P_sites`) and the
+  report can change. Many of the changed offsets were 0 and are now 3, 6, 9
+  or 12: for example, on chromosome 1 of a human sample, the 29-nt reads
+  (37 % of the reads) have the offset 12, not 0. The frame preference of
+  each read length, the coverage tracks, the read counts and the 5'
+  profiles of the report (the sum of all rows) do not change. In the
+  bundled example, few nuclear transcripts have reads, and with the correct
+  rows `nucl` gets no offset. So the root sample now has no P-sites (with
+  the warning "Not enough signal or low frame preference"), and the shoots
+  sample has only the P-sites of ChrC. Before, both had the P-sites of the
+  28-nt reads of `nucl`, with the offset 12.
 - `RiboseQC_analysis()`: the 5' profile of `"all"` of a compartment
   (`profiles_fivepr$five_prime_bins` and `$five_prime_subcodon`, in
   `<dest_name>_results_RiboseQC_all`) is now the sum of the profiles of the
@@ -323,6 +344,20 @@
   results have fewer than 50 (100) genes. Before, they added rows of `NA` up
   to 50 (100) rows, which the "Top 50 abundant genes" tables of the report
   showed. The results with more genes give the same tables.
+- The HTML report now agrees with the results:
+  - Section 4.2.3 ("Choice of read lengths") lists the read lengths that
+    `readlength_choice_method` selected. Before, it listed those of
+    `"max_coverage"` with each method. With the default method, the table
+    does not change. Its text says that the offsets are the cutoffs of
+    section 4.2.2, and that with `offsets_df` or `rescue_all_rls = TRUE`, the
+    P-sites come from other or more read lengths and offsets, which
+    `_P_sites_offsets.tsv` lists.
+  - The two tables of section 6 ("Top 50 abundant genes") show the 50 genes
+    with the most reads, or all genes if there are fewer. Before, they showed
+    100 rows, with rows of `NA` when there were fewer than 100 genes.
+  - The text of the subcodon profiles (sections 4.1 and 4.3) says that their
+    windows are the first and the last 33 nt of the CDS. Before, it said 33
+    nt after the start codon and 33 nt before the stop codon.
 
 ## Performance
 
@@ -485,6 +520,13 @@
   read lengths with an offset (not only the selected ones), and
   `P_sites_percodon_ratio` is `NaN` where a codon does not occur. The code
   does not change.
+- The help of `n_cores` (`?RiboseQC_analysis`) and the comments of
+  `run_riboseqc.sbatch` now give the time and the memory of a human sample
+  with a 2.3 GB BAM file with 1, 2 and 4 cores: 31 min and 18 GB, 24 min and
+  25 GB, 21 min and 33 GB. Only the passes over the BAM file use more than
+  one core, and each core needs the memory for one chunk of alignments. The
+  comments of `run_riboseqc.sbatch` gave 65 min and 15.6 GB for one core,
+  measured on an older version.
 
 # RiboseQC 1.4.0
 
