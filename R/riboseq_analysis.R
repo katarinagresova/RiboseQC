@@ -1,4 +1,4 @@
-#' @include riboseqc.R
+#' @include report.R
 NULL
 
 
