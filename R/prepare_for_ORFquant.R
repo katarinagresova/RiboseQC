@@ -574,20 +574,25 @@ psites_of_chunk<-function(x,rl_cutoffs_comp,circs,seqllll,seqleee,junctions,with
         all_ps<-sort(c(ps_plus,ps_neg))
         uniq_ps<-sort(c(ps_plus_uniq,ps_neg_uniq))
         uniq_mm_ps<-sort(c(ps_plus_uniq_mm,ps_neg_uniq_mm))
+        # the P-sites are sorted, so equal P-sites are next to each other: the score of a unique P-site is the
+        # number of its copies, as countOverlaps(type="equal") gave (no seqlevel of a BAM file is circular)
         if(length(all_ps)>0){
-          ps_res<-unique(all_ps)
-          ps_res$score<-countOverlaps(ps_res,all_ps,type="equal")
+          first<-!duplicated(all_ps)
+          ps_res<-all_ps[first]
+          ps_res$score<-diff(c(which(first),length(all_ps)+1L))
           all_ps<-ps_res
         }
         if(length(uniq_ps)>0){
-          ps_res<-unique(uniq_ps)
-          ps_res$score<-countOverlaps(ps_res,uniq_ps,type="equal")
+          first<-!duplicated(uniq_ps)
+          ps_res<-uniq_ps[first]
+          ps_res$score<-diff(c(which(first),length(uniq_ps)+1L))
           uniq_ps<-ps_res
           
         }
         if(length(uniq_mm_ps)>0){
-          ps_res<-unique(uniq_mm_ps)
-          ps_res$score<-countOverlaps(ps_res,uniq_mm_ps,type="equal")
+          first<-!duplicated(uniq_mm_ps)
+          ps_res<-uniq_mm_ps[first]
+          ps_res$score<-diff(c(which(first),length(uniq_mm_ps)+1L))
           uniq_mm_ps<-ps_res
           
         }
