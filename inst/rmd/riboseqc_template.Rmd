@@ -229,7 +229,7 @@ for (i in c(1:length(datasets))) {
 
 ### 4.2.3 Choice of read lengths {.tabset}
 
-Based on the parameters indicated in the Ribo-seQC run, the following read lengths (with their offsets) were selected to infer P-sites positions.
+Based on the parameters indicated in the Ribo-seQC run (`readlength_choice_method`), the following read lengths were selected to infer P-sites positions; their offsets are the cutoffs in Section 4.2.2. If the run had `offsets_df` or `rescue_all_rls = TRUE`, P-sites positions were inferred with other or more read lengths and offsets: the file `_P_sites_offsets.tsv` of each sample lists the read lengths and offsets that were used.
 
 
 ```{r rl_sel_data, echo=FALSE, warning=FALSE, message=FALSE}
@@ -241,8 +241,8 @@ for (i in 1:length(rdata_list)){
   
   rl_choices_default <- NULL
   for (j in comps){
-    data <- res_all$selection_cutoffs$results_choice[[j]]$data
-    data_default <- data[data[["max_coverage"]],][["read_length"]] # choose only read lengths with max_coverage=TRUE (default choice)
+    data <- res_all$selection_cutoffs$results_choice[[j]]$final_choice
+    data_default <- data[["read_length"]] # the read lengths that readlength_choice_method of the run selected (final_choice)
     rl_choices_default <- rbind(rl_choices_default, c(compartment=j, 
                                                       `read lengths of choice (ordered by frame preference)`=paste(data_default, collapse = ", ")))
   }

@@ -306,6 +306,14 @@
   results have fewer than 50 (100) genes. Before, they added rows of `NA` up
   to 50 (100) rows, which the "Top 50 abundant genes" tables of the report
   showed. The results with more genes give the same tables.
+- The HTML report now agrees with the results:
+  - Section 4.2.3 ("Choice of read lengths") lists the read lengths that
+    `readlength_choice_method` selected. Before, it listed those of
+    `"max_coverage"` with each method. With the default method, the table
+    does not change. Its text says that the offsets are the cutoffs of
+    section 4.2.2, and that with `offsets_df` or `rescue_all_rls = TRUE`, the
+    P-sites come from other or more read lengths and offsets, which
+    `_P_sites_offsets.tsv` lists.
 
 ## Performance
 
