@@ -403,6 +403,18 @@
   506 s, the read lengths 95 s instead of 139 s, and a run with the report on
   one core takes 1,750 s instead of 2,000 s (12% less), without more memory.
   The results don't change.
+- `RiboseQC_analysis()` makes the P-site profiles and the 5' profiles faster.
+  To choose the transcripts of the P-site profiles, it calculated the coverage
+  of the P-sites on all transcripts; it now calculates it only on the
+  transcripts with the CDS that it uses for the profiles, as it already did
+  for the 5' profiles. It also made the bins of the profiles from the
+  coverage as an `Rle`; it now makes them from a vector. On a human sample
+  (a 69 MB BAM, GENCODE 47, `rescue_all_rls = TRUE`, 32 read lengths), the
+  P-site profiles take 47 s instead of 96 s, the 5' profiles 15 s instead of
+  23 s, and a run with the report on one core 325 s instead of 373 s (13%
+  less), with less memory (2.5 GB instead of 3.1 GB). On a human sample with
+  a 2.3 GB BAM (18 chunks), the P-site profiles take 113 s instead of 167 s,
+  with the same memory. The results don't change.
 
 ## Documentation
 

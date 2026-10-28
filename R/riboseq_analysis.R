@@ -1013,7 +1013,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 ps_tiles_5 <- DataFrame(t(sapply(cov_5, function(x) {
                   clos <- 50 * (round(length(x)/50, digits = 0) + 1)
                   idx <- as.integer(seq(1, length(x), length.out = clos))
-                  colMeans(matrix(x[idx], ncol = 50))
+                  colMeans(matrix(as.vector(x)[idx], ncol = 50))
                 })))
                 ps_win_5 <- DataFrame(t(sapply(cov_5, function(x) {
                   as.vector(x)[c(1:25, (length(x) - 25):(length(x) - 1))]
@@ -1022,7 +1022,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 ps_tiles_3 <- DataFrame(t(sapply(cov_3, function(x) {
                   clos <- 50 * (round(length(x)/50, digits = 0) + 1)
                   idx <- as.integer(seq(1, length(x), length.out = clos))
-                  colMeans(matrix(x[idx], ncol = 50))
+                  colMeans(matrix(as.vector(x)[idx], ncol = 50))
                 })))
                 ps_win_3 <- DataFrame(t(sapply(cov_3, function(x) {
                   as.vector(x)[c(2:26, (length(x) - 24):length(x))]
@@ -1032,7 +1032,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 ps_tiles_cds <- DataFrame(t(sapply(cov_cds, function(x) {
                   clos <- 100 * (round(length(x)/100, digits = 0) + 1)
                   idx <- as.integer(seq(1, length(x), length.out = clos))
-                  colMeans(matrix(x[idx], ncol = 100))
+                  colMeans(matrix(as.vector(x)[idx], ncol = 100))
                 })))
                 ps_win_cds <- DataFrame(t(sapply(cov_cds, function(x) {
                   rnd <- as.integer(length(x)/2)%%3
@@ -1254,11 +1254,13 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 ps_comp[["all"]] <- all_ps
                 mp <- mapToTranscripts(all_ps, transcripts = GTF_annotation$exons_txs[as.vector(seqnames(tile_cds))])
                 mp$score <- all_ps$score[mp$xHits]
-                # put seqlevels for compartment only to speed up stuff
-                seqlevels(mp) <- names(GTF_annotation$exons_txs)
-                seqlengths(mp) <- sum(width(GTF_annotation$exons_txs))
+                # only the transcripts of tile_cds, in the order of all transcripts: the others have no P-sites,
+                # so they are not in ok_txs, and their sum is 0
+                txs_tile <- names(GTF_annotation$exons_txs)[names(GTF_annotation$exons_txs) %in% as.vector(seqnames(tile_cds))]
+                seqlevels(mp) <- txs_tile
+                seqlengths(mp) <- sum(width(GTF_annotation$exons_txs))[txs_tile]
                 covtx <- coverage(mp, weight = mp$score)
-                ok_txs <- names(covtx[elementNROWS(runValue(covtx)) > 1])
+                ok_txs <- names(covtx)[elementNROWS(runValue(covtx)) > 1]
                 if (length(ok_txs) < 5) {
                   ps_signals_tiles_all[[comp]] <- c()
                   ps_signals_win_all[[comp]] <- c()
@@ -1266,8 +1268,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 }
                 # keep all txs if small n of txs
                 
-                if (length(ok_txs) >= 5 & length(covtx) < 250) {
-                  # covtx has all transcripts: keep the selected ones, as the 5' profiles do
+                if (length(ok_txs) >= 5 & length(GTF_annotation$exons_txs) < 250) {
+                  # covtx has the transcripts of tile_cds: keep the selected ones, as the 5' profiles do
                   ok_txs <- names(covtx)[names(covtx) %in% as.vector(seqnames(tile_cds))]
                 }
                 
@@ -1440,7 +1442,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                   ps_tiles_5 <- DataFrame(t(sapply(cov_5, function(x) {
                     clos <- 50 * (round(length(x)/50, digits = 0) + 1)
                     idx <- as.integer(seq(1, length(x), length.out = clos))
-                    colMeans(matrix(x[idx], ncol = 50))
+                    colMeans(matrix(as.vector(x)[idx], ncol = 50))
                   })))
                   ps_win_5 <- DataFrame(t(sapply(cov_5, function(x) {
                     as.vector(x)[c(seq_len(25), (length(x) - 25):(length(x) - 1))]
@@ -1450,7 +1452,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                   ps_tiles_3 <- DataFrame(t(sapply(cov_3, function(x) {
                     clos <- 50 * (round(length(x)/50, digits = 0) + 1)
                     idx <- as.integer(seq(1, length(x), length.out = clos))
-                    colMeans(matrix(x[idx], ncol = 50))
+                    colMeans(matrix(as.vector(x)[idx], ncol = 50))
                   })))
                   ps_win_3 <- DataFrame(t(sapply(cov_3, function(x) {
                     as.vector(x)[c(2:26, (length(x) - 24):length(x))]
@@ -1460,7 +1462,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                   ps_tiles_cds <- DataFrame(t(sapply(cov_cds, function(x) {
                     clos <- 100 * (round(length(x)/100, digits = 0) + 1)
                     idx <- as.integer(seq(1, length(x), length.out = clos))
-                    colMeans(matrix(x[idx], ncol = 100))
+                    colMeans(matrix(as.vector(x)[idx], ncol = 100))
                   })))
                   ps_win_cds <- DataFrame(t(sapply(cov_cds, function(x) {
                     rnd <- as.integer(length(x)/2)%%3
