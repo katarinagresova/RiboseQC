@@ -587,7 +587,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 rgs <- GRangesList(list_locat[[i]])
                 # one findOverlaps() for the reads of all read lengths, then the counts of each read length: the
                 # counts of summarizeOverlaps(mode = "Union", inter.feature = FALSE) for each read length
-                ovs <- suppressWarnings(findOverlaps(rgs, rdss, ignore.strand = FALSE))
+                ovs <- suppressWarnings(findOverlaps(rgs, rdss, ignore.strand = !as.logical(strandedness)))
                 ovs <- lapply(split(queryHits(ovs), factor(mcols(rdss)$len_adj)[subjectHits(ovs)]), FUN = function(x) {
                   matrix(tabulate(x, length(rgs)), dimnames = list(names(rgs), "reads"))
                 })
@@ -621,7 +621,7 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 rgs <- GRangesList(list_locat[[i]])
                 # one findOverlaps() for the reads of all read lengths, then the counts of each read length: the
                 # counts of summarizeOverlaps(mode = "Union", inter.feature = FALSE) for each read length
-                ovs <- suppressWarnings(findOverlaps(rgs, rdss, ignore.strand = FALSE))
+                ovs <- suppressWarnings(findOverlaps(rgs, rdss, ignore.strand = !as.logical(strandedness)))
                 ovs <- lapply(split(queryHits(ovs), factor(mcols(rdss)$len_adj)[subjectHits(ovs)]), FUN = function(x) {
                   matrix(tabulate(x, length(rgs)), dimnames = list(names(rgs), "reads"))
                 })

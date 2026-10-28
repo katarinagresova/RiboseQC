@@ -216,6 +216,19 @@
   (`P_sites_all`) do not change. For this fix, `get_ps_fromspliceplus()`
   and `get_ps_fromsplicemin()` now give the P-sites in the order of the
   reads, not sorted by position.
+- `RiboseQC_analysis(stranded = FALSE)`: the reads of each region by read
+  length (`read_stats$reads_summary` and `reads_summary_unq`, in
+  `<dest_name>_results_RiboseQC` and `<dest_name>_results_RiboseQC_all`) now
+  ignore the strand of the regions, as the reads of each region
+  (`read_stats$positions`) and of each gene (`counts_*`) do. So the sum of
+  each row is the value of `positions`. Before, a read counted only for the
+  regions on its strand. For example, a read on the CDS of a gene on the
+  plus strand now also counts for an intron of a gene on the minus strand
+  at the same position. The report shows these counts in sections 1.2 and
+  3, so they now agree with section 1.1 (`positions`). `read_subset`
+  selects the read lengths from them, so with `stranded = FALSE` the run
+  can now calculate the offsets of other read lengths, and its P-sites can
+  change. The results of `stranded = TRUE` and `"inverse"` do not change.
 
 ## Bug fixes
 
