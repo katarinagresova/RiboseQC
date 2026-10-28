@@ -215,11 +215,10 @@ Most reads of the organelles are on CDS. The example BAM files also have
 reads outside the 309 genes of the example annotation, so here many
 reads of the nuclear genome are intergenic.
 
-The plot functions of the report draw the same data. (They use the
-`size` aesthetic for lines, which *ggplot2* 3.4.0 deprecated; this
-vignette hides these warnings.) The read length distribution of each
-compartment shows that the chloroplast ribosomes protect fragments of
-more lengths than the cytoplasmic ribosomes (`nucl`):
+The plot functions of the report draw the same data. The read length
+distribution of each compartment shows that the chloroplast ribosomes
+protect fragments of more lengths than the cytoplasmic ribosomes
+(`nucl`):
 
 ``` r
 plot_read_length_dist(shoots$read_stats$rld, "shoots")

@@ -411,7 +411,7 @@ plot_read_length_dist <- function(rld, sample, output_rds_path=""){
 
 
     g1 <- ggplot(data=rld.m, aes(x=Var2, y=value)) +
-        geom_line(aes(colour=Var1, group=Var1), size=lw) +
+        geom_line(aes(colour=Var1, group=Var1), linewidth=lw) +
         scale_x_continuous(breaks=scales::pretty_breaks(n=8)) +
         labs(x="\nread length", y="read count\n") +
         scale_color_manual(values = colssi) +
@@ -429,7 +429,7 @@ plot_read_length_dist <- function(rld, sample, output_rds_path=""){
     colssi<-alpha(c("blue","dark red","forestgreen",rainbow(length(unique(rld.m$Var1))-3)),alpha = .7)
 
     g2 <- ggplot(data=rld_norm.m, aes(x=Var2, y=value)) +
-        geom_line(aes(colour=Var1, group=Var1), size=lw) +
+        geom_line(aes(colour=Var1, group=Var1), linewidth=lw) +
         scale_x_continuous(breaks=scales::pretty_breaks(n=8)) +
         labs(x="\nread length", y="read count fraction\n") +
         scale_color_manual(values = colssi) +
@@ -504,7 +504,7 @@ plot_read_length_dist_by_biotype <- function(reads_summary, sample, output_rds_p
     rld.m$L1 <- factor(rld.m$L1, levels=levels_comp)
 
     g1 <- ggplot(data=rld.m, aes(x=Var2, y=value)) +
-        geom_line(aes(colour=Var1, group=Var1), size=lw) +
+        geom_line(aes(colour=Var1, group=Var1), linewidth=lw) +
         scale_x_continuous(breaks=scales::pretty_breaks(n=8)) +
         labs(x="\nread length", y="read count\n") +
         scale_color_viridis(discrete=TRUE,alpha = .8) +
@@ -530,7 +530,7 @@ plot_read_length_dist_by_biotype <- function(reads_summary, sample, output_rds_p
     rld_norm.m$L1 <- factor(rld_norm.m$L1, levels=levels_comp)
 
     g2 <- ggplot(data=rld_norm.m, aes(x=Var2, y=value)) +
-        geom_line(aes(colour=Var1, group=Var1), size=lw) +
+        geom_line(aes(colour=Var1, group=Var1), linewidth=lw) +
         scale_x_continuous(breaks=scales::pretty_breaks(n=8)) +
         labs(x="\nread length", y="read count fraction\n") +
         scale_color_viridis(discrete=TRUE,alpha = .8) +
