@@ -201,6 +201,34 @@
   17,154: without the 1,768 reads of ChrC and the 3,173 reads of ChrM. All
   other values, and the results of annotations without circular
   chromosomes, do not change. The report does not use `rld_unq`.
+- `RiboseQC_analysis()` and `prepare_for_ORFquant()`: the P-sites of the
+  uniquely mapping reads (`P_sites_uniq`) and of the uniquely mapping reads
+  with mismatches (`P_sites_uniq_mm`) now come from the correct reads.
+  Before, a read with 2 or more introns and its P-site in a middle block
+  could get the mapping quality and the MD tag of another such read of the
+  same read length and strand. So these P-sites could include the P-site of
+  a read with a mapping quality of 50 or less, and not the P-site of a read
+  with a higher mapping quality. This changes `P_sites_uniq` and
+  `P_sites_uniq_mm` in `<dest_name>_for_ORFquant` and in `P_sites_stats`
+  of `<dest_name>_results_RiboseQC_all`, and the files
+  `<dest_name>_P_sites_uniq_plus.bedgraph` and
+  `<dest_name>_P_sites_uniq_minus.bedgraph`. The P-sites of all reads
+  (`P_sites_all`) do not change. For this fix, `get_ps_fromspliceplus()`
+  and `get_ps_fromsplicemin()` now give the P-sites in the order of the
+  reads, not sorted by position.
+- `RiboseQC_analysis(stranded = FALSE)`: the reads of each region by read
+  length (`read_stats$reads_summary` and `reads_summary_unq`, in
+  `<dest_name>_results_RiboseQC` and `<dest_name>_results_RiboseQC_all`) now
+  ignore the strand of the regions, as the reads of each region
+  (`read_stats$positions`) and of each gene (`counts_*`) do. So the sum of
+  each row is the value of `positions`. Before, a read counted only for the
+  regions on its strand. For example, a read on the CDS of a gene on the
+  plus strand now also counts for an intron of a gene on the minus strand
+  at the same position. The report shows these counts in sections 1.2 and
+  3, so they now agree with section 1.1 (`positions`). `read_subset`
+  selects the read lengths from them, so with `stranded = FALSE` the run
+  can now calculate the offsets of other read lengths, and its P-sites can
+  change. The results of `stranded = TRUE` and `"inverse"` do not change.
 - `RiboseQC_analysis()`: in each row of the transcript profiles
   (`profiles_fivepr` and `profiles_P_sites` in
   `<dest_name>_results_RiboseQC_all`), the CDS columns are now those of the
@@ -411,9 +439,8 @@
   - `?load_annotation`: only the annotations of ORFquant with
     `forge_BSgenome = TRUE` have a BSgenome package in `genome_package`
     (before: also those of RiboseQC 1.2.0 and later, which never have one).
-  - `?get_ps_fromspliceplus`, `?get_ps_fromsplicemin`: the P-sites are sorted
-    by position, not in the order of the reads. `?getSeq` of `FaFile_Circ`: a
-    range must start on the circular chromosome to run past its end.
+  - `?getSeq` of `FaFile_Circ`: a range must start on the circular
+    chromosome to run past its end.
   - `?prepare_for_ORFquant`: the value of the function is now in the help:
     invisibly, the path of the `_for_ORFquant` file. The help says that the
     function assigns `GTF_annotation` and `genome_seq` in the global

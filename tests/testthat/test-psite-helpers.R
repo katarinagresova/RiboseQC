@@ -19,8 +19,9 @@ test_that("get_ps_fromspliceplus() counts the offset from the start of the read,
   expect_identical(start(get_ps_fromspliceplus(x, 10)), 160L)
   expect_identical(start(get_ps_fromspliceplus(x, 12)), 162L)
   expect_identical(start(get_ps_fromspliceplus(spliced_reads("+", "5M10N5M10N20M"), 12)), 132L)
+  # one P-site for each read, in the order of the reads
   ps <- get_ps_fromspliceplus(spliced_reads("+", c("10M50N20M", "20M50N10M")), 12)
-  expect_identical(start(ps), c(112L, 162L))
+  expect_identical(start(ps), c(162L, 112L))
   expect_true(all(width(ps) == 1L))
   expect_identical(as.character(strand(ps)), c("+", "+"))
   expect_identical(seqlengths(ps), c(chr1 = 1000L))
@@ -34,7 +35,7 @@ test_that("get_ps_fromsplicemin() counts the offset from the end of the read, ac
   expect_identical(start(get_ps_fromsplicemin(x, 25)), 104L)
   expect_identical(start(get_ps_fromsplicemin(spliced_reads("-", "5M10N5M10N20M"), 22)), 117L)
   ps <- get_ps_fromsplicemin(spliced_reads("-", c("10M50N20M", "20M50N10M")), 12)
-  expect_identical(start(ps), c(117L, 167L))
+  expect_identical(start(ps), c(167L, 117L))
   expect_true(all(width(ps) == 1L))
   expect_identical(as.character(strand(ps)), c("-", "-"))
   expect_identical(seqlengths(ps), c(chr1 = 1000L))
@@ -81,6 +82,25 @@ test_that("psites_of_chunk() finds the P-site of a spliced read in the first, a 
   expect_identical(start(ps[["30"]]), c(113L, 123L, 133L, 163L, 118L, 128L, 138L, 168L))
   expect_identical(as.character(strand(ps[["30"]])), rep(c("+", "-"), each = 4))
   expect_identical(ps[["30"]]$score, rep(1L, 8))
+})
+
+test_that("psites_of_chunk() gives the P-site of a read with 2 or more introns the mapq and the MD tag of this read", {
+  # 28-nt reads, the cutoff is 12, so the P-site is in the middle block. On each strand, the first read maps uniquely
+  # and has a mismatch, and the second read does not map uniquely, but its P-site has the lower position
+  cig <- c("5M1000N10M500N13M", "5M10N10M10N13M", "13M500N10M1000N5M", "13M10N10M10N5M")
+  x <- GenomicAlignments::GAlignments(seqnames = S4Vectors::Rle("chr1", 4), pos = c(100L, 105L, 100L, 105L),
+                                      cigar = cig, strand = GenomicRanges::strand(rep(c("+", "-"), each = 2)),
+                                      seqlengths = c(chr1 = 5000L))
+  S4Vectors::mcols(x) <- S4Vectors::DataFrame(mapq = c(60L, 0L, 60L, 0L), MD = c("5A22", "28", "5A22", "28"))
+  junctions <- GenomicRanges::GRanges("chr1", IRanges::IRanges(4000, 4100), "+", seqlengths = c(chr1 = 5000L))
+  res <- psites_of_chunk(x, list(nucl = S4Vectors::DataFrame(read_length = 28, cutoff = 12)), character(),
+                         "chr1", c(chr1 = 5000L), junctions)
+  # The P-sites of the first reads: 1105 + 7 on the plus strand, 622 - 7 on the minus strand. The second reads:
+  # 120 + 7 and 137 - 7
+  p_sites <- function(set) sort(start(res[[set]][["28"]]))
+  expect_identical(p_sites("P_sites_all"), c(127L, 130L, 615L, 1112L))
+  expect_identical(p_sites("P_sites_uniq"), c(615L, 1112L))
+  expect_identical(p_sites("P_sites_uniq_mm"), c(615L, 1112L))
 })
 
 test_that("psites_of_chunk() counts the read length without the soft clips, and drops the reads with I or D", {

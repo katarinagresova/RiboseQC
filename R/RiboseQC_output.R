@@ -123,8 +123,8 @@
 #' \item{\code{counts_all_genes}}{The same for all genes, with their exons instead of their CDS.}
 #' \item{\code{counts_cds_genes_unq}, \code{counts_all_genes_unq}}{The same for the uniquely mapping reads.}
 #' \item{\code{reads_summary}}{A list with one DataFrame for each compartment, with one row for each region and the
-#'   columns of \code{rld}: the reads of \code{positions}, by read length. It always uses the strand of the regions,
-#'   also with \code{stranded = FALSE}. \code{read_subset} selects the read lengths with it.}
+#'   columns of \code{rld}: the reads of \code{positions}, by read length (strand as in \code{positions}).
+#'   \code{read_subset} selects the read lengths with it.}
 #' \item{\code{reads_summary_unq}}{The same for the uniquely mapping reads.}
 #' }
 #'

@@ -2243,7 +2243,7 @@ choose_readlengths<-function(summary_data,choice="max_coverage",nt_signals){
 #' @author Lorenzo Calviello, \email{calviello.l.bio@@gmail.com}
 #' @param x a \code{GAlignments} object with a cigar string
 #' @param cutoff number representing the offset value
-#' @return a \code{GRanges} object with offset reads: the P-site (1 nt) of each read, sorted by position, not in the order of \code{x}
+#' @return a \code{GRanges} object with offset reads: the P-site (1 nt) of each read, in the order of \code{x}
 #' @export
 
 get_ps_fromspliceplus<-function(x,cutoff){
@@ -2274,7 +2274,8 @@ get_ps_fromspliceplus<-function(x,cutoff){
         psmores<-GRanges(IRanges(start=stok,width = 1),seqnames = seqnames(x[mores]),strand=strand(x[mores]),seqlengths=seqlengths(x[mores]))
 
     }
-    ps<-sort(c(psones,psmores))
+    # in the order of x: psites_of_chunk() gives each P-site the mcols of its read
+    ps<-c(psones,psmores)[order(c(which(ones),which(mores)))]
     return(ps)
 }
 
@@ -2285,7 +2286,7 @@ get_ps_fromspliceplus<-function(x,cutoff){
 #' @author Lorenzo Calviello, \email{calviello.l.bio@@gmail.com}
 #' @param x a \code{GAlignments} object with a cigar string
 #' @param cutoff number representing the offset value
-#' @return a \code{GRanges} object with offset reads: the P-site (1 nt) of each read, sorted by position, not in the order of \code{x}
+#' @return a \code{GRanges} object with offset reads: the P-site (1 nt) of each read, in the order of \code{x}
 #' @export
 
 get_ps_fromsplicemin<-function(x,cutoff){
@@ -2320,7 +2321,8 @@ get_ps_fromsplicemin<-function(x,cutoff){
         psmores<-GRanges(IRanges(start=stok,width = 1),seqnames = seqnames(x[mores]),strand=strand(x[mores]),seqlengths=seqlengths(x[mores]))
 
     }
-    ps<-sort(c(psones,psmores))
+    # in the order of x: psites_of_chunk() gives each P-site the mcols of its read
+    ps<-c(psones,psmores)[order(c(which(ones),which(mores)))]
     return(ps)
 }
 
