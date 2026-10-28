@@ -267,6 +267,23 @@
   before, it had none, because the profile of the 45 nt reads gave no
   offset. The profiles of the single read lengths, the offsets, the
   selected read lengths and the P-sites do not change.
+- `RiboseQC_analysis()` gives the read lengths, the 5' ends and the P-sites
+  in the same order for each `chunk_size`. Before, the order depended on the
+  chunks of the BAM file. With more than one chunk, a read length without
+  reads in the first chunk came after the read lengths of the first chunk
+  in the 5' ends (`read_stats$reads_pos1` in
+  `<dest_name>_results_RiboseQC_all`), and so in the P-sites
+  (`P_sites_stats`), in the P-site profiles and codon counts
+  (`profiles_P_sites`) and in `<dest_name>_P_sites_offsets.tsv`. Now the
+  read lengths of the 5' ends are in numeric order, as with one chunk. With
+  one chunk (a BAM file with at most `chunk_size` alignments), the 5' ends
+  and the P-sites of each read length were not sorted, and they had all
+  chromosomes of the BAM file, also those that are not in the annotation
+  and have no reads. So did `sequence_analysis` and the P-sites of
+  `<dest_name>_for_ORFquant`. Now they are as with more chunks: sorted, with
+  the chromosomes of the annotation and the chromosomes with reads, and a
+  BAM file without P-sites gives `P_sites_stats` without chromosomes. The
+  values do not change.
 
 ## Bug fixes
 

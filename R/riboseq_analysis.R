@@ -739,19 +739,24 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         read_stats <- reduce_by_yield(X = opts, YIELD = yiel, MAP = mapp, REDUCE = reduc,
             n_cores = n_cores)
-        # two or more chunks: sum the 5' ends of all chunks
-        if (!is.null(read_stats[["chunks_pos1"]])) {
-            seql <- seqlevels(GTF_annotation$seqinfo)
-            seqle <- seqlengths(GTF_annotation$seqinfo)
-            # and the chromosomes with reads that the annotation does not have, with their lengths in the
-            # BAM file: one chunk keeps these reads, so more chunks must keep them too
-            seq_extra <- unlist(lapply(read_stats$chunks_pos1, seqlevelsInUse))
-            seq_extra <- seqlevels(seqs)[seqlevels(seqs) %in% setdiff(seq_extra, seql)]
-            seql <- c(seql, seq_extra)
-            seqle <- c(seqle, seqlengths(seqs)[seq_extra])
-            read_stats$reads_pos1 <- sum_chunks(read_stats$chunks_pos1, seql, seqle)
-            read_stats$chunks_pos1 <- NULL
+        # one chunk: its 5' ends are summed as the chunks of two or more chunks, so that they do not depend on
+        # chunk_size (sorted, and with the chromosomes of the annotation, not all chromosomes of the BAM file)
+        if (is.null(read_stats[["chunks_pos1"]])) {
+            read_stats$chunks_pos1 <- list(read_stats$reads_pos1)
         }
+        # sum the 5' ends of all chunks
+        seql <- seqlevels(GTF_annotation$seqinfo)
+        seqle <- seqlengths(GTF_annotation$seqinfo)
+        # and the chromosomes with reads that the annotation does not have, with their lengths in the
+        # BAM file: these reads are kept
+        seq_extra <- unlist(lapply(read_stats$chunks_pos1, seqlevelsInUse))
+        seq_extra <- seqlevels(seqs)[seqlevels(seqs) %in% setdiff(seq_extra, seql)]
+        seql <- c(seql, seq_extra)
+        seqle <- c(seqle, seqlengths(seqs)[seq_extra])
+        read_stats$reads_pos1 <- sum_chunks(read_stats$chunks_pos1, seql, seqle)
+        # the read lengths in numeric order, as one chunk gives them: not in the order of the chunks
+        read_stats$reads_pos1 <- read_stats$reads_pos1[order(as.numeric(names(read_stats$reads_pos1)))]
+        read_stats$chunks_pos1 <- NULL
         names(read_stats) <- c("rld", "rld_unq", "positions", "positions_unq", "reads_pos1", 
             "counts_cds_genes", "counts_cds_genes_unq", "counts_all_genes", "counts_all_genes_unq", 
             "reads_summary", "reads_summary_unq")
@@ -1207,6 +1212,11 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 P_sites_stats[[ps_set]] <- sum_chunks(chunks, seqllll, seqleee)
             }
             P_sites_stats$chunks_ps <- NULL
+        } else {
+            # one chunk: the P-sites of each read length sorted, as sum_chunks() gives them
+            for (ps_set in c("P_sites_all", "P_sites_uniq", "P_sites_uniq_mm")) {
+                P_sites_stats[[ps_set]] <- endoapply(P_sites_stats[[ps_set]], sort)
+            }
         }
         
         save(P_sites_stats, file = paste(dira, "P_sites_stats", sep = "/"))
