@@ -581,7 +581,6 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             
             # iterate over genome types and compartments
             for (i in names(list_reads)) {
-                reads_by_length <- list()
                 rdss <- list_reads[[i]]
                 
                 rgs <- GRangesList(list_locat[[i]])
@@ -615,7 +614,6 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             
             # iterate over genome types and compartments
             for (i in names(list_reads_unq)) {
-                reads_by_length <- list()
                 rdss <- list_reads_unq[[i]]
                 
                 rgs <- GRangesList(list_locat[[i]])
@@ -806,17 +804,14 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             tile_cds <- list_txs_ok[[comp]]
             strand(tile_cds) <- "+"
             tile_cds <- tile_cds[width(tile_cds) > 100]
-            checkgen <- TRUE
             if (comp == "nucl") {
                 if ((sum((start(tile_cds) > 50))/length(start(tile_cds))) > 0.33) {
                   tile_cds <- tile_cds[start(tile_cds) > 50]
-                  checkgen <- FALSE
                 }
                 if (sum(seqlengths(tile_cds)[as.vector(seqnames(tile_cds))] - end(tile_cds) > 
                   100)/length(tile_cds) > 0.33) {
                   tile_cds <- tile_cds[seqlengths(tile_cds)[as.vector(seqnames(tile_cds))] - 
                     end(tile_cds) > 100]
-                  checkgen <- FALSE
                 }
                 ps_comp <- GRangesList(lapply(ps, function(x) {
                   sort(x[!seqnames(x) %in% circs])
@@ -845,9 +840,6 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 rl_ok <- names(cuma[1:which(cuma > 99)[1]])
                 ps_comp <- ps_comp[names(ps_comp) %in% rl_ok]
             }
-            
-            signal_ps <- list()
-            signal_ps_nt <- list()
             
             all_ps <- unlist(ps_comp)
             ps_comp[["all"]] <- all_ps
@@ -907,8 +899,6 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             tile_cds <- tile_cds[as.character(seqnames(tile_cds)) %in% ok_txs]
             ok_txs <- unique(as.character(seqnames(tile_cds)))
             seqlevels(tile_cds) <- ok_txs
-            list_covs <- list()
-            list_covs[["all"]] <- covtx
             
             tile_5 <- GRanges(seqnames(tile_cds), ranges = IRanges(start = 1, end = start(tile_cds)))
             tile_3 <- GRanges(seqnames(tile_cds), ranges = IRanges(start = end(tile_cds), 
@@ -944,7 +934,6 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 mp$score <- all_ps$score[mp$xHits]
                 
                 covtx <- coverage(mp, weight = mp$score)
-                list_covs[["all"]] <- covtx
             }
             
             if (sum(no3utr) > 0) {
@@ -973,7 +962,6 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 mp$score <- all_ps$score[mp$xHits]
                 
                 covtx <- coverage(mp, weight = mp$score)
-                list_covs[["all"]] <- covtx
                 
             }
             
@@ -1243,17 +1231,14 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 # put positive?
                 strand(tile_cds) <- "+"
                 tile_cds <- tile_cds[width(tile_cds) > 100]
-                checkgen <- TRUE
                 if (comp == "nucl") {
                   if ((sum((start(tile_cds) > 50))/length(start(tile_cds))) > 0.33) {
                     tile_cds <- tile_cds[start(tile_cds) > 50]
-                    checkgen <- FALSE
                   }
                   if (sum(seqlengths(tile_cds)[as.vector(seqnames(tile_cds))] - end(tile_cds) > 
                     100)/length(tile_cds) > 0.33) {
                     tile_cds <- tile_cds[seqlengths(tile_cds)[as.vector(seqnames(tile_cds))] - 
                       end(tile_cds) > 100]
-                    checkgen <- FALSE
                   }
                   ps_comp <- GRangesList(lapply(ps, function(x) {
                     sort(x[!seqnames(x) %in% circs])
@@ -1264,9 +1249,6 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                   }))
                 }
                 
-                
-                signal_ps <- list()
-                signal_ps_nt <- list()
                 
                 all_ps <- unlist(ps_comp)
                 ps_comp[["all"]] <- all_ps
@@ -1328,8 +1310,6 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                 tile_cds <- tile_cds[as.character(seqnames(tile_cds)) %in% ok_txs]
                 ok_txs <- unique(as.character(seqnames(tile_cds)))
                 seqlevels(tile_cds) <- ok_txs
-                list_covs <- list()
-                list_covs[["all"]] <- covtx
                 
                 tile_5 <- GRanges(seqnames(tile_cds), ranges = IRanges(start = 1, 
                   end = start(tile_cds)))
@@ -1365,7 +1345,6 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                   mp$score <- all_ps$score[mp$xHits]
                   
                   covtx <- coverage(mp, weight = mp$score)
-                  list_covs[["all"]] <- covtx
                 }
                 
                 if (sum(no3utr) > 0) {
@@ -1394,7 +1373,6 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
                   mp$score <- all_ps$score[mp$xHits]
                   
                   covtx <- coverage(mp, weight = mp$score)
-                  list_covs[["all"]] <- covtx
                   
                 }
                 

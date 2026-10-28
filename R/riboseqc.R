@@ -400,7 +400,6 @@ plot_read_length_dist <- function(rld, sample, output_rds_path=""){
     rld <- as.matrix(rld)
     colnames(rld) <- as.integer(gsub("reads_", "", colnames(rld)))
 
-    levels_rl <- as.integer(colnames(rld))
     levels_comp <- rownames(rld)
 
     # read count
@@ -495,7 +494,6 @@ plot_read_length_dist_by_biotype <- function(reads_summary, sample, output_rds_p
 
     levels_bio <- row.names(reads_summary[[1]])
     levels_comp <- names(reads_summary)
-    levels_rl <- as.integer(gsub("reads_", "", names(reads_summary[[1]])))
 
     rld <- lapply(reads_summary, function(x) as.matrix(x))
 
@@ -597,7 +595,6 @@ plot_read_length_dist_by_biotype <- function(reads_summary, sample, output_rds_p
 plot_read_biotype_dist_by_length <- function(reads_summary, sample, output_rds_path=""){
     levels_bio <- row.names(reads_summary[[1]])
     levels_comp <- names(reads_summary)
-    levels_rl <- as.integer(gsub("reads_", "", names(reads_summary[[1]])))
 
     rld <- lapply(reads_summary, function(x) as.matrix(x))
 
@@ -1287,13 +1284,11 @@ plot_frame_dist_boxplot_rmd <- function(analysis_frame_cutoff, sample="", output
 plot_frame_dist_boxplot <- function(analysis_frame_cutoff, comp, sample="", output_rds_path="") {
     rl <- names(analysis_frame_cutoff[[comp]])
     rl_list <- NULL
-    rl_list_mean <- NULL
 
     for (k in rl){
         data <- analysis_frame_cutoff[[comp]][[k]]$frames
         colnames(data) <- c("frame 0", "frame 1", "frame 2")
         rl_list[[k]] <- data
-        rl_list_mean[[k]] <- colMeans(data)[1]
     }
     data <- suppressMessages(melt(rl_list))
 
@@ -1881,7 +1876,6 @@ plot_codon_usage_bulk_rmd <- function(data, sample="", output_rds_path="") {
 
     # assumption that list structure is exactly the same for Codon_counts, P_sites_percodon, P_sites_percodon_ratio
     comps <- names(data[["profiles_P_sites"]][["Codon_counts"]])
-    rls <- lapply(data[["profiles_P_sites"]][["Codon_counts"]], function(x) names(x))
 
     for (comp in comps) {
 
@@ -2082,13 +2076,9 @@ choose_readlengths<-function(summary_data,choice="max_coverage",nt_signals){
         mat_fr<-matrix(0,nrow = nrow(sign[[1]]),ncol = 99)
         net_all<-c()
         net_all_cov<-c()
-        net_all_cov_ok<-c()
         gains_cod_all<-c()
         gains_sign_all<-c()
-        gains_cod<-c()
-        gains_sign<-c()
         for(cnt in seq_along(rownames(data))){
-            if(cnt>length(rownames(data))){break}
             rl<-rownames(data)[cnt]
             cutf<-data$cutoff[cnt]
             sig<-as.matrix(sign[[rl]])
@@ -2146,28 +2136,15 @@ choose_readlengths<-function(summary_data,choice="max_coverage",nt_signals){
             if(gain_cod>0){
                 mat_fr[sig_ctf>1]<-1
                 net_all<-rbind(net_all,av_codongain)
-                gains_cod<-c(gains_cod,gain_cod)
 
             }
 
             if(gain_sign>0){
                 net_all_cov<-rbind(net_all_cov,av_codoncov)
-                gains_sign<-c(gains_sign,gain_sign)
 
             }
 
 
-        }
-
-        if(length(gains_sign)>0){
-            ln<-length(unique(gains_sign))
-            if(ln<4){
-                net_all_cov_ok<-net_all_cov
-            }
-            if(ln>3){
-                km<-kmeans_seeded(gains_sign,3)
-                net_all_cov_ok<-net_all_cov[!km$cluster==km$cluster[which.min(gains_sign)][1],]
-            }
         }
 
         data$read_length<-rownames(data)
@@ -2189,7 +2166,6 @@ choose_readlengths<-function(summary_data,choice="max_coverage",nt_signals){
         }
 
         final_choice<-data[,c("read_length","cutoff")][data[,choice],]
-        if(length(final_choice)==0){final_choice<-c()}
         choices<-list(final_choice=final_choice,data=data)
         choices_res[[i]]<-choices
     }
@@ -2381,7 +2357,6 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
     #what if no reads?
     if((dim(profok)[1])<5){return(c())}
 
-    sums<-rowSums(profok)
     frames<-t(apply(profok,1,function(y){
         sumy<-sum(y)
         fr0<-sum(y[seq(1,length(y),by=3)])/sumy
@@ -2396,7 +2371,6 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
     frameans<-colMeans(frames)
     frameans<-(frameans/sum(frameans))*100
     names(frameans)<-seq_len(3)
-    fra2<-as.numeric(names(which.max(frameans)))-1
 
     infra<-seq(fra,-24,by=-3)
 
@@ -2429,10 +2403,6 @@ calc_cutoffs_from_profiles<-function(reads_profile,length_max){
     }
     tbcut<-table(apply(profok,1,which.max))
     names(tbcut)<-abs(as.numeric(colnames(profok)[as.numeric(names(tbcut))]))
-    profcut<-c(rep(0,25))
-    names(profcut)<-0:24
-    profcut<-profcut[as.numeric(names(profcut))<=length_max]
-    profcut[names(tbcut)]<-as.numeric(tbcut)
     cutoff<-abs(as.numeric(names(tbcut)[which.max(tbcut)]))
     cutoff_km<-NA
     cutoff_km_fra<-NA
