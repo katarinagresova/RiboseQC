@@ -47,7 +47,7 @@ then does the analysis of \code{TRUE}. So the P-sites and the coverage tracks ar
 
 \item{normalize_cov}{export normalized (sum to 1 million) bedgraph files for coverage tracks? Defaults to \code{TRUE}}
 
-\item{chunk_size}{the number of alignments to read at each iteration, defaults to 5000000, increase when more RAM is available. Must be more than 100000 and at most 100000000}
+\item{chunk_size}{the number of alignments to read and analyse at a time (one chunk), defaults to 5000000. Must be more than 100000 and at most 100000000. Larger chunks take less time, and more memory in the passes over the BAM file. With 1 core and the default, the peak memory comes later, from the profiles: a smaller \code{chunk_size} does not lower it, and it takes more time. For example, for the human sample of \code{n_cores} (87 million alignments, 1 core), 1000000 took 51 percent more time than the default, with the same memory (18 to 19 GB); 20000000 took 10 percent less time, with the same memory; and 100000000 (one chunk) took 14 percent less time and 27 GB. With more cores, each core needs the memory for one chunk. The results do not depend on it}
 
 \item{write_tmp_files}{Should output all the results (in *results_RiboseQC_all)? Defaults to \code{TRUE}. \code{TRUE} or \code{FALSE}, for all bam files.}
 
@@ -57,7 +57,10 @@ then does the analysis of \code{TRUE}. So the P-sites and the coverage tracks ar
 cutoff (or without a cutoff in \code{offsets_df}). Defaults to \code{FALSE}. Must be of length 1 or same length as bam_files.}
 
 \item{fast_mode}{Use only the 500 transcripts with the most reads to build profiles (else at most 5000)? The profiles give the cutoffs and
-the codon counts. Defaults to \code{TRUE}. Must be of length 1 or same length as bam_files.}
+the codon counts. Defaults to \code{TRUE}. Must be of length 1 or same length as bam_files. With \code{FALSE}, the profiles take more time,
+with the same memory, and the selected read lengths, their cutoffs (and so the P-sites) and the codon counts can change. For example, for the
+human sample of \code{n_cores}, \code{FALSE} took 13 percent more time (the profiles took 319 s, not 162 s), and 6 read lengths got a cutoff
+from the profiles, not 4, with another cutoff for one of the 4.}
 
 \item{create_report}{Create an html report showing the RiboseQC analysis results. Defaults to \code{TRUE}}
 
