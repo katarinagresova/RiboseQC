@@ -18,3 +18,19 @@ test_that("each row of the 5' profiles has the CDS windows of the transcript of 
   expect_gt(sum(first33), 0)
   expect_equal(unname(prof[, paste0("CDS_", 1:33)]), unname(first33))
 })
+
+# "all" is the sum of the read lengths. Before, in a compartment with a transcript with a
+# UTR shorter than 50 nt (here ChrC and ChrM) it was the profile of the last read length
+test_that("the 5' profiles of \"all\" are the sum of the profiles of the read lengths", {
+  for (s in c("root", "shoots")) {
+    for (profiles in example_results(s)$profiles_fivepr) {
+      expect_true(all(c("nucl", "ChrC", "ChrM") %in% names(profiles)))
+      for (comp in names(profiles)) {
+        rls <- setdiff(names(profiles[[comp]]), "all")
+        expect_equal(as.matrix(profiles[[comp]][["all"]]),
+                     Reduce(`+`, lapply(rls, function(r) as.matrix(profiles[[comp]][[r]]))),
+                     info = paste(s, comp))
+      }
+    }
+  }
+})

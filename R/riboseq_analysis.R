@@ -982,7 +982,9 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             ps_tiles <- DataFrameList()
             ps_win <- DataFrameList()
             
-            for (len in c("all", names(ps_comp))) {
+            # ps_comp has "all" at the end: do it once, first (a second time it would
+            # use the covtx of the last read length)
+            for (len in c("all", setdiff(names(ps_comp), "all"))) {
                 
                 if ((sum(no3utr) + sum(no5utr)) == 0) {
                   mp <- mapToTranscripts(ps_comp[[len]], transcripts = fivs_gen)
