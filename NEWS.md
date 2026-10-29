@@ -27,7 +27,7 @@
 - The script `run_riboseqc.sbatch`, installed next to `run_riboseqc.R`, runs
   it as a SLURM job: `sbatch run_riboseqc.sbatch` followed by
   `run_riboseqc.R`'s options, with `--cores` set to the job's CPUs. It asks
-  for 1 CPU, 32 GB of memory and 12 hours, and its comments give the time
+  for 1 CPU, 32 GB of memory and 4 hours, and its comments give the time
   and memory measured on human samples.
 - The progress messages of `RiboseQC_analysis()`, such as "Analyzing BAM
   file: ... ", now come from `message()`, not from `cat()`, as the messages
@@ -594,8 +594,8 @@
   does not change.
 - The help of `n_cores` (`?RiboseQC_analysis`) and the comments of
   `run_riboseqc.sbatch` now give the time and the memory of a human sample
-  with a 2.3 GB BAM file with 1, 2 and 4 cores: 31 min and 18 GB, 24 min and
-  25 GB, 21 min and 33 GB. Only the passes over the BAM file use more than
+  with a 2.3 GB BAM file with 1, 2 and 4 cores: 23 min and 18 GB, 18 min and
+  24 GB, 16 min and 35 GB. Only the passes over the BAM file use more than
   one core, and each core needs the memory for one chunk of alignments. The
   comments of `run_riboseqc.sbatch` gave 65 min and 15.6 GB for one core,
   measured on an older version.
@@ -603,9 +603,9 @@
   what they change, measured on the same human sample with one core. Larger
   chunks take less time and more memory in the passes over the BAM file;
   with the default, the peak memory comes later, from the profiles, so a
-  smaller `chunk_size` does not lower it: 1,000,000 took 51% more time with
-  the same memory (18 to 19 GB), 20,000,000 took 10% less time with the same
-  memory, and 100,000,000 (one chunk) took 14% less time and 27 GB.
+  smaller `chunk_size` does not lower it: 1,000,000 took 49% more time with
+  the same memory (18 GB), 20,000,000 took 10% less time and 17 GB, and
+  100,000,000 (one chunk) took 16% less time and 26 GB.
   `fast_mode = FALSE` took 13% more time with the same memory, and it can
   change the selected read lengths, their offsets, the P-sites and the codon
   counts. Before, the help said only that `chunk_size` can be larger when
@@ -615,6 +615,11 @@
   `shoots_five_prime_subcodon`: the 5' profiles of each transcript of the
   shoots sample, which are only in the `_results_RiboseQC_all` file.
   `inst/script/make_root_results.R` makes it.
+- The README now gives the run time and the memory of the example (about
+  5 min and 2 GB) and of human samples with one core: the annotation of
+  GENCODE 47 takes 9 min and 7 GB, and `RiboseQC_analysis()` takes 4.5 min
+  and 2.5 GB for a 69 MB BAM file, and 23 min and 18 GB for a 2.3 GB BAM
+  file.
 
 # RiboseQC 1.4.0
 

@@ -47,7 +47,7 @@ then does the analysis of \code{TRUE}. So the P-sites and the coverage tracks ar
 
 \item{normalize_cov}{export normalized (sum to 1 million) bedgraph files for coverage tracks? Defaults to \code{TRUE}}
 
-\item{chunk_size}{the number of alignments to read and analyse at a time (one chunk), defaults to 5000000. Must be more than 100000 and at most 100000000. Larger chunks take less time, and more memory in the passes over the BAM file. With 1 core and the default, the peak memory comes later, from the profiles: a smaller \code{chunk_size} does not lower it, and it takes more time. For example, for the human sample of \code{n_cores} (87 million alignments, 1 core), 1000000 took 51 percent more time than the default, with the same memory (18 to 19 GB); 20000000 took 10 percent less time, with the same memory; and 100000000 (one chunk) took 14 percent less time and 27 GB. With more cores, each core needs the memory for one chunk. The results do not depend on it}
+\item{chunk_size}{the number of alignments to read and analyse at a time (one chunk), defaults to 5000000. Must be more than 100000 and at most 100000000. Larger chunks take less time, and more memory in the passes over the BAM file. With 1 core and the default, the peak memory comes later, from the profiles: a smaller \code{chunk_size} does not lower it, and it takes more time. For example, for the human sample of \code{n_cores} (87 million alignments, 1 core), 1000000 took 49 percent more time than the default, with the same memory (18 GB); 20000000 took 10 percent less time and 17 GB; and 100000000 (one chunk) took 16 percent less time and 26 GB. With more cores, each core needs the memory for one chunk. The results do not depend on it}
 
 \item{write_tmp_files}{Should output all the results (in *results_RiboseQC_all)? Defaults to \code{TRUE}. \code{TRUE} or \code{FALSE}, for all bam files.}
 
@@ -78,7 +78,7 @@ and cutoffs for the P_sites, and so for \code{P_sites_stats}, \code{profiles_P_s
 A data.frame gives the offsets of the nuclear compartment (\code{"nucl"}); a list with one such table for each compartment, named as the compartments,
 gives the offsets of the compartments with selected read lengths: it must have all of them, and the other compartments of the list are not used}
 
-\item{n_cores}{number of cores to use, each for one chunk of \code{chunk_size} alignments at a time, in forked processes (not on Windows). Each core needs the memory for one chunk. Only the passes over the BAM file use more than one core, not the profiles, the output files and the report. For example, a human sample with a 2.3 GB BAM file (18 chunks, GENCODE 47, with the report) took 31 min and 18 GB of memory with 1 core, 24 min and 25 GB with 2 cores, and 21 min and 33 GB with 4 cores. The results do not depend on it. Defaults to 1}
+\item{n_cores}{number of cores to use, each for one chunk of \code{chunk_size} alignments at a time, in forked processes (not on Windows). Each core needs the memory for one chunk. Only the passes over the BAM file use more than one core, not the profiles, the output files and the report. For example, a human sample with a 2.3 GB BAM file (18 chunks, GENCODE 47, with the report) took 23 min and 18 GB of memory with 1 core, 18 min and 24 GB with 2 cores, and 16 min and 35 GB with 4 cores. The results do not depend on it. Defaults to 1}
 
 \item{write_TSV_files}{write the main tables of the results as tab-separated files, for each BAM file (see \code{\link{RiboseQC_output}}). Defaults to \code{TRUE}}
 }

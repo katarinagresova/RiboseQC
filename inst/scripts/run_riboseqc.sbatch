@@ -12,14 +12,18 @@
 ## and add --partition or --account if your cluster needs them.
 ##
 ## Resources, measured on human samples with GENCODE 47, the whole genome, with
-## one CPU, the report and rescue_all_rls = TRUE: the annotation took 8 min;
-## RiboseQC_analysis() took 7 min and at most 3.1 GB of memory for a sample with
-## a 69 MB BAM, and 31 min and 18 GB for one with a 2.3 GB BAM. Time and
-## memory grow with the size of the BAM. With more CPUs, RiboseQC_analysis()
-## reads more chunks of alignments at a time, each in a forked copy of R, so
-## memory grows with the CPUs: for the 2.3 GB BAM, 2 CPUs took 24 min and
-## 25 GB, and 4 CPUs 21 min and 33 GB. Only the passes over the BAM use more
-## than one CPU, not the profiles, the output files and the report. The
+## one CPU, the report and rescue_all_rls = TRUE: the annotation took 9 min and
+## 7 GB of memory; RiboseQC_analysis() took 4.5 min and 2.5 GB for a sample
+## with a 69 MB BAM, and 23 min and 18 GB for one with a 2.3 GB BAM. Time and
+## memory grow with the size of the BAM, and the time depends on the CPU. The
+## samples of one job run one after the other, so their times add up. The 32 GB
+## below are enough for a sample with a 2.3 GB BAM, and the 4 hours for the
+## annotation and several such samples: ask for more for larger BAMs or more
+## samples. With more CPUs, RiboseQC_analysis() reads more chunks of
+## alignments at a time, each in a forked copy of R, so memory grows with the
+## CPUs: for the 2.3 GB BAM, 2 CPUs took 18 min and 24 GB, and 4 CPUs 16 min
+## and 35 GB (ask for about 48 GB). Only the passes over the BAM use
+## more than one CPU, not the profiles, the output files and the report. The
 ## annotation also writes temporary files, in TMPDIR (by default /tmp): if the
 ## job's /tmp is too small, the annotation stops with "database or disk is
 ## full"; ask for more temporary space (--tmp, or what your cluster uses) or
@@ -34,7 +38,7 @@
 #SBATCH --job-name=riboseqc
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=32G
-#SBATCH --time=12:00:00
+#SBATCH --time=04:00:00
 #SBATCH --output=%x-%j.log
 
 set -euo pipefail
