@@ -812,6 +812,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         }
         list_txs_ok[["nucl"]] <- tile_cds[!tile_cds %in% unlist(list_txs_ok)]
         
+        # free the garbage of the pass over the BAM file: mapToTranscripts() of the profiles needs much memory
+        gici <- gc()
         message(paste("Building aggregate 5' profiles ...", date()))
         ps_signals_win_all <- list()
         ps_signals_tiles_all <- list()
@@ -1228,6 +1230,8 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
         
         ps <- P_sites_stats$P_sites_all
         
+        # free the garbage of the pass over the BAM file: mapToTranscripts() of the profiles needs much memory
+        gici <- gc()
         message(paste("Building aggregate P-sites profiles ...", date()))
         
         # here do meta and other plots on P-sites positions ()
