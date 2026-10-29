@@ -4,7 +4,7 @@
 #
 #   conda env create -f environment.yml
 #   conda activate riboseqc
-#   Rscript -e 'remotes::install_github("katarinagresova/RiboseQC", upgrade = "never")'
+#   Rscript -e 'remotes::install_github("katarinagresova/RiboseQC@v1.5.0", upgrade = "never")'
 name: riboseqc
 channels:
   - conda-forge
