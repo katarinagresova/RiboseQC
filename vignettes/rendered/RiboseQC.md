@@ -54,20 +54,24 @@ mitochondrial genome (`ChrM`).
   with `bgzip` and indexed;
 - `simp_arab_root.bam` and `simp_arab_shoots.bam`: the Ribo-seq reads of
   a root and a shoot sample, aligned to the genome, with their indexes;
-- `root_results_RiboseQC`: the results of `RiboseQC_analysis()` on the
-  root sample, which the examples of the help pages use;
+- `root_results_RiboseQC` and `shoots_results_RiboseQC`: the results of
+  `RiboseQC_analysis()` on the two samples, which the examples of the
+  help pages use;
+- `shoots_five_prime_subcodon`: the 5’ profiles of each transcript of
+  the shoot sample, from the same run, which the examples of
+  `calc_cutoffs_from_profiles()` and `choose_readlengths()` use;
 - `README.md`: the sources of these files, their terms of use and the
   papers to cite.
 
 ``` r
 ext_data <- system.file("ext_data", package = "RiboseQC")
 list.files(ext_data)
-#>  [1] "README.md"                "root_results_RiboseQC"   
-#>  [3] "shoots_results_RiboseQC"  "simp_arab_root.bam"      
-#>  [5] "simp_arab_root.bam.bai"   "simp_arab_shoots.bam"    
-#>  [7] "simp_arab_shoots.bam.bai" "simp_arab.fa.gz"         
-#>  [9] "simp_arab.fa.gz.fai"      "simp_arab.fa.gz.gzi"     
-#> [11] "simp_arab.gtf.gz"
+#>  [1] "README.md"                  "root_results_RiboseQC"     
+#>  [3] "shoots_five_prime_subcodon" "shoots_results_RiboseQC"   
+#>  [5] "simp_arab_root.bam"         "simp_arab_root.bam.bai"    
+#>  [7] "simp_arab_shoots.bam"       "simp_arab_shoots.bam.bai"  
+#>  [9] "simp_arab.fa.gz"            "simp_arab.fa.gz.fai"       
+#> [11] "simp_arab.fa.gz.gzi"        "simp_arab.gtf.gz"
 ```
 
 All output files go to a temporary directory:
