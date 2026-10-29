@@ -284,6 +284,14 @@
   the chromosomes of the annotation and the chromosomes with reads, and a
   BAM file without P-sites gives `P_sites_stats` without chromosomes. The
   values do not change.
+- `RiboseQC_analysis()` on a BAM file that it reads in more than one chunk
+  gives a set of P-sites without P-sites no column, as with one chunk and as
+  `prepare_for_ORFquant()`. Before, it had the column `score` (logical). The
+  set `P_sites_uniq_mm` (in `P_sites_stats` of
+  `<dest_name>_results_RiboseQC_all`, and in `<dest_name>_for_ORFquant`) is
+  empty when the BAM file has no MD tags, for example the BAM files of the
+  example data, and those of STAR with its default `--outSAMattributes`.
+  The P-sites do not change.
 
 ## Bug fixes
 
@@ -602,6 +610,11 @@
   change the selected read lengths, their offsets, the P-sites and the codon
   counts. Before, the help said only that `chunk_size` can be larger when
   more memory is available.
+- The examples of `calc_cutoffs_from_profiles()` and `choose_readlengths()`
+  run (before: in `\dontrun{}`). They use the new example file
+  `shoots_five_prime_subcodon`: the 5' profiles of each transcript of the
+  shoots sample, which are only in the `_results_RiboseQC_all` file.
+  `inst/script/make_root_results.R` makes it.
 - The README now gives the run time and the memory of the example (about
   5 min and 2 GB) and of human samples with one core: the annotation of
   GENCODE 47 takes 9 min and 7 GB, and `RiboseQC_analysis()` takes 4.5 min

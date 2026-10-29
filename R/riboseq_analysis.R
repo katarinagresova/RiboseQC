@@ -1215,6 +1215,10 @@ RiboseQC_analysis <- function(annotation_file, bam_files, read_subset = TRUE, re
             for (ps_set in c("P_sites_all", "P_sites_uniq", "P_sites_uniq_mm")) {
                 chunks <- lapply(P_sites_stats$chunks_ps, function(x) x[[ps_set]])
                 P_sites_stats[[ps_set]] <- sum_chunks(chunks, seqllll, seqleee)
+                # no P-sites (P_sites_uniq_mm without MD tags): no column, as with one chunk
+                if (sum(lengths(P_sites_stats[[ps_set]])) == 0) {
+                  mcols(P_sites_stats[[ps_set]], level = "within") <- NULL
+                }
             }
             P_sites_stats$chunks_ps <- NULL
         } else {
