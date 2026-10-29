@@ -284,6 +284,14 @@
   the chromosomes of the annotation and the chromosomes with reads, and a
   BAM file without P-sites gives `P_sites_stats` without chromosomes. The
   values do not change.
+- `RiboseQC_analysis()` on a BAM file that it reads in more than one chunk
+  gives a set of P-sites without P-sites no column, as with one chunk and as
+  `prepare_for_ORFquant()`. Before, it had the column `score` (logical). The
+  set `P_sites_uniq_mm` (in `P_sites_stats` of
+  `<dest_name>_results_RiboseQC_all`, and in `<dest_name>_for_ORFquant`) is
+  empty when the BAM file has no MD tags, for example the BAM files of the
+  example data, and those of STAR with its default `--outSAMattributes`.
+  The P-sites do not change.
 
 ## Bug fixes
 
