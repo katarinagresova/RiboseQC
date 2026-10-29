@@ -610,6 +610,11 @@
   change the selected read lengths, their offsets, the P-sites and the codon
   counts. Before, the help said only that `chunk_size` can be larger when
   more memory is available.
+- The examples of `calc_cutoffs_from_profiles()` and `choose_readlengths()`
+  run (before: in `\dontrun{}`). They use the new example file
+  `shoots_five_prime_subcodon`: the 5' profiles of each transcript of the
+  shoots sample, which are only in the `_results_RiboseQC_all` file.
+  `inst/script/make_root_results.R` makes it.
 
 # RiboseQC 1.4.0
 
