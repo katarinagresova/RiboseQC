@@ -439,6 +439,13 @@
   takes 29.5 s instead of 35.4 s, the P-sites 468 s instead of 518 s, and a
   run with the report on one core 1,270 s instead of 1,306 s (2.8% less),
   with the same memory. The results don't change.
+- `RiboseQC_analysis()` needs less memory. It now frees the memory that it
+  no longer uses (`gc()`) before the 5' profiles and before the P-site
+  profiles, where `mapToTranscripts()` needs much memory. On a human sample
+  (a 2.3 GB BAM, 18 chunks, GENCODE 47, `rescue_all_rls = TRUE`), a run
+  with the report on one core needs 17.2 to 17.4 GB instead of 19.2 to
+  19.3 GB (runs of the two versions at the same time on one node), in the
+  same time. The results don't change.
 
 ## Documentation
 
