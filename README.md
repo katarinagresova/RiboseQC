@@ -89,7 +89,12 @@ sbatch $(Rscript -e 'cat(system.file("scripts", "run_riboseqc.sbatch", package =
   --gtf genes.gtf --fasta genome.fa --bam sample.bam --outdir results
 ```
 
-It asks for 1 CPU, 32 GB of memory and 12 hours. Its comments give the time and memory measured on human samples, and say how to change these resources.
+It asks for 1 CPU, 32 GB of memory and 4 hours, enough for the annotation and a human sample with a 2.3 GB BAM file (see below). Its comments say when to ask for more, and how.
+
+
+### Run time and memory
+
+On one core, the example above takes about 5 minutes and 2 GB of memory. For human samples (GENCODE 47, the whole genome, with the report and `rescue_all_rls = TRUE`), `prepare_annotation_files()` takes 9 minutes and 7 GB, once for the annotation, and `RiboseQC_analysis()` takes 4.5 minutes and 2.5 GB for a 69 MB BAM file, and 23 minutes and 18 GB for a 2.3 GB BAM file. Time and memory grow with the size of the BAM file, and the time depends on the CPU. Of these times, the report takes 2.5 and 4 minutes (`create_report = FALSE` or `--no-report` skips it). With `n_cores`, the passes over the BAM file are faster and need more memory: for the 2.3 GB BAM file, 2 cores took 18 minutes and 24 GB, and 4 cores 16 minutes and 35 GB. `?RiboseQC_analysis` gives the time and the memory with other values of `chunk_size` and `fast_mode`.
 
 
 ### Input files
