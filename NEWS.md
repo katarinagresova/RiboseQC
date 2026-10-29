@@ -563,6 +563,17 @@
   one core, and each core needs the memory for one chunk of alignments. The
   comments of `run_riboseqc.sbatch` gave 65 min and 15.6 GB for one core,
   measured on an older version.
+- The help of `chunk_size` and `fast_mode` (`?RiboseQC_analysis`) now says
+  what they change, measured on the same human sample with one core. Larger
+  chunks take less time and more memory in the passes over the BAM file;
+  with the default, the peak memory comes later, from the profiles, so a
+  smaller `chunk_size` does not lower it: 1,000,000 took 51% more time with
+  the same memory (18 to 19 GB), 20,000,000 took 10% less time with the same
+  memory, and 100,000,000 (one chunk) took 14% less time and 27 GB.
+  `fast_mode = FALSE` took 13% more time with the same memory, and it can
+  change the selected read lengths, their offsets, the P-sites and the codon
+  counts. Before, the help said only that `chunk_size` can be larger when
+  more memory is available.
 
 # RiboseQC 1.4.0
 
