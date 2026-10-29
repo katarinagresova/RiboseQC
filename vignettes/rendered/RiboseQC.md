@@ -123,8 +123,9 @@ GTF_annotation$genetic_codes
 alignments (with `n_cores` above 1, it analyses the chunks in parallel),
 and writes its output files with the prefix given in `dest_names`. Then,
 with `create_report = TRUE` (the default), it creates one HTML report of
-all samples. The report includes all plots, so it is large (about 60 MB
-for these two samples); here we create no report.
+all samples. The report includes all plots, so it is large (about 29 MB
+for these two samples, and 41 MB more of plot files); here we create no
+report.
 
 ``` r
 RiboseQC_analysis(annotation_file = annotation_file,

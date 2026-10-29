@@ -543,6 +543,10 @@
     the windows of the CDS.
 - The new help page `?RiboseQC` gives the steps of an analysis and the
   functions for them (before, `?RiboseQC` found no page).
+- The README and the vignette now give the measured size of the report of
+  the example: 29 MB, and 41 MB of plot files in `report.html_plots/`
+  (before: 60 MB). The README also gives the size for one human sample
+  (a 2.3 GB BAM file, GENCODE 47): 41 MB, and 57 MB of plot files.
 - The new help page `?RiboseQC_output` (also `?res_all`) describes each
   output file of `RiboseQC_analysis()`, each element of the list `res_all`
   (its rows, columns, units and the reads that it counts), the files of the
