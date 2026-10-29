@@ -1,5 +1,6 @@
-## How inst/ext_data/root_results_RiboseQC and inst/ext_data/shoots_results_RiboseQC
-## were made, for the examples of the help pages: RiboseQC_analysis() with its default
+## How inst/ext_data/root_results_RiboseQC, inst/ext_data/shoots_results_RiboseQC and
+## inst/ext_data/shoots_five_prime_subcodon were made, for the examples of the help pages:
+## RiboseQC_analysis() with its default
 ## parameters on the bundled root and shoots BAM files, without the HTML report.
 ## RiboseQC_analysis() writes each file as <dest_name>_results_RiboseQC; each file holds
 ## one object, res_all. The root sample has no P-sites (no read length has an offset);
@@ -21,3 +22,10 @@ RiboseQC_analysis(annotation_file = annotation_file,
                   create_report = FALSE)
 file.copy(file.path(out_dir, c("root_results_RiboseQC", "shoots_results_RiboseQC")), "inst/ext_data",
           overwrite = TRUE)
+## inst/ext_data/shoots_five_prime_subcodon, for the examples of calc_cutoffs_from_profiles()
+## and choose_readlengths(): the 5' profiles of each transcript of the shoots sample. They
+## are only in the _results_RiboseQC_all file (res_all$profiles_fivepr$five_prime_subcodon).
+## The file holds one object, five_prime_subcodon.
+load(file.path(out_dir, "shoots_results_RiboseQC_all"))
+five_prime_subcodon <- res_all$profiles_fivepr$five_prime_subcodon
+save(five_prime_subcodon, file = "inst/ext_data/shoots_five_prime_subcodon")

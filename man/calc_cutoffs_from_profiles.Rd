@@ -36,13 +36,15 @@ Four methods are used and combined in the final choice:
  frequent cutoff chosen in all methods applied to in-frame positions.
 }
 \examples{
-\dontrun{
 # The 5' profiles of each transcript are only in the *_results_RiboseQC_all file
-# (RiboseQC_analysis() with write_tmp_files = TRUE).
-load("my_sample_results_RiboseQC_all")
-calc_cutoffs_from_profiles(res_all$profiles_fivepr[["five_prime_subcodon"]][["nucl"]][["28"]],
-  length_max = 28)
-}
+# (RiboseQC_analysis() with write_tmp_files = TRUE), in
+# res_all$profiles_fivepr[["five_prime_subcodon"]]. Those of the shoots sample
+# of the example data:
+load(system.file("ext_data", "shoots_five_prime_subcodon", package = "RiboseQC"))
+# the 29-nt reads of ChrC
+res <- calc_cutoffs_from_profiles(five_prime_subcodon[["ChrC"]][["29"]], length_max = 29)
+res$final_cutoff
+res$frames_res
 }
 \seealso{
 \code{\link{RiboseQC_analysis}}
