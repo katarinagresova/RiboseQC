@@ -25,7 +25,7 @@ With *BiocManager*:
 
 ```r
 install.packages(c("BiocManager", "remotes"))
-BiocManager::install("katarinagresova/RiboseQC")
+BiocManager::install("katarinagresova/RiboseQC@v1.5.0")
 ```
 
 The HTML report also needs [pandoc](https://pandoc.org). On Linux, the packages are usually built from source, which needs the development files of system libraries such as libcurl (`libcurl-devel` on RHEL or Fedora, `libcurl4-openssl-dev` on Debian or Ubuntu).
@@ -35,8 +35,10 @@ Or with conda, using [environment.yml](environment.yml) from this repository (R 
 ```bash
 conda env create -f environment.yml
 conda activate riboseqc
-Rscript -e 'remotes::install_github("katarinagresova/RiboseQC", upgrade = "never")'
+Rscript -e 'remotes::install_github("katarinagresova/RiboseQC@v1.5.0", upgrade = "never")'
 ```
+
+`@v1.5.0` installs the release 1.5.0. Without it, both commands install the latest code of the `main` branch.
 
 To also install the vignette, add `build_vignettes = TRUE` to either install command (this needs pandoc), and read it with `vignette("RiboseQC")`.
 
